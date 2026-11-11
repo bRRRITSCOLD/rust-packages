@@ -14,6 +14,7 @@ Licensed under either of [Apache License, Version 2.0](LICENSE-APACHE) or [MIT l
 |---|---|
 | `brrritscold-core-gpui` | The styled component layer on `gpui-base`. |
 | `brrritscold-core-gpui-tokens` | Design tokens generated from core-react's `tokens.json`. |
+| `brrritscold-core-gpui-gallery` | The component registry, a gallery window and headless captures (internal). |
 | `xtask` | Workspace tasks (internal). |
 
 ## Development
@@ -25,5 +26,10 @@ The toolchain is pinned in `rust-toolchain.toml`. On Linux, install GPUI's packa
 | `cargo test-unit` | Unit tier (nextest profile `unit`, plus doctests). |
 | `cargo test-unit-ci` | Setup → unit tier → teardown (always); exits with the tests' code. |
 | `bacon unit` | Unit tier in watch mode. |
+| `cargo run -p brrritscold-core-gpui-gallery` | Opens the gallery: every registry variant, the icons, a light/dark toggle. |
+| `cargo xtask captures [--out <dir>]` | One 2x PNG per variant × theme, headless, into `target/captures/`. Needs a Vulkan driver (lavapipe works). |
+| `cargo xtask captures compare [--penpot-theme light\|dark]` | `target/captures/compare/index.html`: core-react's published Storybook \| GPUI \| Penpot, for a person to judge. Needs Node; the Penpot column needs the env in `.env.example`. |
+
+Captures are local only: never committed, never run in CI, and nothing compares their pixels.
 
 Commits follow [Conventional Commits](https://www.conventionalcommits.org/): release-plz derives the version bump and `CHANGELOG.md` from them. Releases are git-only: one workspace version, one `v<version>` tag. Apps pin every `brrritscold-*` crate to the same tag, and copy the GPUI pin (`gpui-base`, `gpui` = `gpui-pre`) from this workspace's `Cargo.toml`.
