@@ -15,15 +15,19 @@
 //! entries of their own, named as their exports. Code-only parts (`AvatarGroup`,
 //! `TableHeader`, `TableBody`) are not entries: the library has no twin to check them against.
 
+mod accordion;
 mod alert;
 mod alert_dialog;
 mod avatar;
 mod badge;
 mod breadcrumb;
 mod button;
+mod calendar;
 mod card;
 mod checkbox;
 mod combobox;
+mod data_table;
+mod date_picker;
 mod dialog;
 mod dropdown_menu;
 mod field;
@@ -41,6 +45,7 @@ mod skeleton;
 mod support;
 mod switch;
 mod table;
+mod tabs;
 mod textarea;
 mod toast;
 mod toggle;
@@ -152,6 +157,11 @@ pub fn registry() -> Vec<Entry> {
     entries.extend(combobox::entries());
     entries.extend(dropdown_menu::entries());
     entries.extend(toast::entries());
+    entries.extend(accordion::entries());
+    entries.extend(tabs::entries());
+    entries.extend(calendar::entries());
+    entries.push(date_picker::entry());
+    entries.extend(data_table::entries());
     entries
 }
 

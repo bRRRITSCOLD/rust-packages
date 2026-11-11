@@ -112,6 +112,7 @@ pub struct PaginationLink {
     label: Option<SharedString>,
     is_active: bool,
     size: ButtonSize,
+    disabled: bool,
     on_click: Option<ClickHandler>,
     style: StyleRefinement,
 }
@@ -124,6 +125,7 @@ impl PaginationLink {
             label: None,
             is_active: false,
             size: ButtonSize::Icon,
+            disabled: false,
             on_click: None,
             style: StyleRefinement::default(),
         }
@@ -165,9 +167,20 @@ impl PaginationLink {
         }
     }
 
+    /// `aria-disabled:pointer-events-none aria-disabled:opacity-50`, as core-react's
+    /// `DataTablePagination` fades Previous on the first page and Next on the last. Not a
+    /// Penpot property of the link, so it stays inside the crate.
+    pub(crate) fn disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
+    }
+
     fn button(self) -> Button {
         let variant = self.variant();
-        let mut button = Button::new(self.id).variant(variant).size(self.size);
+        let mut button = Button::new(self.id)
+            .variant(variant)
+            .size(self.size)
+            .disabled(self.disabled);
         if let Some(label) = self.label {
             button = button.label(label);
         }
@@ -192,6 +205,7 @@ macro_rules! step {
         pub struct $step {
             id: ElementId,
             text: SharedString,
+            disabled: bool,
             on_click: Option<ClickHandler>,
             style: StyleRefinement,
         }
@@ -202,6 +216,7 @@ macro_rules! step {
                 Self {
                     id: id.into(),
                     text: $text.into(),
+                    disabled: false,
                     on_click: None,
                     style: StyleRefinement::default(),
                 }
@@ -222,8 +237,16 @@ macro_rules! step {
                 self
             }
 
+            /// Fades the link and makes it inert; see [`PaginationLink::disabled`].
+            pub(crate) fn disabled(mut self, disabled: bool) -> Self {
+                self.disabled = disabled;
+                self
+            }
+
             fn link(&mut self) -> PaginationLink {
-                let mut link = PaginationLink::new(self.id.clone()).size(ButtonSize::Default);
+                let mut link = PaginationLink::new(self.id.clone())
+                    .size(ButtonSize::Default)
+                    .disabled(self.disabled);
                 link.on_click = self.on_click.take();
                 link.style = std::mem::take(&mut self.style);
                 link
