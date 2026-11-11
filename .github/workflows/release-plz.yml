@@ -9,6 +9,7 @@ jobs:
   release:
     if: github.repository_owner == 'bRRRITSCOLD'
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     permissions:
       contents: write
     steps:
@@ -28,6 +29,7 @@ jobs:
   release-pr:
     if: github.repository_owner == 'bRRRITSCOLD'
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     permissions:
       contents: write
       pull-requests: write

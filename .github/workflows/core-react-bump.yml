@@ -15,6 +15,7 @@ jobs:
   bump:
     if: github.repository_owner == 'bRRRITSCOLD'
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
       - name: Compare the pin with npm latest
