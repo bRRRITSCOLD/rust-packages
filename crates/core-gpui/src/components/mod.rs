@@ -28,16 +28,23 @@ macro_rules! impl_parent {
     )+};
 }
 
+pub mod accordion;
 pub mod alert;
 pub mod alert_dialog;
 pub mod avatar;
 pub mod badge;
 pub mod breadcrumb;
 pub mod button;
+pub mod calendar;
 pub mod card;
 pub mod checkbox;
 pub mod combobox;
 mod control;
+pub mod data_table_column_header;
+pub mod data_table_pagination;
+pub mod data_table_toolbar;
+pub mod data_table_view_options;
+pub mod date_picker;
 pub mod dialog;
 pub mod dropdown_menu;
 pub mod field;
@@ -54,6 +61,7 @@ pub mod sheet;
 pub mod skeleton;
 pub mod switch;
 pub mod table;
+pub mod tabs;
 pub mod textarea;
 pub mod toast;
 pub mod toggle;
@@ -137,6 +145,22 @@ pub(crate) mod test_support {
         window
             .update(cx, |_, window, cx| cx.new(|cx| build(window, cx)))
             .expect("the window is open")
+    }
+
+    /// Presses and releases `key` on whatever has focus. GPUI clicks a focused element with a
+    /// click handler on Enter or Space natively, on the release, which `simulate_keystrokes`
+    /// never sends.
+    pub(crate) fn press(cx: &mut VisualTestContext, key: &str) {
+        let keystroke = cx.update(|_, cx| {
+            gpui::Keystroke::parse_with_os(key, cx.platform_info().os).expect("a key")
+        });
+        cx.simulate_event(gpui::KeyDownEvent {
+            keystroke: keystroke.clone(),
+            is_held: false,
+            prefer_character_input: false,
+        });
+        cx.simulate_event(gpui::KeyUpEvent { keystroke });
+        cx.run_until_parked();
     }
 
     /// Switches the app to `mode` and returns the theme.

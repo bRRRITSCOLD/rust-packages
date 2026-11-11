@@ -694,6 +694,7 @@ name = "brrritscold-core-gpui"
 version = "0.1.0"
 dependencies = [
  "brrritscold-core-gpui-tokens",
+ "chrono",
  "gpui-base",
  "gpui-pre",
  "strum",
@@ -706,6 +707,7 @@ dependencies = [
  "anyhow",
  "brrritscold-core-gpui",
  "brrritscold-core-gpui-tokens",
+ "chrono",
  "gpui-base",
  "gpui-pre",
  "gpui-pre-platform",

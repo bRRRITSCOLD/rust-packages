@@ -1,14 +1,4 @@
 {
 	"allowlist": [],
-	"pending": {
-		"Accordion": "*",
-		"Calendar": "*",
-		"CalendarDayButton": "*",
-		"DataTableColumnHeader": "*",
-		"DataTablePagination": "*",
-		"DataTableToolbar": "*",
-		"DataTableViewOptions": "*",
-		"DatePicker": "*",
-		"Tabs": "*"
-	}
+	"pending": {}
 }

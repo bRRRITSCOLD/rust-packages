@@ -12,6 +12,7 @@ publish.workspace = true
 anyhow.workspace = true
 brrritscold-core-gpui.workspace = true
 brrritscold-core-gpui-tokens.workspace = true
+chrono.workspace = true
 # Internal crate: `test-support` is always on, for the headless capture renderer.
 gpui = { workspace = true, features = ["test-support"] }
 gpui-base = { workspace = true, features = ["test-support"] }

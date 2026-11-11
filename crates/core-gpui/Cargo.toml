@@ -12,6 +12,7 @@ publish.workspace = true
 
 [dependencies]
 brrritscold-core-gpui-tokens.workspace = true
+chrono.workspace = true
 gpui.workspace = true
 gpui-base.workspace = true
 strum.workspace = true

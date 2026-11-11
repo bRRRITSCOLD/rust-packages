@@ -6,7 +6,8 @@
 // - Gone: action dispatch and the action context, links, custom element items, key-binding
 //   hints (the shortcut is a part), icons and the check side, sizes, scrolling and scrolling to
 //   the checked item, `rebuild`, and building from `OwnedMenuItem`s.
-// - Added: checkbox items toggle and radio items check in place, without closing the menu;
+// - Added: checkbox items toggle and radio items check in place, without closing the menu
+//   unless a radio item closes on click;
 //   the submenu opens at core-react's offsets (`sideOffset={0}`, `alignOffset={-3}`).
 // - Actions come from `gpui-base`; `init` is called from `core_gpui::init`.
 
@@ -257,6 +258,7 @@ impl PopupMenu {
             }
             PopupMenuItem::RadioItem(item) => {
                 let handler = item.on_select.clone();
+                let close = item.close_on_click;
                 for (ix, other) in self.menu_items.iter_mut().enumerate() {
                     if let PopupMenuItem::RadioItem(other) = other {
                         other.checked = ix == index;
@@ -264,6 +266,9 @@ impl PopupMenu {
                 }
                 if let Some(handler) = handler {
                     handler(event, window, cx);
+                }
+                if close {
+                    self.dismiss(&Cancel, window, cx);
                 }
                 cx.notify();
             }

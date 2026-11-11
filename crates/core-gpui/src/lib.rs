@@ -33,6 +33,7 @@ pub mod icons;
 mod root;
 pub mod theme;
 
+pub use components::accordion::{Accordion, AccordionContent, AccordionItem, AccordionTrigger};
 pub use components::alert::{Alert, AlertAction, AlertDescription, AlertTitle, AlertVariant};
 pub use components::alert_dialog::{
     AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogContentSize,
@@ -48,6 +49,7 @@ pub use components::breadcrumb::{
     BreadcrumbSeparator,
 };
 pub use components::button::{Button, ButtonSize, ButtonVariant};
+pub use components::calendar::{Calendar, CalendarDayButton};
 pub use components::card::{
     Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle,
 };
@@ -56,6 +58,11 @@ pub use components::combobox::{
     Combobox, ComboboxChip, ComboboxChips, ComboboxContent, ComboboxEmpty, ComboboxGroup,
     ComboboxInput, ComboboxItem, ComboboxLabel, ComboboxSeparator,
 };
+pub use components::data_table_column_header::{DataTableColumnHeader, DataTableSort};
+pub use components::data_table_pagination::DataTablePagination;
+pub use components::data_table_toolbar::DataTableToolbar;
+pub use components::data_table_view_options::{DataTableViewColumn, DataTableViewOptions};
+pub use components::date_picker::DatePicker;
 pub use components::dialog::{
     Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHandle,
     DialogHeader, DialogOverlay, DialogTitle,
@@ -91,6 +98,9 @@ pub use components::skeleton::Skeleton;
 pub use components::switch::{Switch, SwitchSize};
 pub use components::table::{
     Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow,
+};
+pub use components::tabs::{
+    Tabs, TabsContent, TabsList, TabsListVariant, TabsOrientation, TabsTrigger,
 };
 pub use components::textarea::{Textarea, TextareaState};
 pub use components::toast::{

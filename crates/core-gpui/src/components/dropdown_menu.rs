@@ -83,6 +83,7 @@ pub struct DropdownMenu {
     id: ElementId,
     trigger: Option<Button>,
     content: DropdownMenuContent,
+    anchor: Anchor,
 }
 
 impl DropdownMenu {
@@ -92,6 +93,7 @@ impl DropdownMenu {
             id: id.into(),
             trigger: None,
             content: DropdownMenuContent::new(),
+            anchor: Anchor::TopLeft,
         }
     }
 
@@ -104,6 +106,13 @@ impl DropdownMenu {
     /// The menu shown while open.
     pub fn content(mut self, content: DropdownMenuContent) -> Self {
         self.content = content;
+        self
+    }
+
+    /// Lines the menu's right edge up with the trigger's (`align="end"`); by default their left
+    /// edges line up (`align="start"`). Not a Penpot property, so it stays inside the crate.
+    pub(crate) fn align_end(mut self) -> Self {
+        self.anchor = Anchor::TopRight;
         self
     }
 }
@@ -120,9 +129,9 @@ impl RenderOnce for DropdownMenu {
             window.use_keyed_state(self.id.clone(), cx, |_, _| DropdownMenuState::default());
         let content = self.content;
         let trigger = self.trigger;
-        // side="bottom" align="start" sideOffset={4}
+        // side="bottom" align="start" (or "end") sideOffset={4}
         gpui_base::Popover::new(self.id)
-            .anchor(Anchor::TopLeft)
+            .anchor(self.anchor)
             .offset(space::S1)
             // The menu dismisses itself on a press outside, so a press on a submenu isn't one.
             .overlay_closable(false)
@@ -523,6 +532,8 @@ impl RenderOnce for DropdownMenuCheckboxItem {
 #[derive(IntoElement, Clone)]
 pub struct DropdownMenuRadioItem {
     pub(crate) label: SharedString,
+    icon: Option<IconName>,
+    pub(crate) close_on_click: bool,
     pub(crate) checked: bool,
     pub(crate) disabled: bool,
     pub(crate) highlighted: bool,
@@ -534,11 +545,26 @@ impl DropdownMenuRadioItem {
     pub fn new(label: impl Into<SharedString>) -> Self {
         Self {
             label: label.into(),
+            icon: None,
+            close_on_click: false,
             checked: false,
             disabled: false,
             highlighted: false,
             on_select: None,
         }
+    }
+
+    /// An icon before the label, `size-4`.
+    pub fn icon(mut self, icon: IconName) -> Self {
+        self.icon = Some(icon);
+        self
+    }
+
+    /// Closes the menu once the item is chosen (Base UI's `closeOnClick`); by default the menu
+    /// stays open.
+    pub fn close_on_click(mut self, close: bool) -> Self {
+        self.close_on_click = close;
+        self
     }
 
     /// Whether it's the chosen one (its `Checked` part shows).
@@ -553,7 +579,7 @@ impl DropdownMenuRadioItem {
         self
     }
 
-    /// Runs when it's chosen; the menu stays open.
+    /// Runs when it's chosen.
     pub fn on_select(
         mut self,
         handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
@@ -571,9 +597,12 @@ impl DropdownMenuRadioItem {
 impl RenderOnce for DropdownMenuRadioItem {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let style = DropdownMenuItemVariant::Default.style(self.highlighted, cx.theme());
-        // py-1.5 pr-8 pl-2
+        // py-1.5 pr-8 pl-2; [&_svg:not([class*='size-'])]:size-4
         row(style, self.disabled, cx)
             .pr(space::S8)
+            .when_some(self.icon, |d, icon| {
+                d.child(Icon::new(icon).size(space::S4))
+            })
             .child(self.label)
             .when(self.checked, |d| d.child(check_indicator()))
     }
