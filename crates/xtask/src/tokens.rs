@@ -1,8 +1,11 @@
 //! `cargo xtask tokens …`: vendor core-react's tokens and library snapshot from npm at one
-//! exact version (the *core-react pin*) and generate `core-gpui-tokens/src/generated.rs`.
+//! exact version (the *core-react pin*) and generate `core-gpui-tokens/src/generated.rs`. The
+//! Lucide icons ride the same pin: core-react names the exact `lucide-react` version.
 
 pub mod generate;
+pub mod icons;
 
+use std::collections::BTreeMap;
 use std::io::Read as _;
 use std::path::{Path, PathBuf};
 
@@ -26,6 +29,8 @@ pub struct Pin {
     pub tokens_sha256: String,
     /// sha256 of the vendored `library.snapshot.json`.
     pub snapshot_sha256: String,
+    /// The exact `lucide-react` version core-react depends on; icons come from `lucide-static`.
+    pub lucide: String,
 }
 
 /// `cargo xtask tokens <update <version|latest> | generate>`.
@@ -46,30 +51,13 @@ pub fn run(mut args: impl Iterator<Item = String>) -> Result<()> {
 /// regenerates `generated.rs`.
 fn update(spec: &str) -> Result<()> {
     let root = workspace_root();
-    let manifest: serde_json::Value = ureq::get(format!(
-        "https://registry.npmjs.org/{}/{spec}",
-        PACKAGE.replace('/', "%2f")
-    ))
-    .call()
-    .with_context(|| format!("fetching {PACKAGE}@{spec} from npm"))?
-    .body_mut()
-    .read_json()?;
-    let version = manifest["version"]
-        .as_str()
-        .context("npm manifest has no version")?;
-    let tarball = manifest["dist"]["tarball"]
-        .as_str()
-        .context("npm manifest has no tarball")?;
-
-    let bytes = ureq::get(tarball)
-        .call()
-        .with_context(|| format!("downloading {tarball}"))?
-        .body_mut()
-        .with_config()
-        .limit(64 * 1024 * 1024)
-        .read_to_vec()?;
+    let (version, bytes) = npm_tarball(PACKAGE, spec)?;
+    let version = version.as_str();
     let tokens = extract(&bytes, "package/dist/tokens.json")?;
     let snapshot = extract(&bytes, "package/dist/library.snapshot.json")?;
+    let package: serde_json::Value =
+        serde_json::from_str(&extract(&bytes, "package/package.json")?)?;
+    let lucide = exact_dependency(&package, "lucide-react")?;
 
     write(&root.join(TOKENS_FILE), &tokens)?;
     write(&root.join(SNAPSHOT_FILE), &snapshot)?;
@@ -79,15 +67,17 @@ fn update(spec: &str) -> Result<()> {
             version: version.to_owned(),
             tokens_sha256: sha256(tokens.as_bytes()),
             snapshot_sha256: sha256(snapshot.as_bytes()),
+            lucide: lucide.clone(),
         },
     )?;
+    icons::vendor(&root, &lucide)?;
     let generated = generate::generate(&tokens, version)?;
     write(&root.join(GENERATED_FILE), &generated)?;
-    println!("core-react pin: {version} (tokens.json, library.snapshot.json, generated.rs)");
+    println!("core-react pin: {version} (tokens, snapshot, lucide-static {lucide})");
     Ok(())
 }
 
-/// Regenerates `generated.rs` from the vendored `tokens.json`, for a generator change.
+/// Regenerates both generated modules from the vendored files, for a generator change.
 fn regenerate() -> Result<()> {
     let root = workspace_root();
     let pin = read_pin(&root)?;
@@ -95,7 +85,65 @@ fn regenerate() -> Result<()> {
     write(
         &root.join(GENERATED_FILE),
         &generate::generate(&tokens, &pin.version)?,
-    )
+    )?;
+    icons::regenerate(&root, &pin.lucide)
+}
+
+/// Fetches an npm package's manifest at `spec` and downloads its tarball.
+pub(crate) fn npm_tarball(package: &str, spec: &str) -> Result<(String, Vec<u8>)> {
+    let manifest: serde_json::Value = ureq::get(format!(
+        "https://registry.npmjs.org/{}/{spec}",
+        package.replace('/', "%2f")
+    ))
+    .call()
+    .with_context(|| format!("fetching {package}@{spec} from npm"))?
+    .body_mut()
+    .read_json()?;
+    let version = manifest["version"]
+        .as_str()
+        .context("npm manifest has no version")?
+        .to_owned();
+    let tarball = manifest["dist"]["tarball"]
+        .as_str()
+        .context("npm manifest has no tarball")?;
+    let bytes = ureq::get(tarball)
+        .call()
+        .with_context(|| format!("downloading {tarball}"))?
+        .body_mut()
+        .with_config()
+        .limit(128 * 1024 * 1024)
+        .read_to_vec()?;
+    Ok((version, bytes))
+}
+
+/// A dependency's version from a package.json, which must be exact (no range).
+fn exact_dependency(package: &serde_json::Value, name: &str) -> Result<String> {
+    let version = package["dependencies"][name]
+        .as_str()
+        .with_context(|| format!("core-react doesn't depend on `{name}`"))?;
+    if !version.starts_with(|c: char| c.is_ascii_digit()) {
+        bail!("core-react's `{name}` is `{version}`, not an exact version");
+    }
+    Ok(version.to_owned())
+}
+
+/// Every file in a tarball whose path passes `wanted`, keyed by path.
+pub(crate) fn extract_where(
+    tarball: &[u8],
+    wanted: impl Fn(&str) -> bool,
+) -> Result<BTreeMap<String, Vec<u8>>> {
+    let mut archive = tar::Archive::new(flate2::read::GzDecoder::new(tarball));
+    let mut files = BTreeMap::new();
+    for entry in archive.entries()? {
+        let mut entry = entry?;
+        let path = entry.path()?.to_string_lossy().into_owned();
+        if wanted(&path) {
+            let mut bytes = Vec::new();
+            entry.read_to_end(&mut bytes)?;
+            files.insert(path, bytes);
+        }
+    }
+    Ok(files)
 }
 
 fn extract(tarball: &[u8], wanted: &str) -> Result<String> {
@@ -111,7 +159,7 @@ fn extract(tarball: &[u8], wanted: &str) -> Result<String> {
     bail!("the tarball has no `{wanted}`")
 }
 
-fn write(path: &Path, contents: &str) -> Result<()> {
+pub(crate) fn write(path: &Path, contents: &str) -> Result<()> {
     if let Some(dir) = path.parent() {
         std::fs::create_dir_all(dir)?;
     }
@@ -140,6 +188,7 @@ pub fn read_pin(root: &Path) -> Result<Pin> {
         version: field("version")?,
         tokens_sha256: field("tokens-sha256")?,
         snapshot_sha256: field("snapshot-sha256")?,
+        lucide: field("lucide")?,
     })
 }
 
@@ -164,6 +213,7 @@ fn write_pin(root: &Path, pin: &Pin) -> Result<()> {
     table.insert("version", value(&pin.version));
     table.insert("tokens-sha256", value(&pin.tokens_sha256));
     table.insert("snapshot-sha256", value(&pin.snapshot_sha256));
+    table.insert("lucide", value(&pin.lucide));
     metadata.insert("core-react", Item::Table(table));
     write(&path, &doc.to_string())
 }
