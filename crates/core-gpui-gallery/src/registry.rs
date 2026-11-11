@@ -21,11 +21,20 @@ mod badge;
 mod breadcrumb;
 mod button;
 mod card;
+mod checkbox;
+mod field;
+mod input;
 mod label;
 mod pagination;
+mod radio_group;
 mod separator;
 mod skeleton;
+mod support;
+mod switch;
 mod table;
+mod textarea;
+mod toggle;
+mod toggle_group;
 
 use gpui::{AnyElement, ElementId, Pixels, px};
 
@@ -111,6 +120,16 @@ pub fn registry() -> Vec<Entry> {
     entries.extend(breadcrumb::entries());
     entries.extend(table::entries());
     entries.extend(pagination::entries());
+    entries.extend([
+        input::entry(),
+        textarea::entry(),
+        checkbox::entry(),
+        switch::entry(),
+        toggle::entry(),
+    ]);
+    entries.extend(radio_group::entries());
+    entries.extend(toggle_group::entries());
+    entries.extend(field::entries());
     entries
 }
 

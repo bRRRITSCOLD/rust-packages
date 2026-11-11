@@ -46,15 +46,28 @@ pub use components::button::{Button, ButtonSize, ButtonVariant};
 pub use components::card::{
     Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle,
 };
+pub use components::checkbox::Checkbox;
+pub use components::field::{
+    Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend,
+    FieldLegendVariant, FieldOrientation, FieldSeparator, FieldSet, FieldTitle,
+};
+pub use components::input::{Input, InputState};
 pub use components::label::Label;
 pub use components::pagination::{
     Pagination, PaginationContent, PaginationEllipsis, PaginationLink, PaginationNext,
     PaginationPrevious,
 };
+pub use components::radio_group::{RadioGroup, RadioGroupItem};
 pub use components::separator::{Separator, SeparatorOrientation};
 pub use components::skeleton::Skeleton;
+pub use components::switch::{Switch, SwitchSize};
 pub use components::table::{
     Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow,
+};
+pub use components::textarea::{Textarea, TextareaState};
+pub use components::toggle::{Toggle, ToggleSize, ToggleVariant};
+pub use components::toggle_group::{
+    ToggleGroup, ToggleGroupItem, ToggleGroupOrientation, ToggleGroupSpacing,
 };
 pub use gpui_base::Root;
 pub use icons::{Icon, IconName};

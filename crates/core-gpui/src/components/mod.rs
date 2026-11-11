@@ -34,11 +34,20 @@ pub mod badge;
 pub mod breadcrumb;
 pub mod button;
 pub mod card;
+pub mod checkbox;
+mod control;
+pub mod field;
+pub mod input;
 pub mod label;
 pub mod pagination;
+pub mod radio_group;
 pub mod separator;
 pub mod skeleton;
+pub mod switch;
 pub mod table;
+pub mod textarea;
+pub mod toggle;
+pub mod toggle_group;
 
 /// `ring-<width>`: a solid spread shadow outside the box, which takes no layout space.
 fn ring(width: f32, color: gpui::Hsla) -> gpui::BoxShadow {
@@ -105,6 +114,18 @@ pub(crate) mod test_support {
         cx.update(|window, cx| window.draw(cx).clear(cx));
         let drawn = bounds.get().expect("the element was laid out");
         (cx, drawn)
+    }
+
+    /// Creates an entity that needs a window to start, such as an input's state, in a window
+    /// of its own.
+    pub(crate) fn state<S: 'static>(
+        cx: &mut TestAppContext,
+        build: impl FnOnce(&mut Window, &mut gpui::Context<S>) -> S,
+    ) -> gpui::Entity<S> {
+        let window = cx.add_window(|_, _| gpui::EmptyView);
+        window
+            .update(cx, |_, window, cx| cx.new(|cx| build(window, cx)))
+            .expect("the window is open")
     }
 
     /// Switches the app to `mode` and returns the theme.
