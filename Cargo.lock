@@ -496,6 +496,7 @@ dependencies = [
  "brrritscold-core-gpui-tokens",
  "gpui-base",
  "gpui-pre",
+ "strum",
 ]
 
 [[package]]

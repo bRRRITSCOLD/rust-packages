@@ -27,6 +27,11 @@ gpui-sum-tree = { package = "gpui-pre-sum-tree", version = "=0.3.12" }
 
 anyhow = "1"
 thiserror = "2"
+# Variant enums: `EnumIter` for the gallery registry, kebab-case strings = Penpot values.
+strum = { version = "0.28", features = ["derive"] }
+
+# Gallery only: writes the headless captures (gpui already pulls `image` in with png).
+image = { version = "0.25", default-features = false, features = ["png"] }
 
 # xtask only.
 flate2 = "1.1.11"
