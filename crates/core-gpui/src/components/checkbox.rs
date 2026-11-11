@@ -18,7 +18,6 @@ use brrritscold_core_gpui_tokens::primitive::space;
 use gpui::{
     App, ElementId, Hsla, InteractiveElement as _, IntoElement, ParentElement as _, RenderOnce,
     SharedString, StyleRefinement, Styled, Window, prelude::FluentBuilder as _, px,
-    transparent_black,
 };
 use gpui_base::{CheckboxState, StyledExt as _};
 
@@ -137,11 +136,8 @@ impl BoxStyle {
             }
         } else {
             Self {
-                // dark:bg-input/30, made opaque: the box sits on shadow-xs and maybe a ring
-                fill: on_background(
-                    theme,
-                    theme.mode().pick(transparent_black(), s.input.opacity(0.3)),
-                ),
+                // bg-input-background, made opaque: the box sits on shadow-xs and maybe a ring
+                fill: on_background(theme, s.input_background),
                 border: outline.border,
                 text: s.foreground,
                 outline,

@@ -346,10 +346,9 @@ impl DropdownMenuItemVariant {
                 fill: None,
                 text: Some(s.destructive),
             },
-            // data-[variant=destructive]:focus:bg-destructive/10
-            // dark:data-[variant=destructive]:focus:bg-destructive/20
+            // data-[variant=destructive]:focus:bg-destructive-background
             (DropdownMenuItemVariant::Destructive, true) => RowStyle {
-                fill: Some(s.destructive.opacity(theme.mode().pick(0.1, 0.2))),
+                fill: Some(s.destructive_background),
                 text: Some(s.destructive),
             },
         }

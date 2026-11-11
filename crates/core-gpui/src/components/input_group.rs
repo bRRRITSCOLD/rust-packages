@@ -13,7 +13,7 @@ use brrritscold_core_gpui_tokens::primitive::{font_size, font_weight, opacity, s
 use gpui::{
     AnyElement, App, ClickEvent, ElementId, Entity, Focusable as _, InteractiveElement as _,
     IntoElement, MouseButton, ParentElement as _, Pixels, RenderOnce, SharedString,
-    StyleRefinement, Styled, Window, div, prelude::FluentBuilder as _, transparent_black,
+    StyleRefinement, Styled, Window, div, prelude::FluentBuilder as _,
 };
 use gpui_base::StyledExt as _;
 use gpui_base::input::{InputBase, InputState};
@@ -84,11 +84,8 @@ impl RenderOnce for InputGroup {
             Some((border, ring)) => (border, Some(ring)),
             None => (outline.border, outline.ring),
         };
-        // dark:bg-input/30, made opaque: it sits on shadow-xs and the ring
-        let fill = on_background(
-            theme,
-            theme.mode().pick(transparent_black(), s.input.opacity(0.3)),
-        );
+        // bg-input-background, made opaque: it sits on shadow-xs and the ring
+        let fill = on_background(theme, s.input_background);
         let has_addon = !self.addon.is_empty();
         // InputGroupInput: Input's `px-2.5 py-1` with `flex-1 rounded-none border-0
         // bg-transparent shadow-none`, and the group's has-[>[data-align=inline-end]]:[&>input]:pr-1.5

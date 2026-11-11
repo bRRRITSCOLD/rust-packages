@@ -9,7 +9,7 @@
 //!   Penpot variant property.
 //! - `underline-offset-4`: GPUI draws underlines at a fixed offset.
 
-use brrritscold_core_gpui_tokens::primitive::{font_size, font_weight, opacity, space};
+use brrritscold_core_gpui_tokens::primitive::{font_size, font_weight, space};
 use gpui::{
     App, Hsla, InteractiveElement as _, IntoElement, ParentElement as _, RenderOnce, SharedString,
     StyleRefinement, Styled, Window, div, prelude::FluentBuilder as _, transparent_black,
@@ -138,9 +138,9 @@ impl BadgeVariant {
                 text: s.secondary_foreground,
                 ..base
             },
-            // bg-destructive/10 text-destructive
+            // bg-destructive-background text-destructive
             BadgeVariant::Destructive => VariantStyle {
-                fill: Some(s.destructive.opacity(m.pick(opacity::O10, 0.2))), // dark:bg-destructive/20
+                fill: Some(s.destructive_background),
                 text: s.destructive,
                 ..base
             },

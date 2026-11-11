@@ -386,12 +386,12 @@ impl TabsTrigger {
             return resting;
         }
         match self.variant {
-            // data-active:bg-background data-active:text-foreground dark:data-active:border-input
-            // dark:data-active:bg-input/30 group-data-[variant=default]/tabs-list:data-active:shadow-sm.
-            // The dark fill is made opaque on the list's `muted`: GPUI paints shadow-sm under the
-            // whole box (see `control`).
+            // data-active:bg-outline-background data-active:text-foreground
+            // dark:data-active:border-input group-data-[variant=default]/tabs-list:data-active:shadow-sm.
+            // The fill (translucent in dark) is made opaque on the list's `muted`: GPUI paints
+            // shadow-sm under the whole box (see `control`).
             TabsListVariant::Default => TriggerStyle {
-                fill: Some(m.pick(s.background, s.muted.blend(s.input.opacity(0.3)))),
+                fill: Some(s.muted.blend(s.outline_background)),
                 text: s.foreground,
                 border: m.pick(transparent_black(), s.input),
                 shadow_sm: true,

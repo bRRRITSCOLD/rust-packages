@@ -9,7 +9,7 @@
 //! Not mirrored:
 //! - `alignItemWithTrigger`: Base UI lays the list over the trigger, the chosen item on it; here
 //!   the list opens below the trigger, 4px away, at least as wide as it.
-//! - The trigger's transparent fill (`bg-transparent`, `dark:bg-input/30`) is drawn as it
+//! - The trigger's translucent fill (`bg-input-background`) is drawn as it
 //!   shows on `background`, opaque, as Input's is: GPUI paints `shadow-xs` and the invalid ring
 //!   under the whole box, so they'd show through (see `control`). On another surface (a
 //!   popover, a card in dark mode) the trigger keeps `background`'s colour.
@@ -24,7 +24,6 @@ use gpui::{
     Anchor, App, ElementId, FocusHandle, Hsla, InteractiveElement as _, IntoElement, MouseButton,
     ParentElement as _, Pixels, RenderOnce, SharedString, StatefulInteractiveElement as _,
     StyleRefinement, Styled, Window, canvas, div, prelude::FluentBuilder as _, px,
-    transparent_black,
 };
 use gpui_base::StyledExt as _;
 use gpui_base::actions::{Cancel, Confirm, SelectDown, SelectUp};
@@ -423,9 +422,9 @@ impl SelectTrigger {
             Some((border, ring)) => (border, Some(ring)),
             None => (outline.border, outline.ring),
         };
-        // bg-transparent dark:bg-input/30 dark:hover:bg-input/50, made opaque: it sits on
-        // shadow-xs and the ring
-        let mut fill = on_background(theme, m.pick(transparent_black(), s.input.opacity(0.3)));
+        // bg-input-background dark:hover:bg-input/50, made opaque: it sits on shadow-xs and
+        // the ring
+        let mut fill = on_background(theme, s.input_background);
         let hover_fill = m.pick(None, Some(on_background(theme, s.input.opacity(0.5))));
         let mut shadows = shadows(ring, true);
         if self.disabled {

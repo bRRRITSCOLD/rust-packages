@@ -21,7 +21,6 @@ use brrritscold_core_gpui_tokens::primitive::{border_radius, space};
 use gpui::{
     AnyElement, App, ElementId, Hsla, InteractiveElement as _, IntoElement, ParentElement as _,
     RenderOnce, SharedString, StyleRefinement, Styled, Window, div, prelude::FluentBuilder as _,
-    transparent_black,
 };
 use gpui_base::StyledExt as _;
 
@@ -151,11 +150,8 @@ impl ItemStyle {
             }
         } else {
             Self {
-                // dark:bg-input/30, made opaque for the focus ring under it
-                fill: on_background(
-                    theme,
-                    theme.mode().pick(transparent_black(), s.input.opacity(0.3)),
-                ),
+                // bg-input-background, made opaque for the focus ring under it
+                fill: on_background(theme, s.input_background),
                 border: outline.border,
                 dot: None,
                 outline,
