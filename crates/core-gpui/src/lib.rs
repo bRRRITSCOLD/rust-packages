@@ -33,7 +33,11 @@ pub mod icons;
 mod root;
 pub mod theme;
 
+pub use components::badge::{Badge, BadgeVariant};
 pub use components::button::{Button, ButtonSize, ButtonVariant};
+pub use components::label::Label;
+pub use components::separator::{Separator, SeparatorOrientation};
+pub use components::skeleton::Skeleton;
 pub use gpui_base::Root;
 pub use icons::{Icon, IconName};
 pub use theme::{ActiveTheme, Mode, Theme, ThemePreference};

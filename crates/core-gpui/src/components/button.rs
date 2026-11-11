@@ -11,10 +11,11 @@
 
 use brrritscold_core_gpui_tokens::primitive::{font_size, font_weight, opacity, shadow, space};
 use gpui::{
-    App, BoxShadow, ClickEvent, ElementId, Hsla, InteractiveElement as _, IntoElement,
-    ParentElement as _, Pixels, Rems, RenderOnce, SharedString, Styled, Window, div, point,
+    App, ClickEvent, ElementId, Hsla, InteractiveElement as _, IntoElement, ParentElement as _,
+    Pixels, Rems, RenderOnce, SharedString, StyleRefinement, Styled, Window, div,
     prelude::FluentBuilder as _, px, transparent_black,
 };
+use gpui_base::StyledExt as _;
 use strum::{AsRefStr, Display, EnumIter, IntoStaticStr};
 
 use crate::icons::{Icon, IconName};
@@ -103,8 +104,10 @@ pub struct Button {
     size: ButtonSize,
     label: Option<SharedString>,
     icon: Option<IconName>,
+    icon_end: Option<IconName>,
     disabled: bool,
     on_click: Option<ClickHandler>,
+    style: StyleRefinement,
 }
 
 impl Button {
@@ -116,8 +119,10 @@ impl Button {
             size: ButtonSize::default(),
             label: None,
             icon: None,
+            icon_end: None,
             disabled: false,
             on_click: None,
+            style: StyleRefinement::default(),
         }
     }
 
@@ -249,6 +254,8 @@ struct SizeStyle {
     padding_x: Pixels,
     /// `has-data-[icon=inline-start]:pl-*`: the left padding when an icon leads a label.
     padding_left_with_icon: Pixels,
+    /// `has-data-[icon=inline-end]:pr-*`: the right padding when an icon trails a label.
+    padding_right_with_icon: Pixels,
     gap: Pixels,
     text: Rems,
     /// `[&_svg:not([class*='size-'])]:size-*`
@@ -263,6 +270,7 @@ impl ButtonSize {
             square: false,
             padding_x: space::S2_5,
             padding_left_with_icon: space::S2,
+            padding_right_with_icon: space::S2,
             gap: space::S1_5,
             text: font_size::SM,
             icon: space::S4,
@@ -272,30 +280,34 @@ impl ButtonSize {
             square: true,
             padding_x: px(0.),
             padding_left_with_icon: px(0.),
+            padding_right_with_icon: px(0.),
             gap: px(0.),
             ..base
         };
         match self {
-            // h-9 gap-1.5 px-2.5 has-data-[icon=inline-start]:pl-2
+            // h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2
             ButtonSize::Default => base,
-            // h-6 gap-1 px-2 text-xs has-data-[icon=inline-start]:pl-1.5 [&_svg]:size-3
+            // h-6 gap-1 px-2 text-xs has-data-[icon=inline-end]:pr-1.5
+            // has-data-[icon=inline-start]:pl-1.5 [&_svg]:size-3
             ButtonSize::Xs => SizeStyle {
                 height: space::S6,
                 padding_x: space::S2,
                 padding_left_with_icon: space::S1_5,
+                padding_right_with_icon: space::S1_5,
                 gap: space::S1,
                 text: font_size::XS,
                 icon: space::S3,
                 ..base
             },
-            // h-8 gap-1 px-2.5 has-data-[icon=inline-start]:pl-1.5
+            // h-8 gap-1 px-2.5 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5
             ButtonSize::Sm => SizeStyle {
                 height: space::S8,
                 padding_left_with_icon: space::S1_5,
+                padding_right_with_icon: space::S1_5,
                 gap: space::S1,
                 ..base
             },
-            // h-10 gap-1.5 px-2.5 has-data-[icon=inline-start]:pl-2
+            // h-10 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2
             ButtonSize::Lg => SizeStyle {
                 height: space::S10,
                 ..base
@@ -326,15 +338,10 @@ impl RenderOnce for Button {
         let radius = theme.semantic().radius_md; // rounded-md
         let enabled = !self.disabled;
         let icon_leads_label = self.icon.is_some() && self.label.is_some();
+        let icon_trails_label = self.icon_end.is_some() && self.label.is_some();
 
         // ring-3 is a 3px spread shadow; in CSS it stacks over the variant's shadow-xs.
-        let mut focus_shadow = vec![BoxShadow {
-            color: v.focus_ring,
-            offset: point(px(0.), px(0.)),
-            blur_radius: px(0.),
-            spread_radius: px(3.),
-            inset: false,
-        }];
+        let mut focus_shadow = vec![super::ring(3., v.focus_ring)];
         if v.shadow_xs {
             focus_shadow.extend_from_slice(shadow::XS);
         }
@@ -365,6 +372,7 @@ impl RenderOnce for Button {
                     b.px(z.padding_x)
                         .gap(z.gap)
                         .when(icon_leads_label, |b| b.pl(z.padding_left_with_icon))
+                        .when(icon_trails_label, |b| b.pr(z.padding_right_with_icon))
                 }
             })
             .rounded(radius)
@@ -384,60 +392,26 @@ impl RenderOnce for Button {
             .children(fill)
             .when_some(self.icon, |b, icon| b.child(Icon::new(icon).size(z.icon)))
             .when_some(self.label, |b, label| b.child(label))
+            .when_some(self.icon_end, |b, icon| {
+                b.child(Icon::new(icon).size(z.icon))
+            })
+            .refine_style(&self.style)
     }
 }
+
+impl_styled!(Button);
 
 #[cfg(test)]
 mod tests {
     use std::cell::Cell;
     use std::rc::Rc;
 
-    use gpui::{Bounds, Context, Modifiers, Render, TestAppContext, VisualTestContext};
+    use gpui::{Modifiers, TestAppContext};
     use strum::IntoEnumIterator as _;
 
     use super::*;
-    use crate::theme::{Mode, ThemePreference};
-
-    /// Renders the button `make` builds at the window's origin and records its bounds.
-    struct Harness {
-        make: Box<dyn Fn() -> Button>,
-        bounds: Rc<Cell<Option<Bounds<Pixels>>>>,
-    }
-
-    impl Render for Harness {
-        fn render(&mut self, _: &mut Window, _: &mut Context<Self>) -> impl IntoElement {
-            let bounds = self.bounds.clone();
-            div()
-                .flex()
-                .items_start()
-                .child((self.make)())
-                .on_children_prepainted(move |children, _, _| bounds.set(children.first().copied()))
-        }
-    }
-
-    /// Opens a window on an app [`crate::init`] has set up, renders a button and draws once.
-    fn render(
-        cx: &mut TestAppContext,
-        make: impl Fn() -> Button + 'static,
-    ) -> (&mut VisualTestContext, Bounds<Pixels>) {
-        let bounds = Rc::new(Cell::new(None));
-        let (_, cx) = cx.add_window_view({
-            let bounds = bounds.clone();
-            move |_, _| Harness {
-                make: Box::new(make),
-                bounds,
-            }
-        });
-        cx.update(|window, cx| window.draw(cx).clear(cx));
-        let drawn = bounds.get().expect("the button was laid out");
-        (cx, drawn)
-    }
-
-    fn theme(cx: &mut TestAppContext, mode: Mode) -> Theme {
-        let preference = mode.pick(ThemePreference::Light, ThemePreference::Dark);
-        cx.update(|cx| Theme::set_preference(preference, cx));
-        cx.read(|cx| *cx.theme())
-    }
+    use crate::components::test_support::{render, theme};
+    use crate::theme::Mode;
 
     mod variant {
         use super::*;

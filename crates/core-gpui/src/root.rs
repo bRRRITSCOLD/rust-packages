@@ -4,12 +4,15 @@
 //! `gpui-base`'s [`Root`] has to be the window's root view (its overlays and `Root::read`
 //! depend on it), so core-gpui extends it through a plugin rather than wrapping it. The plugin
 //! feeds the window's OS appearance into the [`Theme`] and gives the root surface the theme's
-//! background, foreground and sans font.
+//! background, foreground and sans font, at `line-height.normal` (1.5): core-react's text
+//! inherits the 1.5 Tailwind's preflight sets on `html`, and GPUI's own default is 1.618.
 //!
 //! [`Root`]: gpui_base::Root
 
 use brrritscold_core_gpui_tokens::primitive;
-use gpui::{App, Context, Div, Empty, IntoElement, Render, Stateful, Styled, Subscription, Window};
+use gpui::{
+    App, Context, Div, Empty, IntoElement, Render, Stateful, Styled, Subscription, Window, relative,
+};
 use gpui_base::RootPlugin;
 
 use crate::theme::{ActiveTheme as _, Theme};
@@ -50,6 +53,7 @@ impl RootPlugin for ThemePlugin {
         style.text.color = Some(s.foreground);
         style.text.font_family = Some(sans.family.into());
         style.text.font_fallbacks = Some(sans.font_fallbacks());
+        style.text.line_height = Some(relative(primitive::line_height::NORMAL));
     }
 }
 

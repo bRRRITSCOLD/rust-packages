@@ -112,7 +112,11 @@ mod tests {
             let keys = |value: &Value| -> Vec<String> {
                 value.as_object().unwrap().keys().cloned().collect()
             };
-            assert_eq!(keys(&manifest["exports"]), ["Button", "Toggle"]);
+            let exports = keys(&manifest["exports"]);
+            let mut sorted = exports.clone();
+            sorted.sort();
+            assert_eq!(exports, sorted);
+            assert!(exports.contains(&"Toggle".to_owned()));
             assert_eq!(
                 keys(&manifest["exports"]["Toggle"]["props"]),
                 ["pressed", "variant"]
