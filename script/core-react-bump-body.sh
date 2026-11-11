@@ -19,7 +19,8 @@ echo "## core-react CHANGELOG"
 echo
 changelog=$(curl -fsSL "https://raw.githubusercontent.com/bRRRITSCOLD/ts-packages/%40brrritscold/core-react%40${new}/packages/core-react/CHANGELOG.md" || true)
 if [ -n "$changelog" ]; then
-  printf '%s\n' "$changelog" | awk -v old="## ${old}" 'index($0, old) == 1 { exit } /^## / { show = 1 } show'
+  # No early exit or head: under pipefail a reader that stops early SIGPIPEs the writer (exit 141).
+  awk -v old="## ${old}" 'index($0, old) == 1 { stop = 1 } stop { next } /^## / { show = 1 } show' <<<"$changelog"
 else
   echo "_Couldn't fetch the CHANGELOG at the \`@brrritscold/core-react@${new}\` tag._"
 fi
@@ -50,7 +51,7 @@ for file in crates/core-gpui-tokens/tokens.json design/library.snapshot.json; do
     echo '<details><summary>Diff</summary>'
     echo
     echo '```diff'
-    git diff -- "$file" | head -400
+    git diff -- "$file" | sed -n '1,400p' # not head: see above
     echo '```'
     echo
     echo '</details>'
