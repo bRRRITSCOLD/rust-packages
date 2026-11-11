@@ -15,7 +15,7 @@ use brrritscold_core_gpui::{Mode, Root, Theme, ThemePreference};
 use brrritscold_core_gpui_tokens::primitive::{font_family, font_weight};
 use gpui::{
     AppContext as _, Bounds, Context, Font, HeadlessAppContext, IntoElement, ParentElement as _,
-    Pixels, Render, Size, Styled as _, TextSystem, Window, div, font, px, size,
+    Pixels, Render, Rgba, Size, Styled as _, TextSystem, Window, div, font, px, size,
 };
 use serde_json::json;
 
@@ -28,7 +28,8 @@ const WINDOW: Size<Pixels> = size(px(1280.), px(960.));
 const MARGIN: f32 = 4.;
 
 /// Captures every registry variant in both themes into `out`, plus `index.json` listing
-/// each file with its component, props, theme and Storybook story.
+/// each file with its component, props, theme, Storybook story and the theme's
+/// `background` token (what a comparison flattens a transparent export onto).
 pub fn capture(out: &Path) -> anyhow::Result<()> {
     std::fs::create_dir_all(out).with_context(|| format!("creating {}", out.display()))?;
     let mut index = Vec::new();
@@ -44,6 +45,7 @@ pub fn capture(out: &Path) -> anyhow::Result<()> {
         });
         cx.update(|cx| ensure_inter(cx.text_system()))?;
         let theme = mode.pick("light", "dark");
+        let background = hex(mode.semantic().background.to_rgb());
         for entry in registry() {
             let variants = Rc::new(entry.variants());
             let shots = shoot(&mut cx, variants.clone())
@@ -68,6 +70,7 @@ pub fn capture(out: &Path) -> anyhow::Result<()> {
                     "theme": theme,
                     "file": file,
                     "story": variant.story,
+                    "background": background,
                 }));
             }
         }
@@ -75,6 +78,17 @@ pub fn capture(out: &Path) -> anyhow::Result<()> {
     let index = serde_json::to_string_pretty(&json!({ "captures": index }))?;
     std::fs::write(out.join("index.json"), index).context("writing index.json")?;
     Ok(())
+}
+
+/// `#rrggbb`.
+fn hex(color: Rgba) -> String {
+    let channel = |c: f32| (c * 255.).round() as u8;
+    format!(
+        "#{:02x}{:02x}{:02x}",
+        channel(color.r),
+        channel(color.g),
+        channel(color.b)
+    )
 }
 
 /// Fails unless the sans family resolves to the bundled Inter with a face per weight, so a
@@ -185,5 +199,20 @@ impl Render for Board {
                         bounds.borrow_mut()[index] = children.first().copied();
                     })
             }))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    mod hex {
+        use super::*;
+
+        #[test]
+        fn should_write_the_background_tokens_as_css_hex() {
+            assert_eq!(hex(Mode::Light.semantic().background.to_rgb()), "#ffffff");
+            assert_eq!(hex(Mode::Dark.semantic().background.to_rgb()), "#0a0a0a");
+        }
     }
 }
