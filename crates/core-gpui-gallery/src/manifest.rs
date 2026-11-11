@@ -64,10 +64,11 @@ mod tests {
     use super::*;
     use crate::registry::Variant;
 
-    /// A two-property entry whose variants list some values twice and out of order.
+    /// A two-property entry whose variants list some values twice and out of order, named
+    /// after no registry entry.
     fn toggle() -> Entry {
         Entry {
-            name: "Toggle",
+            name: "FixtureToggle",
             properties: &["variant", "pressed"],
             variants: || {
                 [
@@ -94,7 +95,7 @@ mod tests {
             assert_eq!(
                 manifest(&[toggle()], &[])["exports"],
                 json!({
-                    "Toggle": {
+                    "FixtureToggle": {
                         "props": {
                             "pressed": { "type": "literals", "values": ["false", "true"], "optional": true },
                             "variant": { "type": "literals", "values": ["default", "outline"], "optional": true },
@@ -116,9 +117,9 @@ mod tests {
             let mut sorted = exports.clone();
             sorted.sort();
             assert_eq!(exports, sorted);
-            assert!(exports.contains(&"Toggle".to_owned()));
+            assert!(exports.contains(&"FixtureToggle".to_owned()));
             assert_eq!(
-                keys(&manifest["exports"]["Toggle"]["props"]),
+                keys(&manifest["exports"]["FixtureToggle"]["props"]),
                 ["pressed", "variant"]
             );
         }
