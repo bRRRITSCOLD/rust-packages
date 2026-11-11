@@ -6,7 +6,7 @@ set -euo pipefail
 old=$1
 new=$2
 registry=https://registry.npmjs.org/@brrritscold%2fcore-react
-dep() { curl -fsSL "$registry/$1" | jq -r --arg d "$2" '.dependencies[$d] // "none"'; }
+dep() { curl -fsSL "$registry/$1" | jq -r --arg d "$2" '.dependencies[$d] // .devDependencies[$d] // "none"'; }
 
 echo "Bumps the core-react pin **${old} → ${new}**: \`tokens.json\`, \`library.snapshot.json\` and \`generated.rs\`."
 echo
@@ -25,7 +25,7 @@ else
 fi
 echo
 
-for pair in "lucide-react:Lucide icons (re-vendor with the icons xtask)" "@fontsource/inter:Inter (re-vendor the TTFs in core-gpui)"; do
+for pair in "lucide-react:Lucide icons (re-vendored by the tokens xtask)" "@fontsource/inter:Inter (re-vendor the TTFs in core-gpui by hand)" "@brrritscold/design-core-node:drift checker CLI (pin moved by the tokens xtask)" "@brrritscold/design-core-js:drift checker rules (pin moved by the tokens xtask)"; do
   name=${pair%%:*}
   label=${pair#*:}
   before=$(dep "$old" "$name")

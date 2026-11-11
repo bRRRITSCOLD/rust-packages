@@ -58,7 +58,11 @@ fn update(spec: &str) -> Result<()> {
     let snapshot = extract(&bytes, "package/dist/library.snapshot.json")?;
     let package: serde_json::Value =
         serde_json::from_str(&extract(&bytes, "package/package.json")?)?;
-    let lucide = exact_dependency(&package, "lucide-react")?;
+    let lucide = exact_dependency(&package, "dependencies", "lucide-react")?;
+    // The drift checker core-react itself ran at this release: the pair moves with the pin.
+    let checker_node =
+        exact_dependency(&package, "devDependencies", "@brrritscold/design-core-node")?;
+    let checker_js = exact_dependency(&package, "devDependencies", "@brrritscold/design-core-js")?;
 
     write(&root.join(TOKENS_FILE), &tokens)?;
     write(&root.join(SNAPSHOT_FILE), &snapshot)?;
@@ -71,10 +75,14 @@ fn update(spec: &str) -> Result<()> {
             lucide: lucide.clone(),
         },
     )?;
+    write_checker_pin(&root, &checker_node, &checker_js)?;
     icons::vendor(&root, &lucide)?;
     let generated = generate::generate(&tokens, version)?;
     write(&root.join(GENERATED_FILE), &generated)?;
-    println!("core-react pin: {version} (tokens, snapshot, lucide-static {lucide})");
+    println!(
+        "core-react pin: {version} (tokens, snapshot, lucide-static {lucide}, \
+         design-core-node {checker_node} + design-core-js {checker_js})"
+    );
     Ok(())
 }
 
@@ -117,11 +125,11 @@ pub(crate) fn npm_tarball(package: &str, spec: &str) -> Result<(String, Vec<u8>)
     Ok((version, bytes))
 }
 
-/// A dependency's version from a package.json, which must be exact (no range).
-fn exact_dependency(package: &serde_json::Value, name: &str) -> Result<String> {
-    let version = package["dependencies"][name]
+/// A dependency's version from a package.json section, which must be exact (no range).
+fn exact_dependency(package: &serde_json::Value, section: &str, name: &str) -> Result<String> {
+    let version = package[section][name]
         .as_str()
-        .with_context(|| format!("core-react doesn't depend on `{name}`"))?;
+        .with_context(|| format!("core-react's {section} has no `{name}`"))?;
     if !version.starts_with(|c: char| c.is_ascii_digit()) {
         bail!("core-react's `{name}` is `{version}`, not an exact version");
     }
@@ -219,6 +227,30 @@ fn write_pin(root: &Path, pin: &Pin) -> Result<()> {
     write(&path, &doc.to_string())
 }
 
+/// Moves the drift checker pin, `[package.metadata.design-core-node]`, editing the two values
+/// in place so the table's comments survive.
+fn write_checker_pin(root: &Path, node: &str, js: &str) -> Result<()> {
+    let path = manifest_path(root);
+    let mut doc: DocumentMut = std::fs::read_to_string(&path)?.parse()?;
+    set_checker_pin(&mut doc, node, js)?;
+    write(&path, &doc.to_string())
+}
+
+fn set_checker_pin(doc: &mut DocumentMut, node: &str, js: &str) -> Result<()> {
+    let table = doc["package"]["metadata"]["design-core-node"]
+        .as_table_like_mut()
+        .context("the tokens crate has no [package.metadata.design-core-node]")?;
+    for (key, version) in [("version", node), ("design-core-js", js)] {
+        match table.get_mut(key).and_then(Item::as_value_mut) {
+            Some(existing) => *existing = version.into(),
+            None => {
+                table.insert(key, value(version));
+            }
+        }
+    }
+    Ok(())
+}
+
 fn sha256(bytes: &[u8]) -> String {
     Sha256::digest(bytes)
         .iter()
@@ -272,6 +304,46 @@ mod tests {
                 pin.snapshot_sha256,
                 "{SNAPSHOT_FILE} differs from the pin"
             );
+        }
+    }
+
+    mod checker_pin {
+        use super::*;
+
+        const MANIFEST: &str = "[package]\nname = \"t\"\n\n[package.metadata.design-core-node]\n\
+            # The checker pin.\nversion = \"0.1.0\"\ndesign-core-js = \"0.1.0\"\n";
+
+        #[test]
+        fn should_move_both_versions_and_keep_comments() {
+            let mut doc: DocumentMut = MANIFEST.parse().unwrap();
+            set_checker_pin(&mut doc, "0.2.0", "0.2.1").unwrap();
+            let text = doc.to_string();
+            assert!(text.contains("# The checker pin."));
+            assert!(text.contains("version = \"0.2.0\""));
+            assert!(text.contains("design-core-js = \"0.2.1\""));
+        }
+
+        #[test]
+        fn should_read_the_pair_from_core_reacts_dev_dependencies() {
+            let package = serde_json::json!({
+                "dependencies": { "lucide-react": "1.68.0" },
+                "devDependencies": { "@brrritscold/design-core-node": "0.1.0" }
+            });
+            assert_eq!(
+                exact_dependency(&package, "devDependencies", "@brrritscold/design-core-node")
+                    .unwrap(),
+                "0.1.0"
+            );
+            assert!(
+                exact_dependency(&package, "devDependencies", "@brrritscold/design-core-js")
+                    .is_err()
+            );
+        }
+
+        #[test]
+        fn should_reject_a_range() {
+            let package = serde_json::json!({ "devDependencies": { "x": "^0.1.0" } });
+            assert!(exact_dependency(&package, "devDependencies", "x").is_err());
         }
     }
 
