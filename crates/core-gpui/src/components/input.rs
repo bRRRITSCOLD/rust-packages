@@ -13,10 +13,10 @@
 //! - The `file:` arms: GPUI has no file input.
 //! - `cursor-not-allowed` while disabled.
 
-use brrritscold_core_gpui_tokens::primitive::{font_size, opacity, space};
+use brrritscold_core_gpui_tokens::primitive::{font_size, space};
 use gpui::{
     App, Entity, EntityId, Focusable as _, IntoElement, ParentElement as _, RenderOnce,
-    StyleRefinement, Styled, Window, div, prelude::FluentBuilder as _, transparent_black,
+    StyleRefinement, Styled, Window, div, transparent_black,
 };
 use gpui_base::StyledExt as _;
 use gpui_base::input::InputBase;
@@ -112,9 +112,9 @@ impl_styled!(Input);
 /// `w-full min-w-0 rounded-md border border-input bg-transparent px-2.5 shadow-xs md:text-sm`,
 /// the focus and invalid outline, `dark:bg-input/30` and `disabled:opacity-50`.
 ///
-/// The frame is dimmed layer by layer (see `control::dimmed`) and the text through an
-/// opacity on its own, so the frame's ring and shadow don't show through a half-transparent
-/// fill.
+/// The frame is dimmed layer by layer (see `control::dimmed`), so its ring and shadow don't
+/// show through a half-transparent fill. The text needs nothing: `gpui-base` already draws a
+/// disabled editor's text and placeholder at 50%.
 pub(super) fn frame(
     editor_id: EntityId,
     editor: impl IntoElement,
@@ -154,14 +154,7 @@ pub(super) fn frame(
         .px(space::S2_5)
         .text_size(font_size::SM)
         .shadow(shadow)
-        .child(
-            div()
-                .flex()
-                .flex_1()
-                .min_w_0()
-                .when(disabled, |d| d.opacity(opacity::O50))
-                .child(editor),
-        )
+        .child(div().flex().flex_1().min_w_0().child(editor))
 }
 
 #[cfg(test)]
