@@ -8,16 +8,25 @@
 //! - `underline-offset-4`: GPUI draws underlines at a fixed offset.
 //! - The `aria-invalid` and `aria-expanded` arms: neither is a Penpot variant property, so
 //!   the Button has no builder for them until one is.
+//!
+//! Where GPUI paints differently, the button resolves its colours with the form controls'
+//! helpers (see `control`): a focused button paints `background` under its fill, as GPUI
+//! would show the ring through a transparent one, and `disabled:opacity-50` dims each layer's
+//! colour instead of setting an opacity. Both resolve against `background`, so on a `card` or
+//! `popover` surface in dark mode a focused or disabled button reads a little darker than in
+//! CSS. Outline's translucent dark fill stays translucent at rest: `shadow-xs` shows through
+//! it by one level at most, where an opaque fill would darken it on those surfaces.
 
-use brrritscold_core_gpui_tokens::primitive::{font_size, font_weight, opacity, shadow, space};
+use brrritscold_core_gpui_tokens::primitive::{font_size, font_weight, opacity, space};
 use gpui::{
-    App, ClickEvent, ElementId, Hsla, InteractiveElement as _, IntoElement, ParentElement as _,
-    Pixels, Rems, RenderOnce, SharedString, StyleRefinement, Styled, Window, div,
-    prelude::FluentBuilder as _, px, transparent_black,
+    App, BoxShadow, ClickEvent, ElementId, Hsla, InteractiveElement as _, IntoElement,
+    ParentElement as _, Pixels, Rems, RenderOnce, SharedString, StyleRefinement, Styled, Window,
+    div, prelude::FluentBuilder as _, px, transparent_black,
 };
 use gpui_base::StyledExt as _;
 use strum::{AsRefStr, Display, EnumIter, IntoStaticStr};
 
+use super::control::{dimmed, dimmed_shadows, on_background, shadows};
 use crate::icons::{Icon, IconName};
 use crate::theme::{ActiveTheme as _, Theme};
 
@@ -160,7 +169,8 @@ impl Button {
     }
 
     /// Dims the button to 50% and makes it inert (`disabled:opacity-50
-    /// disabled:pointer-events-none`); it also leaves the Tab order.
+    /// disabled:pointer-events-none`); it also leaves the Tab order. A text colour the caller
+    /// sets dims with it.
     pub fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
@@ -237,12 +247,17 @@ impl ButtonVariant {
                 hover_fill: Some(s.primary.opacity(0.8)),
                 ..base
             },
-            // border-border bg-background shadow-xs hover:bg-muted hover:text-foreground
+            // border-border bg-background shadow-xs hover:bg-muted hover:text-foreground. The
+            // dark fills stay translucent at rest, so they tint a card or dialog as in CSS:
+            // shadow-xs shows through them by one level at most.
             ButtonVariant::Outline => VariantStyle {
                 fill: Some(m.pick(s.background, s.input.opacity(0.3))), // dark:bg-input/30
                 border: Some(m.pick(s.border, s.input)),                // dark:border-input
                 shadow_xs: true,
                 hover_fill: Some(m.pick(s.muted, s.input.opacity(0.5))), // dark:hover:bg-input/50
+                // dark:border-input comes after focus-visible:border-ring in the stylesheet, so
+                // a focused dark outline keeps its border.
+                focus_border: m.pick(s.ring, s.input),
                 ..base
             },
             // bg-secondary text-secondary-foreground hover:bg-secondary/80
@@ -273,6 +288,59 @@ impl ButtonVariant {
                 hover_underline: true,
                 ..base
             },
+        }
+    }
+}
+
+/// What a button paints: its `variant` arm in the button's state.
+#[derive(Debug, Clone, PartialEq)]
+struct Paint {
+    fill: Option<Hsla>,
+    hover_fill: Option<Hsla>,
+    border: Hsla,
+    text: Hsla,
+    shadows: Vec<BoxShadow>,
+    hover_underline: bool,
+    /// Painted under the fill while focused: `bg-transparent` made opaque, as GPUI would show
+    /// the ring through it.
+    focus_fill: Hsla,
+    focus_border: Hsla,
+    /// `ring-3`, over `shadow-xs` where the variant has it.
+    focus_shadows: Vec<BoxShadow>,
+}
+
+impl Button {
+    /// The variant arm in this button's state. A caller's `text_color` (a date picker's
+    /// placeholder, a calendar day's) stands in for the arm's, so it dims too.
+    fn paint(&self, theme: &Theme) -> Paint {
+        let v = self.variant.style(theme);
+        let paint = Paint {
+            fill: v.fill,
+            hover_fill: v.hover_fill,
+            border: v.border.unwrap_or(transparent_black()),
+            text: self.style.text.color.unwrap_or(v.text),
+            shadows: shadows(None, v.shadow_xs),
+            hover_underline: v.hover_underline,
+            focus_fill: on_background(theme, transparent_black()),
+            focus_border: v.focus_border,
+            focus_shadows: shadows(Some(v.focus_ring), v.shadow_xs),
+        };
+        if !self.disabled {
+            return paint;
+        }
+        // disabled:opacity-50, layer by layer (see `control::dimmed`). The border sits on the
+        // page, not the fill (bg-clip-padding), and the opaque text covers the fill. A disabled
+        // button takes no focus, so its focus paint stays as it is.
+        Paint {
+            fill: paint.fill.map(|fill| dimmed(theme, fill)),
+            hover_fill: None,
+            border: v
+                .border
+                .map_or(paint.border, |border| dimmed(theme, border)),
+            text: dimmed(theme, paint.text),
+            shadows: dimmed_shadows(paint.shadows),
+            hover_underline: false,
+            ..paint
         }
     }
 }
@@ -363,30 +431,27 @@ impl ButtonSize {
 const GROUP: &str = "brrritscold-core-gpui-button";
 
 impl RenderOnce for Button {
-    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
+    fn render(mut self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = cx.theme();
-        let v = self.variant.style(theme);
+        let paint = self.paint(theme);
+        // The caller's text colour is in `paint.text`, dimmed if disabled.
+        self.style.text.color = None;
         let z = self.size.style();
         let radius = theme.semantic().radius_md; // rounded-md
-        let enabled = !self.disabled;
         let icon_leads_label = self.icon.is_some() && self.label.is_some();
         let icon_trails_label = self.icon_end.is_some() && self.label.is_some();
-
-        // ring-3 is a 3px spread shadow; in CSS it stacks over the variant's shadow-xs.
-        let mut focus_shadow = vec![super::ring(3., v.focus_ring)];
-        if v.shadow_xs {
-            focus_shadow.extend_from_slice(shadow::XS);
-        }
+        let (focus_fill, focus_border, focus_shadows) =
+            (paint.focus_fill, paint.focus_border, paint.focus_shadows);
 
         // `bg-clip-padding`: the fill stops inside the 1px border, transparent or not. GPUI
         // paints a background under the border, so the fill is its own layer.
-        let fill = (v.fill.is_some() || v.hover_fill.is_some()).then(|| {
+        let fill = (paint.fill.is_some() || paint.hover_fill.is_some()).then(|| {
             div()
                 .absolute()
                 .inset_0()
                 .rounded(radius - px(1.))
-                .when_some(v.fill, |d, fill| d.bg(fill))
-                .when_some(v.hover_fill.filter(|_| enabled), |d, hover| {
+                .when_some(paint.fill, |d, fill| d.bg(fill))
+                .when_some(paint.hover_fill, |d, hover| {
                     d.group_hover(GROUP, move |s| s.bg(hover))
                 })
         });
@@ -414,15 +479,18 @@ impl RenderOnce for Button {
             })
             .rounded(radius)
             .border_1()
-            .border_color(v.border.unwrap_or(transparent_black()))
+            .border_color(paint.border)
             .text_size(z.text)
             .font_weight(font_weight::MEDIUM)
-            .text_color(v.text)
+            .text_color(paint.text)
             .whitespace_nowrap()
-            .when(v.shadow_xs, |b| b.shadow(shadow::XS.to_vec()))
-            .when(v.hover_underline && enabled, |b| b.hover(|s| s.underline()))
-            .focus_visible(move |s| s.border_color(v.focus_border).shadow(focus_shadow))
-            .when(self.disabled, |b| b.opacity(opacity::O50))
+            .when(!paint.shadows.is_empty(), |b| b.shadow(paint.shadows))
+            .when(paint.hover_underline, |b| b.hover(|s| s.underline()))
+            .focus_visible(move |s| {
+                s.bg(focus_fill)
+                    .border_color(focus_border)
+                    .shadow(focus_shadows)
+            })
             .when_some(self.on_click, |b, on_click| {
                 b.on_click(move |event, window, cx| on_click(event, window, cx))
             })
@@ -481,6 +549,15 @@ mod tests {
         }
 
         #[gpui::test]
+        fn should_keep_the_dark_outline_border_on_focus(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            let light = ButtonVariant::Outline.style(&theme(cx, Mode::Light));
+            let dark = ButtonVariant::Outline.style(&theme(cx, Mode::Dark));
+            assert_eq!(light.focus_border, Mode::Light.semantic().ring);
+            assert_eq!(dark.focus_border, Mode::Dark.semantic().input);
+        }
+
+        #[gpui::test]
         fn should_tint_destructive_at_10_percent_light_and_20_percent_dark(
             cx: &mut TestAppContext,
         ) {
@@ -508,6 +585,108 @@ mod tests {
             assert_eq!(
                 ButtonVariant::Destructive.style(&theme).focus_ring,
                 theme.semantic().destructive.opacity(0.2)
+            );
+        }
+    }
+
+    mod paint {
+        use super::*;
+
+        /// `color` at 50% on `background`: `disabled:opacity-50` over the page.
+        fn half(mode: Mode, color: Hsla) -> Hsla {
+            mode.semantic().background.blend(color.opacity(0.5))
+        }
+
+        #[gpui::test]
+        fn should_paint_background_under_the_focus_ring(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            for mode in [Mode::Light, Mode::Dark] {
+                let theme = theme(cx, mode);
+                for variant in ButtonVariant::iter() {
+                    let paint = Button::new("b").variant(variant).paint(&theme);
+                    assert_eq!(paint.focus_fill, mode.semantic().background, "{variant}");
+                    assert_eq!(paint.focus_shadows[0].spread_radius, px(3.), "{variant}");
+                }
+            }
+        }
+
+        #[gpui::test]
+        fn should_stack_the_focus_ring_over_shadow_xs_on_outline_only(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            let theme = theme(cx, Mode::Light);
+            let outline = Button::new("b")
+                .variant(ButtonVariant::Outline)
+                .paint(&theme);
+            let ghost = Button::new("b").variant(ButtonVariant::Ghost).paint(&theme);
+            assert_eq!(outline.focus_shadows[1..], outline.shadows[..]);
+            assert!(!outline.shadows.is_empty());
+            assert_eq!(ghost.focus_shadows.len(), 1);
+            assert!(ghost.shadows.is_empty());
+        }
+
+        #[gpui::test]
+        fn should_dim_each_layer_of_a_disabled_outline_opaquely(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            for mode in [Mode::Light, Mode::Dark] {
+                let s = mode.semantic();
+                let theme = theme(cx, mode);
+                let at_rest = Button::new("b")
+                    .variant(ButtonVariant::Outline)
+                    .paint(&theme);
+                let paint = Button::new("b")
+                    .variant(ButtonVariant::Outline)
+                    .disabled(true)
+                    .paint(&theme);
+                assert_eq!(paint.fill, at_rest.fill.map(|fill| half(mode, fill)));
+                assert_eq!(paint.border, half(mode, at_rest.border));
+                assert_eq!(paint.text, half(mode, s.foreground));
+                for color in [paint.fill.unwrap(), paint.border, paint.text] {
+                    assert_eq!(color.a, 1., "{mode:?}");
+                }
+                let shadow_alpha =
+                    |p: &Paint| p.shadows.iter().map(|s| s.color.a).collect::<Vec<_>>();
+                let halved: Vec<f32> = shadow_alpha(&at_rest).iter().map(|a| a * 0.5).collect();
+                assert_eq!(shadow_alpha(&paint), halved);
+                assert_eq!(paint.hover_fill, None);
+            }
+        }
+
+        #[gpui::test]
+        fn should_dim_text_on_its_own_layer_not_through_the_fill(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            let s = Mode::Light.semantic();
+            let paint = Button::new("b")
+                .disabled(true)
+                .paint(&theme(cx, Mode::Light));
+            assert_eq!(paint.fill, Some(half(Mode::Light, s.primary)));
+            assert_eq!(paint.text, half(Mode::Light, s.primary_foreground));
+        }
+
+        #[gpui::test]
+        fn should_keep_a_transparent_border_transparent_when_disabled(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            let paint = Button::new("b")
+                .variant(ButtonVariant::Ghost)
+                .disabled(true)
+                .paint(&theme(cx, Mode::Dark));
+            assert_eq!(paint.border, transparent_black());
+            assert_eq!(paint.fill, None);
+        }
+
+        #[gpui::test]
+        fn should_dim_the_callers_text_colour(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            let s = Mode::Light.semantic();
+            let theme = theme(cx, Mode::Light);
+            let button = || {
+                Button::new("b")
+                    .variant(ButtonVariant::Outline)
+                    .text_color(s.muted_foreground)
+            };
+            assert_eq!(button().paint(&theme).text, s.muted_foreground);
+            assert_eq!(
+                button().disabled(true).paint(&theme).text,
+                half(Mode::Light, s.muted_foreground)
             );
         }
     }
