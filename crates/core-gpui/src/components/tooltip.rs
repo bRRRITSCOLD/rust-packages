@@ -1,5 +1,6 @@
 //! Tooltip: core-react's `tooltip.tsx`. Its popup is `gpui-base`'s unstyled
-//! [`gpui_base::Tooltip`] (the tooltip role), anchored by `gpui-base`'s [`gpui_base::Popup`].
+//! [`gpui_base::Tooltip`] (the tooltip role), placed by `gpui-base`'s
+//! [`gpui_base::Positioner`], which flips it to the other side when there's no room.
 //!
 //! [`TooltipContent`] is the surface, arrow included, and renders on its own; [`Tooltip`] shows
 //! it beside its trigger, 4px away, while the pointer is over the trigger. core-react's
@@ -8,16 +9,20 @@
 //! The arrow is a rotated square in core-react (`size-2.5 rotate-45`, half under the surface);
 //! a `Div` can't rotate, so the part that shows, a triangle as deep as half the square's
 //! diagonal less its offset, is painted as a path. Not mirrored: the arrow's rounded tip
-//! (`rounded-xs`), the open and close animations, and the `kbd` styles.
+//! (`rounded-xs`), the open and close animations, and the `kbd` styles. A tooltip flipped to
+//! the other side keeps its arrow on the side it asked for.
+
+use std::cell::Cell;
+use std::rc::Rc;
 
 use brrritscold_core_gpui_tokens::primitive::{font_size, space};
 use gpui::{
-    Anchor, AnyElement, App, Bounds, ElementId, Hsla, InteractiveElement as _, IntoElement,
+    AnyElement, App, Bounds, ElementId, Hsla, InteractiveElement as _, IntoElement,
     ParentElement as _, PathBuilder, Pixels, RenderOnce, SharedString,
-    StatefulInteractiveElement as _, StyleRefinement, Styled, Window, canvas, div, point,
+    StatefulInteractiveElement as _, StyleRefinement, Styled, Window, canvas, deferred, div, point,
     prelude::FluentBuilder as _, px,
 };
-use gpui_base::StyledExt as _;
+use gpui_base::{Placement, StyledExt as _};
 use strum::{AsRefStr, Display, EnumIter, IntoStaticStr};
 
 use crate::theme::ActiveTheme as _;
@@ -41,13 +46,13 @@ pub enum TooltipContentSide {
 }
 
 impl TooltipContentSide {
-    /// The popup's point that meets its trigger.
-    fn anchor(self) -> Anchor {
+    /// The side of the trigger it prefers.
+    fn placement(self) -> Placement {
         match self {
-            TooltipContentSide::Top => Anchor::BottomCenter,
-            TooltipContentSide::Right => Anchor::LeftCenter,
-            TooltipContentSide::Bottom => Anchor::TopCenter,
-            TooltipContentSide::Left => Anchor::RightCenter,
+            TooltipContentSide::Top => Placement::Top,
+            TooltipContentSide::Right => Placement::Right,
+            TooltipContentSide::Bottom => Placement::Bottom,
+            TooltipContentSide::Left => Placement::Left,
         }
     }
 
@@ -104,23 +109,62 @@ impl Tooltip {
 /// `sideOffset={4}`: the gap between the trigger and the surface.
 const SIDE_OFFSET: Pixels = space::S1;
 
+/// Distance kept between a tooltip and the window edge.
+const WINDOW_MARGIN: Pixels = space::S2;
+
+/// Paint priority: above popups (`gpui_base::POPUP_PRIORITY`), as `gpui-base`'s tooltips are.
+const TOOLTIP_PRIORITY: usize = 200;
+
+/// A tooltip's state between frames: whether its trigger is hovered, and where it is.
+struct TooltipState {
+    hovered: bool,
+    trigger: Rc<Cell<Bounds<Pixels>>>,
+}
+
 impl RenderOnce for Tooltip {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
-        let hovered = window.use_keyed_state(self.id.clone(), cx, |_, _| false);
-        let open = *hovered.read(cx);
+        let state = window.use_keyed_state(self.id.clone(), cx, |_, _| TooltipState {
+            hovered: false,
+            trigger: Rc::new(Cell::new(Bounds::default())),
+        });
+        let (open, trigger_bounds) = {
+            let s = state.read(cx);
+            (s.hovered, s.trigger.clone())
+        };
         let side = self.content.as_ref().map(|c| c.side).unwrap_or_default();
-        let popup = gpui_base::Popup::new(self.id, div().children(self.trigger))
-            .anchor(side.anchor())
-            .offset(SIDE_OFFSET)
-            .on_hover(move |is_hovered, _, cx| {
-                hovered.update(cx, |hovered, cx| {
-                    *hovered = *is_hovered;
+        let measured = trigger_bounds.clone();
+        div()
+            .id(self.id)
+            .relative()
+            .on_hover(move |hovered, _, cx| {
+                state.update(cx, |state, cx| {
+                    state.hovered = *hovered;
                     cx.notify();
                 })
-            });
-        popup.when_some(self.content.filter(|_| open), |popup, content| {
-            popup.content(gpui_base::Tooltip::new("tooltip").child(content))
-        })
+            })
+            .children(self.trigger)
+            .child(
+                // Notes the trigger's bounds, for the tooltip to sit beside.
+                canvas(move |bounds, _, _| measured.set(bounds), |_, _, _, _| {})
+                    .absolute()
+                    .top_0()
+                    .left_0()
+                    .size_full(),
+            )
+            .when_some(self.content.filter(|_| open), |d, content| {
+                // Placed beside the trigger, flipping to the other side when there's no room.
+                // It takes no pointer events, so it never covers its trigger's hover.
+                d.child(
+                    deferred(
+                        gpui_base::Positioner::side(trigger_bounds.get())
+                            .placement(side.placement())
+                            .offset(SIDE_OFFSET)
+                            .margin(WINDOW_MARGIN)
+                            .child(gpui_base::Tooltip::new("tooltip").child(content)),
+                    )
+                    .with_priority(TOOLTIP_PRIORITY),
+                )
+            })
     }
 }
 

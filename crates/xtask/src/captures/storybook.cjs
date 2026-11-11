@@ -77,6 +77,9 @@ async function target(page, component) {
 	const root = page.locator('#storybook-root > *').first()
 	const slot = slotOf(component)
 	if ((await root.getAttribute('data-slot')) === slot) return root
+	// Only an overlay's part is worth opening a trigger for; anything else is shot as before.
+	const opens = slot.startsWith('toast') || (await page.locator('#storybook-root [data-slot$="-trigger"]').count()) > 0
+	if (!opens && !(await waitForSlot(page, slot, 0))) return root
 	// The story's `play` may still be opening or closing it, so it must stay up for a moment.
 	let el = null
 	for (let attempt = 0; attempt < 4 && !el; attempt++) {

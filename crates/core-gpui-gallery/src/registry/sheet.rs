@@ -7,11 +7,10 @@ use brrritscold_core_gpui::{
     SheetFooter, SheetHeader, SheetTitle,
 };
 use brrritscold_core_gpui_tokens::primitive::{size, space};
-use gpui::{IntoElement as _, ParentElement as _, Styled as _, div, px};
+use gpui::{ElementId, IntoElement as _, ParentElement as _, Styled as _, div, px};
 use strum::IntoEnumIterator as _;
 
-use super::stand_in::{self, Field};
-use super::{Entry, Variant, one};
+use super::{Entry, Variant, fields, one};
 
 /// The story's viewport, which a sheet fills along its edge.
 const VIEWPORT_WIDTH: gpui::Pixels = px(640.);
@@ -40,15 +39,11 @@ fn footer() -> SheetFooter {
 }
 
 /// A surface's sample content, pinned to `side`.
-pub(super) fn content(side: SheetContentSide) -> SheetContent {
+pub(super) fn content(id: &ElementId, side: SheetContentSide) -> SheetContent {
     SheetContent::new()
         .side(side)
         .header(header())
-        .child(
-            div()
-                .px(space::S4)
-                .child(stand_in::field(Field::new("Name"))),
-        )
+        .child(div().px(space::S4).child(fields::name(id)))
         .footer(footer())
 }
 
@@ -69,8 +64,8 @@ pub(super) fn entries() -> Vec<Entry> {
                         story: Some("components-sheet--right"),
                         // Its size in the story's viewport: 384px by the full height at the
                         // left or right, the full width at the top or bottom.
-                        render: Box::new(move |_| {
-                            let sheet = content(side);
+                        render: Box::new(move |id| {
+                            let sheet = content(&id, side);
                             match side {
                                 SheetContentSide::Left | SheetContentSide::Right => {
                                     sheet.w(size::SM).h(VIEWPORT_HEIGHT)

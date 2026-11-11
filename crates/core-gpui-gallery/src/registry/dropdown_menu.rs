@@ -123,10 +123,11 @@ pub(super) fn entries() -> Vec<Entry> {
         Entry {
             name: "DropdownMenuRadioItem",
             properties: &[],
-            // The story's first radio item, Top; Bottom is the checked one.
+            // The story's first radio item, Top, which its play function checks (and Penpot's
+            // main component shows checked).
             variants: || {
                 one(Some("components-dropdownmenu--radio-items"), || {
-                    in_menu(MIN_ROW, DropdownMenuRadioItem::new("Top"))
+                    in_menu(MIN_ROW, DropdownMenuRadioItem::new("Top").checked(true))
                 })
             },
         },

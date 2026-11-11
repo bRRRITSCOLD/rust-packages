@@ -1,4 +1,4 @@
-// Vendored from gpui-component 0.9.1: crates/ui/src/menu/menu_item.rs
+// Vendored from gpui-component 0.9.1: src/menu/menu_item.rs
 //
 // Modified for core-gpui: the row draws nothing of its own (the dropdown menu's parts draw
 // every row, highlight included), so its padding, colours and hover styles are gone, as is
@@ -11,6 +11,9 @@ use gpui::{
 };
 use gpui_base::StyledExt as _;
 
+type ClickHandler = Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>;
+type HoverHandler = Box<dyn Fn(&bool, &mut Window, &mut App) + 'static>;
+
 #[derive(IntoElement)]
 pub(crate) struct MenuItemElement {
     id: ElementId,
@@ -19,8 +22,8 @@ pub(crate) struct MenuItemElement {
     disabled: bool,
     selected: bool,
     checked: Option<bool>,
-    on_click: Option<Box<dyn Fn(&ClickEvent, &mut Window, &mut App) + 'static>>,
-    on_hover: Option<Box<dyn Fn(&bool, &mut Window, &mut App) + 'static>>,
+    on_click: Option<ClickHandler>,
+    on_hover: Option<HoverHandler>,
     children: Vec<AnyElement>,
 }
 

@@ -1,4 +1,4 @@
-// Vendored from gpui-component 0.9.1: crates/ui/src/menu/popup_menu.rs
+// Vendored from gpui-component 0.9.1: src/menu/popup_menu.rs
 //
 // Modified for core-gpui:
 // - The items are the dropdown menu's parts (`MenuEntry`), and those parts draw every row; the
@@ -148,7 +148,7 @@ impl PopupMenu {
         cx: &mut App,
     ) -> Entity<Self> {
         let previous = window.focused(cx);
-        Self::build_level(content, false, previous, None, window, cx)
+        Self::build_level(content, false, previous, None, cx)
     }
 
     fn build_level(
@@ -156,7 +156,6 @@ impl PopupMenu {
         sub: bool,
         previous: Option<FocusHandle>,
         parent: Option<(WeakEntity<Self>, usize)>,
-        window: &mut Window,
         cx: &mut App,
     ) -> Entity<Self> {
         cx.new(|cx| {
@@ -183,7 +182,6 @@ impl PopupMenu {
                             true,
                             previous.clone(),
                             Some((this.clone(), menu.priority)),
-                            window,
                             cx,
                         ),
                     },
@@ -195,13 +193,13 @@ impl PopupMenu {
     }
 
     pub(crate) fn active_submenu(&self) -> Option<Entity<PopupMenu>> {
-        if let Some(ix) = self.selected_index {
-            if let Some(item) = self.menu_items.get(ix) {
-                return match item {
-                    PopupMenuItem::Submenu { menu, .. } => Some(menu.clone()),
-                    _ => None,
-                };
-            }
+        if let Some(ix) = self.selected_index
+            && let Some(item) = self.menu_items.get(ix)
+        {
+            return match item {
+                PopupMenuItem::Submenu { menu, .. } => Some(menu.clone()),
+                _ => None,
+            };
         }
 
         None
@@ -440,10 +438,8 @@ impl PopupMenu {
         // focused its input) -- stealing focus back would break that.
         let focus_moved_away =
             window.focused(cx).is_some() && !self.focus_handle.contains_focused(window, cx);
-        if !focus_moved_away {
-            if let Some(handle) = self.previous_focus_handle.as_ref() {
-                window.focus(handle, cx);
-            }
+        if !focus_moved_away && let Some(handle) = self.previous_focus_handle.as_ref() {
+            window.focus(handle, cx);
         }
 
         let Some(parent_menu) = self.parent_menu.clone() else {
@@ -463,12 +459,11 @@ impl PopupMenu {
         cx: &mut Context<Self>,
     ) {
         // Do not dismiss, if click inside the parent menu
-        if let Some(parent) = self.parent_menu.as_ref() {
-            if let Some(parent) = parent.upgrade() {
-                if parent.read(cx).bounds.contains(position) {
-                    return;
-                }
-            }
+        if let Some(parent) = self.parent_menu.as_ref()
+            && let Some(parent) = parent.upgrade()
+            && parent.read(cx).bounds.contains(position)
+        {
+            return;
         }
 
         // Do not dismiss, if there have an active submenu, the click may be
@@ -652,14 +647,13 @@ impl Render for PopupMenu {
                 view.update(cx, |menu, cx| {
                     let width_changed = menu.bounds.size.width != bounds.size.width;
                     menu.bounds = bounds;
-                    if width_changed {
-                        if let Some(parent) = menu
+                    if width_changed
+                        && let Some(parent) = menu
                             .parent_menu
                             .as_ref()
                             .and_then(|parent| parent.upgrade())
-                        {
-                            parent.update(cx, |_, cx| cx.notify());
-                        }
+                    {
+                        parent.update(cx, |_, cx| cx.notify());
                     }
                 });
             })

@@ -26,8 +26,10 @@ mod checkbox;
 mod dialog;
 mod dropdown_menu;
 mod field;
+mod fields;
 mod input;
 mod label;
+mod live;
 mod pagination;
 mod popover;
 mod radio_group;
@@ -35,7 +37,6 @@ mod select;
 mod separator;
 mod sheet;
 mod skeleton;
-mod stand_in;
 mod support;
 mod switch;
 mod table;
@@ -44,6 +45,8 @@ mod toast;
 mod toggle;
 mod toggle_group;
 mod tooltip;
+
+pub use live::live;
 
 use gpui::{AnyElement, ElementId, Pixels, px};
 

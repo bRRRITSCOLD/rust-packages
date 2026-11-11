@@ -1,6 +1,6 @@
 //! Dropdown Menu: core-react's `dropdown-menu.tsx`. `gpui-base` has no menu, so its behaviour
 //! (the highlight, arrow keys, submenus and their focus, dismissing the whole chain) is
-//! gpui-component's popup menu, vendored into [`popup_menu`] and [`menu_item`] and drawn with
+//! gpui-component's popup menu, vendored into `popup_menu` and `menu_item` and drawn with
 //! the parts here; [`DropdownMenu`] opens it under its trigger through `gpui-base`'s
 //! [`gpui_base::Popover`].
 //!
@@ -163,7 +163,7 @@ pub(crate) enum MenuEntry {
     CheckboxItem(DropdownMenuCheckboxItem),
     RadioItem(DropdownMenuRadioItem),
     Separator(DropdownMenuSeparator),
-    Sub(DropdownMenuSubTrigger, DropdownMenuSubContent),
+    Sub(DropdownMenuSubTrigger, Box<DropdownMenuSubContent>),
 }
 
 /// The surface every menu draws on: core-react's content and sub-content classes.
@@ -239,7 +239,8 @@ impl DropdownMenuContent {
 
     /// A submenu: its `SubTrigger` part, which opens its `SubContent` beside it.
     pub fn sub(mut self, trigger: DropdownMenuSubTrigger, content: DropdownMenuSubContent) -> Self {
-        self.entries.push(MenuEntry::Sub(trigger, content));
+        self.entries
+            .push(MenuEntry::Sub(trigger, Box::new(content)));
         self
     }
 }

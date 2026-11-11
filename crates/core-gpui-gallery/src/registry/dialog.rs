@@ -5,10 +5,9 @@ use brrritscold_core_gpui::{
     Button, ButtonVariant, DialogClose, DialogContent, DialogDescription, DialogFooter,
     DialogHeader, DialogOverlay, DialogTitle,
 };
-use gpui::{IntoElement as _, ParentElement as _, Styled as _, div, px};
+use gpui::{ElementId, IntoElement as _, ParentElement as _, Styled as _, div, px};
 
-use super::stand_in::{self, Field};
-use super::{Entry, one};
+use super::{Entry, Variant, fields, one};
 
 fn title() -> DialogTitle {
     DialogTitle::new("Edit profile")
@@ -35,10 +34,10 @@ fn footer() -> DialogFooter {
 }
 
 /// The surface's sample content: the story's header, name field and footer.
-pub(super) fn content() -> DialogContent {
+pub(super) fn content(id: &ElementId) -> DialogContent {
     DialogContent::new()
         .header(header())
-        .child(stand_in::field(Field::new("Name")))
+        .child(fields::name(id))
         .footer(footer())
 }
 
@@ -53,9 +52,11 @@ pub(super) fn entries() -> Vec<Entry> {
             name: "DialogContent",
             properties: &[],
             variants: || {
-                one(Some("components-dialog--default"), || {
-                    content().into_any_element()
-                })
+                vec![Variant {
+                    props: Vec::new(),
+                    story: Some("components-dialog--default"),
+                    render: Box::new(|id| content(&id).into_any_element()),
+                }]
             },
         },
         Entry {

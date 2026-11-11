@@ -165,7 +165,7 @@ impl Render for Gallery {
 const CELL_WIDTH: Pixels = px(160.);
 
 /// Every variant of `entry`, one row per value of its first property, each cell labelled
-/// with its values.
+/// with its values; above them, for an overlay's surface, a live trigger that opens it.
 pub fn component_page(entry: &Entry, cx: &App) -> impl IntoElement {
     let muted = cx.theme().semantic().muted_foreground;
     let variants = entry.variants();
@@ -186,6 +186,15 @@ pub fn component_page(entry: &Entry, cx: &App) -> impl IntoElement {
         .flex()
         .flex_col()
         .gap_8()
+        .children(crate::registry::live(entry.name).map(|live| {
+            div()
+                .flex()
+                .flex_col()
+                .items_start()
+                .gap_2()
+                .child(live)
+                .child(div().text_xs().text_color(muted).child("live"))
+        }))
         .children(rows.into_iter().map(|row| {
             div()
                 .flex()

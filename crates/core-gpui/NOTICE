@@ -12,7 +12,12 @@ third-party files under their own licences:
   lucide-static at the version core-react pins, licensed under the ISC
   License (icons/LICENSE). Copyright (c) Lucide Icons and Contributors.
 
-- gpui-component (https://github.com/longbridge/gpui-component) files,
+- gpui-component (https://github.com/longbridge/gpui-kit) files,
   licensed under the Apache License, Version 2.0. Each vendored file starts
-  with `// Vendored from gpui-component <version>: <upstream path>`. None
-  are vendored yet.
+  with `// Vendored from gpui-component <version>: <upstream path>` and says
+  how it was modified. Copyright 2024 - 2026 Longbridge. Vendored and
+  modified:
+    src/components/dropdown_menu/popup_menu.rs
+      (src/menu/popup_menu.rs in the gpui-component crate)
+    src/components/dropdown_menu/menu_item.rs
+      (src/menu/menu_item.rs in the gpui-component crate)

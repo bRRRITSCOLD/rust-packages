@@ -69,23 +69,6 @@ fn ring(width: f32, color: gpui::Hsla) -> gpui::BoxShadow {
     }
 }
 
-/// `ring-<width>` around a box whose fill is transparent: a spread shadow would also paint
-/// under the box (GPUI draws shadows beneath the whole box), so the ring is a border on a
-/// layer outside it instead. Put it in a `relative` box with corners `radius`.
-fn ring_outline(width: f32, color: gpui::Hsla, radius: gpui::Pixels) -> gpui::Div {
-    use gpui::Styled as _;
-    let outset = -gpui::px(width);
-    gpui::div()
-        .absolute()
-        .top(outset)
-        .left(outset)
-        .right(outset)
-        .bottom(outset)
-        .rounded(radius + gpui::px(width))
-        .border(gpui::px(width))
-        .border_color(color)
-}
-
 #[cfg(test)]
 pub(crate) mod test_support {
     //! Window helpers shared by the components' unit tests.

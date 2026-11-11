@@ -9,8 +9,10 @@
 //! Not mirrored:
 //! - `alignItemWithTrigger`: Base UI lays the list over the trigger, the chosen item on it; here
 //!   the list opens below the trigger, 4px away, at least as wide as it.
-//! - The trigger's `shadow-xs`: GPUI paints a box shadow under the box too, and the trigger's
-//!   fill is transparent (`bg-transparent`, `dark:bg-input/30`), so it would show through.
+//! - The trigger's transparent fill (`bg-transparent`, `dark:bg-input/30`) is drawn as it
+//!   shows on `background`, opaque, as Input's is: GPUI paints `shadow-xs` and the invalid ring
+//!   under the whole box, so they'd show through (see `control`). On another surface (a
+//!   popover, a card in dark mode) the trigger keeps `background`'s colour.
 //! - The scroll arrows and `max-h-(--available-height)`: the list grows to fit its items.
 //! - The open and close animations.
 
@@ -28,6 +30,7 @@ use gpui_base::StyledExt as _;
 use gpui_base::actions::{Cancel, Confirm, SelectDown, SelectUp};
 use strum::{AsRefStr, Display, EnumIter, IntoStaticStr};
 
+use super::control::{Outline, dimmed, dimmed_shadows, on_background, shadows};
 use crate::icons::{Icon, IconName};
 use crate::theme::{ActiveTheme as _, Theme};
 
@@ -322,12 +325,15 @@ impl RenderOnce for Select {
 /// `sideOffset={4}`: the gap between the trigger and the list.
 const SIDE_OFFSET: Pixels = space::S1;
 
+type Choose = Rc<dyn Fn(SharedString, &mut Window, &mut App)>;
+type Highlight = Rc<dyn Fn(SharedString, &mut App)>;
+
 /// What a list's items need from the select they're in.
 struct SelectContext {
     selected: Option<SharedString>,
     highlighted: Option<SharedString>,
-    choose: Rc<dyn Fn(SharedString, &mut Window, &mut App)>,
-    highlight: Rc<dyn Fn(SharedString, &mut App)>,
+    choose: Choose,
+    highlight: Highlight,
 }
 
 /// The select's `Trigger` part: the field showing the chosen item, or a placeholder, and a
@@ -399,42 +405,40 @@ impl SelectTrigger {
 }
 
 /// The trigger's resolved colours.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 struct TriggerStyle {
     fill: Hsla,
     hover_fill: Option<Hsla>,
     border: Hsla,
-    ring: Option<Hsla>,
+    shadows: Vec<gpui::BoxShadow>,
 }
 
 impl SelectTrigger {
     fn colors(&self, theme: &Theme) -> TriggerStyle {
         let s = theme.semantic();
         let m = theme.mode();
-        // border-input bg-transparent dark:bg-input/30 dark:hover:bg-input/50
-        let base = TriggerStyle {
-            fill: m.pick(transparent_black(), s.input.opacity(0.3)),
-            hover_fill: m.pick(None, Some(s.input.opacity(0.5))),
-            border: s.input,
-            ring: None,
+        // border-input, the focus-visible and aria-invalid arms: Input's outline.
+        let outline = Outline::new(theme, self.aria_invalid);
+        let (mut border, ring) = match outline.focus.filter(|_| self.focus_visible) {
+            Some((border, ring)) => (border, Some(ring)),
+            None => (outline.border, outline.ring),
         };
-        if self.aria_invalid {
-            // aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20
-            // dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40
-            TriggerStyle {
-                border: m.pick(s.destructive, s.destructive.opacity(0.5)),
-                ring: Some(s.destructive.opacity(m.pick(0.2, 0.4))),
-                ..base
-            }
-        } else if self.focus_visible {
-            // focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50
-            TriggerStyle {
-                border: s.ring,
-                ring: Some(theme.focus_ring()),
-                ..base
-            }
-        } else {
-            base
+        // bg-transparent dark:bg-input/30 dark:hover:bg-input/50, made opaque: it sits on
+        // shadow-xs and the ring
+        let mut fill = on_background(theme, m.pick(transparent_black(), s.input.opacity(0.3)));
+        let hover_fill = m.pick(None, Some(on_background(theme, s.input.opacity(0.5))));
+        let mut shadows = shadows(ring, true);
+        if self.disabled {
+            // disabled:opacity-50, layer by layer
+            border = dimmed(theme, fill.blend(border));
+            fill = dimmed(theme, fill);
+            shadows = dimmed_shadows(shadows);
+        }
+        TriggerStyle {
+            fill,
+            hover_fill: hover_fill.filter(|_| !self.disabled),
+            border,
+            shadows,
         }
     }
 }
@@ -462,33 +466,28 @@ impl RenderOnce for SelectTrigger {
             .border_1()
             .border_color(c.border)
             .bg(c.fill)
-            .when_some(c.hover_fill.filter(|_| !self.disabled), |d, fill| {
-                d.hover(move |style| style.bg(fill))
-            })
-            .relative()
-            .when_some(c.ring, |d, ring| {
-                d.child(super::ring_outline(3., ring, s.radius_md))
-            })
+            .when_some(c.hover_fill, |d, fill| d.hover(move |style| style.bg(fill)))
+            .shadow(c.shadows)
             .py(space::S2)
             .pr(space::S2)
             .pl(space::S2_5)
             .text_size(font_size::SM)
             .whitespace_nowrap()
-            // disabled:opacity-50
-            .when(self.disabled, |d| d.opacity(opacity::O50))
             // *:data-[slot=select-value]:line-clamp-1; data-placeholder:text-muted-foreground
             .child(
                 div()
                     .flex_1()
                     .line_clamp(1)
                     .when(placeholder, |d| d.text_color(s.muted_foreground))
+                    .when(self.disabled, |d| d.opacity(opacity::O50))
                     .children(text),
             )
             // ChevronDownIcon: pointer-events-none size-4 text-muted-foreground
             .child(
                 Icon::new(IconName::ChevronDown)
                     .size(space::S4)
-                    .text_color(s.muted_foreground),
+                    .text_color(s.muted_foreground)
+                    .when(self.disabled, |icon| icon.opacity(opacity::O50)),
             )
             .refine_style(&self.style)
     }
@@ -925,8 +924,9 @@ mod tests {
             cx.update(crate::init);
             let theme = crate::components::test_support::theme(cx, crate::Mode::Light);
             let colors = SelectTrigger::new().aria_invalid(true).colors(&theme);
-            assert_eq!(colors.border, theme.semantic().destructive);
-            assert_eq!(colors.ring, Some(theme.semantic().destructive.opacity(0.2)));
+            let destructive = theme.semantic().destructive;
+            assert_eq!(colors.border, destructive);
+            assert_eq!(colors.shadows[0].color, destructive.opacity(0.2));
         }
     }
 

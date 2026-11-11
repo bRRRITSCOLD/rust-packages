@@ -3,10 +3,9 @@
 
 use brrritscold_core_gpui::{PopoverContent, PopoverDescription, PopoverHeader, PopoverTitle};
 use brrritscold_core_gpui_tokens::primitive::space;
-use gpui::{IntoElement as _, ParentElement as _, Styled as _, div};
+use gpui::{ElementId, IntoElement as _, ParentElement as _, Styled as _, div};
 
-use super::stand_in::{self, Field};
-use super::{Entry, one};
+use super::{Entry, Variant, fields, one};
 
 fn title() -> PopoverTitle {
     PopoverTitle::new("Dimensions")
@@ -23,12 +22,10 @@ fn header() -> PopoverHeader {
 }
 
 /// The surface's sample content: the story's header and width field.
-pub(super) fn content() -> PopoverContent {
+pub(super) fn content(id: &ElementId) -> PopoverContent {
     PopoverContent::new()
         .header(header())
-        .child(stand_in::field(
-            Field::new("Width").horizontal().value("100%"),
-        ))
+        .child(fields::width(id))
 }
 
 pub(super) fn entries() -> Vec<Entry> {
@@ -37,9 +34,11 @@ pub(super) fn entries() -> Vec<Entry> {
             name: "PopoverContent",
             properties: &[],
             variants: || {
-                one(Some("components-popover--default"), || {
-                    content().into_any_element()
-                })
+                vec![Variant {
+                    props: Vec::new(),
+                    story: Some("components-popover--default"),
+                    render: Box::new(|id| content(&id).into_any_element()),
+                }]
             },
         },
         Entry {
