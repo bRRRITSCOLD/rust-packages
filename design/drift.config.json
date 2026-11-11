@@ -2,7 +2,6 @@
 	"allowlist": [],
 	"pending": {
 		"Accordion": "*",
-		"Alert": "*",
 		"AlertDialogAction": "*",
 		"AlertDialogCancel": "*",
 		"AlertDialogContent": "*",
@@ -16,7 +15,6 @@
 		"Breadcrumb": "*",
 		"Calendar": "*",
 		"CalendarDayButton": "*",
-		"Card": "*",
 		"Checkbox": "*",
 		"ComboboxChip": "*",
 		"ComboboxChips": "*",

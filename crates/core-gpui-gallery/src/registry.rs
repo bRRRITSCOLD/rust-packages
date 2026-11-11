@@ -15,13 +15,20 @@
 //! entries of their own, named as their exports. Code-only parts (`AvatarGroup`,
 //! `TableHeader`, `TableBody`) are not entries: the library has no twin to check them against.
 
+mod alert;
 mod badge;
 mod button;
+mod card;
 mod label;
 mod separator;
 mod skeleton;
 
-use gpui::{AnyElement, ElementId};
+use gpui::{AnyElement, ElementId, Pixels, px};
+
+/// The width a full-width story root fills in the published Storybook: its 640px capture
+/// viewport less the padded layout's 1rem each side. Entries for `w-full` components render
+/// at it, so their captures line up with the core-react column.
+const STORY_WIDTH: Pixels = px(608.);
 
 /// One component in the registry.
 pub struct Entry {
@@ -87,13 +94,16 @@ fn one(story: Option<&'static str>, render: impl Fn() -> AnyElement + 'static) -
 
 /// Every component, in sidebar order: each component, then its parts.
 pub fn registry() -> Vec<Entry> {
-    vec![
+    let mut entries = vec![
         button::entry(),
         badge::entry(),
         label::entry(),
         separator::entry(),
         skeleton::entry(),
-    ]
+    ];
+    entries.extend(card::entries());
+    entries.extend(alert::entries());
+    entries
 }
 
 #[cfg(test)]

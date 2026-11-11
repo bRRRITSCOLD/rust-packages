@@ -33,8 +33,12 @@ pub mod icons;
 mod root;
 pub mod theme;
 
+pub use components::alert::{Alert, AlertAction, AlertDescription, AlertTitle, AlertVariant};
 pub use components::badge::{Badge, BadgeVariant};
 pub use components::button::{Button, ButtonSize, ButtonVariant};
+pub use components::card::{
+    Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle,
+};
 pub use components::label::Label;
 pub use components::separator::{Separator, SeparatorOrientation};
 pub use components::skeleton::Skeleton;
