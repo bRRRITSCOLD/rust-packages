@@ -679,13 +679,8 @@ impl RenderOnce for ComboboxChips {
             Some((border, ring)) => (border, Some(ring)),
             None => (outline.border, outline.ring),
         };
-        // bg-transparent dark:bg-input/30, made opaque: it sits on shadow-xs and the ring
-        let fill = on_background(
-            theme,
-            theme
-                .mode()
-                .pick(gpui::transparent_black(), s.input.opacity(0.3)),
-        );
+        // bg-input-background, made opaque: it sits on shadow-xs and the ring
+        let fill = on_background(theme, s.input_background);
         let has_chips = !self.chips.is_empty();
         // ComboboxChipsInput: min-w-16 flex-1 outline-none
         let input = div()

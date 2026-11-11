@@ -16,7 +16,7 @@
 use brrritscold_core_gpui_tokens::primitive::{font_size, space};
 use gpui::{
     App, Entity, EntityId, Focusable as _, IntoElement, ParentElement as _, RenderOnce,
-    StyleRefinement, Styled, Window, div, transparent_black,
+    StyleRefinement, Styled, Window, div,
 };
 use gpui_base::StyledExt as _;
 use gpui_base::input::InputBase;
@@ -109,8 +109,8 @@ impl RenderOnce for Input {
 impl_styled!(Input);
 
 /// The frame Input and Textarea share around `editor` (whose state `editor_id` names):
-/// `w-full min-w-0 rounded-md border border-input bg-transparent px-2.5 shadow-xs md:text-sm`,
-/// the focus and invalid outline, `dark:bg-input/30` and `disabled:opacity-50`.
+/// `w-full min-w-0 rounded-md border border-input bg-input-background px-2.5 shadow-xs md:text-sm`,
+/// the focus and invalid outline and `disabled:opacity-50`.
 ///
 /// The frame is dimmed layer by layer (see `control::dimmed`), so its ring and shadow don't
 /// show through a half-transparent fill. The text needs nothing: `gpui-base` already draws a
@@ -131,11 +131,8 @@ pub(super) fn frame(
         Some((border, ring)) => (border, Some(ring)),
         None => (outline.border, outline.ring),
     };
-    // bg-transparent dark:bg-input/30, made opaque: it sits on a ring and shadow-xs
-    let mut fill = on_background(
-        theme,
-        theme.mode().pick(transparent_black(), s.input.opacity(0.3)),
-    );
+    // bg-input-background, made opaque: it sits on a ring and shadow-xs
+    let mut fill = on_background(theme, s.input_background);
     let mut shadow = shadows(ring, true);
     if disabled {
         border = dimmed(theme, fill.blend(border));

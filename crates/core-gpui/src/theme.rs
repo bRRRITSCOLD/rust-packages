@@ -20,7 +20,7 @@ pub enum Mode {
 
 impl Mode {
     /// Picks the value for this mode. Components use it for core-react's dark-only arms
-    /// (`dark:` classes), which aren't tokens: `mode.pick(s.input, s.input.opacity(0.3))`.
+    /// (`dark:` classes), which aren't tokens: `mode.pick(s.accent, s.input.opacity(0.5))`.
     pub fn pick<T>(self, light: T, dark: T) -> T {
         match self {
             Mode::Light => light,

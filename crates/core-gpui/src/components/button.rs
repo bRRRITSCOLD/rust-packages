@@ -17,7 +17,7 @@
 //! CSS. Outline's translucent dark fill stays translucent at rest: `shadow-xs` shows through
 //! it by one level at most, where an opaque fill would darken it on those surfaces.
 
-use brrritscold_core_gpui_tokens::primitive::{font_size, font_weight, opacity, space};
+use brrritscold_core_gpui_tokens::primitive::{font_size, font_weight, space};
 use gpui::{
     App, BoxShadow, ClickEvent, ElementId, Hsla, InteractiveElement as _, IntoElement,
     ParentElement as _, Pixels, Rems, RenderOnce, SharedString, StyleRefinement, Styled, Window,
@@ -247,12 +247,12 @@ impl ButtonVariant {
                 hover_fill: Some(s.primary.opacity(0.8)),
                 ..base
             },
-            // border-border bg-background shadow-xs hover:bg-muted hover:text-foreground. The
-            // dark fills stay translucent at rest, so they tint a card or dialog as in CSS:
-            // shadow-xs shows through them by one level at most.
+            // border-border bg-outline-background shadow-xs hover:bg-muted hover:text-foreground.
+            // The dark fill stays translucent at rest, so it tints a card or dialog as in CSS:
+            // shadow-xs shows through it by one level at most.
             ButtonVariant::Outline => VariantStyle {
-                fill: Some(m.pick(s.background, s.input.opacity(0.3))), // dark:bg-input/30
-                border: Some(m.pick(s.border, s.input)),                // dark:border-input
+                fill: Some(s.outline_background),
+                border: Some(m.pick(s.border, s.input)), // dark:border-input
                 shadow_xs: true,
                 hover_fill: Some(m.pick(s.muted, s.input.opacity(0.5))), // dark:hover:bg-input/50
                 // dark:border-input comes after focus-visible:border-ring in the stylesheet, so
@@ -272,10 +272,10 @@ impl ButtonVariant {
                 hover_fill: Some(m.pick(s.muted, s.muted.opacity(0.5))), // dark:hover:bg-muted/50
                 ..base
             },
-            // bg-destructive/10 text-destructive hover:bg-destructive/20
+            // bg-destructive-background text-destructive hover:bg-destructive/20
             // focus-visible:border-destructive/40 focus-visible:ring-destructive/20
             ButtonVariant::Destructive => VariantStyle {
-                fill: Some(s.destructive.opacity(m.pick(opacity::O10, 0.2))), // dark:bg-destructive/20
+                fill: Some(s.destructive_background),
                 text: s.destructive,
                 hover_fill: Some(s.destructive.opacity(m.pick(0.2, 0.3))), // dark:hover:bg-destructive/30
                 focus_border: s.destructive.opacity(0.4),
