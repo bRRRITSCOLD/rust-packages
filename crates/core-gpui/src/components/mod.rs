@@ -29,6 +29,7 @@ macro_rules! impl_parent {
 }
 
 pub mod alert;
+pub mod alert_dialog;
 pub mod avatar;
 pub mod badge;
 pub mod breadcrumb;
@@ -36,18 +37,26 @@ pub mod button;
 pub mod card;
 pub mod checkbox;
 mod control;
+pub mod dialog;
+pub mod dropdown_menu;
 pub mod field;
 pub mod input;
 pub mod label;
+mod modal;
 pub mod pagination;
+pub mod popover;
 pub mod radio_group;
+pub mod select;
 pub mod separator;
+pub mod sheet;
 pub mod skeleton;
 pub mod switch;
 pub mod table;
 pub mod textarea;
+pub mod toast;
 pub mod toggle;
 pub mod toggle_group;
+pub mod tooltip;
 
 /// `ring-<width>`: a solid spread shadow outside the box, which takes no layout space.
 fn ring(width: f32, color: gpui::Hsla) -> gpui::BoxShadow {
@@ -58,6 +67,23 @@ fn ring(width: f32, color: gpui::Hsla) -> gpui::BoxShadow {
         spread_radius: gpui::px(width),
         inset: false,
     }
+}
+
+/// `ring-<width>` around a box whose fill is transparent: a spread shadow would also paint
+/// under the box (GPUI draws shadows beneath the whole box), so the ring is a border on a
+/// layer outside it instead. Put it in a `relative` box with corners `radius`.
+fn ring_outline(width: f32, color: gpui::Hsla, radius: gpui::Pixels) -> gpui::Div {
+    use gpui::Styled as _;
+    let outset = -gpui::px(width);
+    gpui::div()
+        .absolute()
+        .top(outset)
+        .left(outset)
+        .right(outset)
+        .bottom(outset)
+        .rounded(radius + gpui::px(width))
+        .border(gpui::px(width))
+        .border_color(color)
 }
 
 #[cfg(test)]

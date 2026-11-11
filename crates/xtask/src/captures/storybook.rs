@@ -40,9 +40,10 @@ pub fn capture(root: &Path, captures: &[Capture], out: &Path) -> Result<()> {
     Ok(())
 }
 
-/// One job per capture with a story: the story id, its props as args, the theme and file.
-/// A `true` / `false` value goes as a boolean: a component reads the string `"false"` as
-/// truthy, so a `disabled: "false"` arg would disable it.
+/// One job per capture with a story: the story id, its props as args, the component (whose
+/// `data-slot` an overlay's shot crops to), the theme and file. A `true` / `false` value goes
+/// as a boolean: a component reads the string `"false"` as truthy, so a `disabled: "false"`
+/// arg would disable it.
 fn jobs(captures: &[Capture]) -> Vec<Value> {
     captures
         .iter()
@@ -62,6 +63,7 @@ fn jobs(captures: &[Capture]) -> Vec<Value> {
                 .collect();
             Some(json!({
                 "story": story,
+                "component": capture.component,
                 "args": args,
                 "theme": capture.theme,
                 "file": capture.file,
@@ -130,6 +132,7 @@ mod tests {
                 jobs(&[with_story, without]),
                 vec![json!({
                     "story": "components-button--icon",
+                    "component": "Button",
                     "args": { "variant": "ghost", "size": "icon" },
                     "theme": "dark",
                     "file": "b.png",
