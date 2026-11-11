@@ -1,10 +1,14 @@
 //! Workspace tasks for rust-packages, run through the cargo aliases in `.cargo/config.toml`.
 //!
+//! - `cargo xtask captures [--out <dir>]` writes the gallery's headless captures (local only).
+//! - `cargo xtask captures compare [--penpot-theme light|dark]` builds the design comparison
+//!   sheet: core-react's Storybook | GPUI | Penpot.
 //! - `cargo xtask test <tier> [--ci] [-- <nextest args>]` runs one test tier.
 //! - `cargo xtask tokens update <version|latest>` vendors core-react's tokens at one exact version.
 //! - `cargo xtask tokens generate` regenerates `generated.rs` from the vendored tokens.
 //! - `cargo xtask gpui update <version|latest> [--body <file>]` moves the GPUI pin.
 
+mod captures;
 mod gpui;
 mod test_chain;
 mod tokens;
@@ -43,7 +47,8 @@ fn run(args: Vec<String>) -> anyhow::Result<ExitCode> {
         }
         Some("tokens") => tokens::run(args).map(|()| ExitCode::SUCCESS),
         Some("gpui") => gpui::run(args).map(|()| ExitCode::SUCCESS),
+        Some("captures") => captures::run(args).map(|()| ExitCode::SUCCESS),
         Some(other) => bail!("unknown task `{other}`"),
-        None => bail!("usage: cargo xtask <task>; tasks: test, tokens, gpui"),
+        None => bail!("usage: cargo xtask <task>; tasks: test, tokens, gpui, captures"),
     }
 }

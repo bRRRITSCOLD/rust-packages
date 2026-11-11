@@ -27,11 +27,13 @@
 //! # }
 //! ```
 
+pub mod components;
 mod fonts;
 pub mod icons;
 mod root;
 pub mod theme;
 
+pub use components::button::{Button, ButtonSize, ButtonVariant};
 pub use gpui_base::Root;
 pub use icons::{Icon, IconName};
 pub use theme::{ActiveTheme, Mode, Theme, ThemePreference};
