@@ -34,6 +34,11 @@ mod root;
 pub mod theme;
 
 pub use components::alert::{Alert, AlertAction, AlertDescription, AlertTitle, AlertVariant};
+pub use components::alert_dialog::{
+    AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogContentSize,
+    AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia,
+    AlertDialogOverlay, AlertDialogTitle,
+};
 pub use components::avatar::{
     Avatar, AvatarBadge, AvatarFallback, AvatarGroup, AvatarGroupCount, AvatarImage, AvatarSize,
 };
@@ -47,6 +52,15 @@ pub use components::card::{
     Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle,
 };
 pub use components::checkbox::Checkbox;
+pub use components::dialog::{
+    Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHandle,
+    DialogHeader, DialogOverlay, DialogTitle,
+};
+pub use components::dropdown_menu::{
+    DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem,
+    DropdownMenuItemVariant, DropdownMenuLabel, DropdownMenuRadioItem, DropdownMenuSeparator,
+    DropdownMenuShortcut, DropdownMenuSubContent, DropdownMenuSubTrigger,
+};
 pub use components::field::{
     Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend,
     FieldLegendVariant, FieldOrientation, FieldSeparator, FieldSet, FieldTitle,
@@ -57,18 +71,32 @@ pub use components::pagination::{
     Pagination, PaginationContent, PaginationEllipsis, PaginationLink, PaginationNext,
     PaginationPrevious,
 };
+pub use components::popover::{
+    Popover, PopoverContent, PopoverDescription, PopoverHeader, PopoverTitle,
+};
 pub use components::radio_group::{RadioGroup, RadioGroupItem};
+pub use components::select::{
+    Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger,
+    SelectTriggerSize,
+};
 pub use components::separator::{Separator, SeparatorOrientation};
+pub use components::sheet::{
+    Sheet, SheetContent, SheetContentSide, SheetDescription, SheetFooter, SheetHeader, SheetTitle,
+};
 pub use components::skeleton::Skeleton;
 pub use components::switch::{Switch, SwitchSize};
 pub use components::table::{
     Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow,
 };
 pub use components::textarea::{Textarea, TextareaState};
+pub use components::toast::{
+    Toast, ToastAction, ToastClose, ToastDescription, ToastExt, ToastTitle, ToastType,
+};
 pub use components::toggle::{Toggle, ToggleSize, ToggleVariant};
 pub use components::toggle_group::{
     ToggleGroup, ToggleGroupItem, ToggleGroupOrientation, ToggleGroupSpacing,
 };
+pub use components::tooltip::{Tooltip, TooltipContent, TooltipContentSide};
 pub use gpui_base::Root;
 pub use icons::{Icon, IconName};
 pub use theme::{ActiveTheme, Mode, Theme, ThemePreference};
@@ -78,11 +106,14 @@ use gpui::App;
 /// Sets core-gpui up for this application. Required, once, before the first window opens.
 ///
 /// It initialises `gpui-base`, registers the bundled Inter fonts, installs the [`Theme`]
-/// (preference [`ThemePreference::System`]) and registers the root plugin that feeds each
-/// window's OS appearance into it.
+/// (preference [`ThemePreference::System`]) and registers the root plugins: the one that feeds
+/// each window's OS appearance into it, and the one hosting each window's toasts
+/// ([`ToastExt::push_toast`]).
 pub fn init(cx: &mut App) {
     gpui_base::init(cx);
     fonts::register(cx);
     theme::init(cx);
     root::register(cx);
+    components::toast::register(cx);
+    components::dropdown_menu::popup_menu::init(cx);
 }

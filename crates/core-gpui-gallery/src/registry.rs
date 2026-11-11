@@ -16,25 +16,37 @@
 //! `TableHeader`, `TableBody`) are not entries: the library has no twin to check them against.
 
 mod alert;
+mod alert_dialog;
 mod avatar;
 mod badge;
 mod breadcrumb;
 mod button;
 mod card;
 mod checkbox;
+mod dialog;
+mod dropdown_menu;
 mod field;
+mod fields;
 mod input;
 mod label;
+mod live;
 mod pagination;
+mod popover;
 mod radio_group;
+mod select;
 mod separator;
+mod sheet;
 mod skeleton;
 mod support;
 mod switch;
 mod table;
 mod textarea;
+mod toast;
 mod toggle;
 mod toggle_group;
+mod tooltip;
+
+pub use live::live;
 
 use gpui::{AnyElement, ElementId, Pixels, px};
 
@@ -130,6 +142,14 @@ pub fn registry() -> Vec<Entry> {
     entries.extend(radio_group::entries());
     entries.extend(toggle_group::entries());
     entries.extend(field::entries());
+    entries.extend(dialog::entries());
+    entries.extend(alert_dialog::entries());
+    entries.extend(sheet::entries());
+    entries.extend(popover::entries());
+    entries.extend(tooltip::entries());
+    entries.extend(select::entries());
+    entries.extend(dropdown_menu::entries());
+    entries.extend(toast::entries());
     entries
 }
 

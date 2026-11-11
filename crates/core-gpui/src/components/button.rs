@@ -107,6 +107,7 @@ pub struct Button {
     icon_end: Option<IconName>,
     disabled: bool,
     on_click: Option<ClickHandler>,
+    base: Option<gpui_base::Button>,
     style: StyleRefinement,
 }
 
@@ -122,6 +123,7 @@ impl Button {
             icon_end: None,
             disabled: false,
             on_click: None,
+            base: None,
             style: StyleRefinement::default(),
         }
     }
@@ -170,6 +172,29 @@ impl Button {
         handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
     ) -> Self {
         self.on_click = Some(Box::new(handler));
+        self
+    }
+
+    /// Runs `handler` after the caller's own `on_click`: an overlay part that wraps a caller's
+    /// button (a trigger, an alert dialog's action) adds its behaviour this way.
+    pub(crate) fn then_on_click(
+        mut self,
+        handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
+    ) -> Self {
+        let first = self.on_click.take();
+        self.on_click = Some(Box::new(move |event, window, cx| {
+            if let Some(first) = &first {
+                first(event, window, cx);
+            }
+            handler(event, window, cx);
+        }));
+        self
+    }
+
+    /// Styles `base`, a `gpui-base` button that already carries behaviour (a dialog close
+    /// trigger's), instead of a fresh one. Its click handler stays unless the caller set one.
+    pub(crate) fn on_base(mut self, base: gpui_base::Button) -> Self {
+        self.base = Some(base);
         self
     }
 }
@@ -366,8 +391,13 @@ impl RenderOnce for Button {
                 })
         });
 
-        gpui_base::Button::new(self.id)
-            .disabled(self.disabled)
+        let label = self.label.clone();
+        let base = match self.base {
+            // A behaviour-carrying base names itself ("Close"); a visible label wins.
+            Some(base) => base.when_some(label, |b, label| b.accessibility_label(label)),
+            None => gpui_base::Button::new(self.id),
+        };
+        base.disabled(self.disabled)
             .group(GROUP)
             .relative()
             .flex_shrink_0()
