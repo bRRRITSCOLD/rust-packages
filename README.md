@@ -6,7 +6,7 @@ Linux is first-class, macOS best-effort, Windows not targeted.
 
 ## License
 
-Licensed under either of [Apache License, Version 2.0](LICENSE-APACHE) or [MIT license](LICENSE-MIT) at your option, unless a crate's manifest says otherwise.
+Licensed under either of [Apache License, Version 2.0](LICENSE-APACHE) or [MIT license](LICENSE-MIT) at your option, unless a crate's manifest says otherwise. `brrritscold-core-gpui` also bundles Inter (OFL-1.1) and Lucide icons (ISC); see its `NOTICE`.
 
 ## Crates
 
