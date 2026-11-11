@@ -1,0 +1,28 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [0.1.0](https://github.com/bRRRITSCOLD/rust-packages/releases/tag/v0.1.0) - 2026-11-11
+
+### Added
+
+- *(core-gpui)* composites and data table (accordion, tabs, calendar, date picker, data table parts) ([#28](https://github.com/bRRRITSCOLD/rust-packages/pull/28))
+- *(core-gpui)* combobox, with an internal input group ([#27](https://github.com/bRRRITSCOLD/rust-packages/pull/27))
+- *(core-gpui)* overlays and toast (dialog, alert dialog, sheet, popover, tooltip, select, dropdown menu, toast) ([#26](https://github.com/bRRRITSCOLD/rust-packages/pull/26))
+- *(core-gpui)* form controls (input, textarea, checkbox, switch, radio group, toggle, toggle group, field) ([#24](https://github.com/bRRRITSCOLD/rust-packages/pull/24))
+- *(core-gpui)* presentational set (badge, card, alert, avatar, separator, skeleton, label, breadcrumb, table, pagination) ([#23](https://github.com/bRRRITSCOLD/rust-packages/pull/23))
+- cargo xtask drift with a pending list and a blocking CI job ([#18](https://github.com/bRRRITSCOLD/rust-packages/pull/18))
+- Button, gallery, registry and captures ([#17](https://github.com/bRRRITSCOLD/rust-packages/pull/17))
+- *(core-gpui)* Lucide icons vendored at core-react's Lucide version ([#15](https://github.com/bRRRITSCOLD/rust-packages/pull/15))
+- *(core-gpui)* init, bundled Inter, Mode/ThemePreference and the theme root plugin ([#14](https://github.com/bRRRITSCOLD/rust-packages/pull/14))
+- workspace skeleton, CI, release-plz and the GPUI pin ([#11](https://github.com/bRRRITSCOLD/rust-packages/pull/11))
+
+### Fixed
+
+- *(core-gpui)* button paints focus and disabled with the control helpers ([#30](https://github.com/bRRRITSCOLD/rust-packages/pull/30))
+- *(core-gpui)* licence expression and NOTICE name Inter and Lucide ([#21](https://github.com/bRRRITSCOLD/rust-packages/pull/21))
