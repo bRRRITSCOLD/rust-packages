@@ -1,0 +1,5 @@
+[alias]
+xtask = "run --quiet --package xtask --"
+# One command per tier; `-ci` runs setup -> tests -> teardown (always) and exits with the tests' code.
+test-unit = "xtask test unit"
+test-unit-ci = "xtask test unit --ci"

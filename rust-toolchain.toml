@@ -1,0 +1,5 @@
+[toolchain]
+# Keep in step with `rust-version` in Cargo.toml. GPUI tracks the latest stable.
+channel = "1.99.1"
+components = ["rustfmt", "clippy"]
+profile = "minimal"

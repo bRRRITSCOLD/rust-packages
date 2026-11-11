@@ -1,0 +1,7 @@
+brrritscold-core-gpui
+Copyright (c) 2026 bRRRITSCOLD
+
+This crate will contain files vendored from gpui-component
+(https://github.com/longbridge/gpui-component), licensed under the Apache
+License, Version 2.0. Each vendored file starts with a header comment naming
+its upstream path and the gpui-kit version it was copied from.
