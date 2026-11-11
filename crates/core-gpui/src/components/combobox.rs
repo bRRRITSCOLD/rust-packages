@@ -120,7 +120,7 @@ pub struct Combobox {
 
 impl Combobox {
     /// A closed combobox with nothing chosen. `id` keys its state. Give it a field with
-    /// [`input`](Self::input) or [`chips`](Self::chips).
+    /// [`input`](Self::input) or [`chips`](Self::chips): one rendered without either panics.
     pub fn new(id: impl Into<ElementId>) -> Self {
         Self {
             id: id.into(),
@@ -200,9 +200,9 @@ impl RenderOnce for Combobox {
         let input = field.state().clone();
         let disabled = field.disabled();
         let default_values = self.default_values;
-        let default_label = (!multiple)
-            .then(|| default_values.first())
-            .flatten()
+        let default_label = default_values
+            .first()
+            .filter(|_| !multiple)
             .and_then(|value| self.content.label_of(value));
         let state = window.use_keyed_state(self.id.clone(), cx, |window, cx| {
             if let Some(label) = default_label {
@@ -241,9 +241,9 @@ impl RenderOnce for Combobox {
         // Base UI's filter: the items whose label contains the typed text, ignoring case. The
         // chosen item's own label, shown as the text, filters nothing.
         let query = input.read(cx).value();
-        let chosen_label = (!multiple)
-            .then(|| values.first())
-            .flatten()
+        let chosen_label = values
+            .first()
+            .filter(|_| !multiple)
             .and_then(|value| self.content.label_of(value));
         let filter = (!query.is_empty() && chosen_label.as_ref() != Some(&query))
             .then(|| query.to_lowercase());
@@ -272,7 +272,8 @@ impl RenderOnce for Combobox {
                 state.update(cx, |s, cx| {
                     if s.open != open {
                         s.open = open;
-                        s.highlighted = None;
+                        // Base UI highlights the chosen item on opening.
+                        s.highlighted = open.then(|| s.values.first().cloned()).flatten();
                         cx.notify();
                     }
                 })
@@ -597,8 +598,9 @@ impl RenderOnce for ComboboxInput {
         // ComboboxClear shows while there is a value, and the trigger hides beside it
         // (group-has-data-[slot=combobox-clear]/input-group:hidden).
         let button = if self.show_clear && has_value {
-            // XIcon in an icon-xs button: size-3
-            InputGroupButton::new("combobox-clear", IconName::X, space::S3, "Clear")
+            // XIcon in an icon-xs InputGroupButton: size-4 (InputGroupButton's own icon-xs arm
+            // sets no icon size, so Button's base size-4 shows)
+            InputGroupButton::new("combobox-clear", IconName::X, space::S4, "Clear")
                 .disabled(self.disabled)
                 .when_some(self.on_clear, |b, clear| {
                     b.on_click(move |_, window, cx| clear(window, cx))

@@ -397,13 +397,7 @@ anyhow = "1"
                 "0.9.1".into(),
                 "src/menu.rs".into(),
             )];
-            let body = pr_body(
-                "0.9.1",
-                "0.9.2",
-                &[],
-                &vendored,
-                &["src/menu.rs".into()],
-            );
+            let body = pr_body("0.9.1", "0.9.2", &[], &vendored, &["src/menu.rs".into()]);
             assert!(body.contains("⚠️ upstream changed"));
             assert!(body.contains("captures compare"));
         }

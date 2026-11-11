@@ -166,10 +166,11 @@ pub(super) fn entries() -> Vec<Entry> {
         Entry {
             name: "ComboboxEmpty",
             properties: &[],
-            // The Empty story's play function types "zzz".
+            // The Empty story's play function types "zzz": the list shows only the message.
             variants: || {
                 one(Some("components-combobox--empty"), || {
-                    ComboboxEmpty::new("No frameworks found.")
+                    ComboboxContent::new()
+                        .empty(ComboboxEmpty::new("No frameworks found."))
                         .w(LIST_WIDTH)
                         .into_any_element()
                 })

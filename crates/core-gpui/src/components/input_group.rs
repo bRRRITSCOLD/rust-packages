@@ -102,7 +102,7 @@ impl RenderOnce for InputGroup {
             .pl(space::S2_5)
             .pr(if has_addon { space::S1_5 } else { space::S2_5 })
             .py(space::S1)
-            .when(disabled, |d| d.opacity(opacity::O50))
+            // disabled:opacity-50: `gpui-base` already draws a disabled editor's text at 50%
             .when_some(self.on_input_press.filter(|_| !disabled), |d, handler| {
                 d.on_mouse_down(MouseButton::Left, move |_, window, cx| handler(window, cx))
             })
