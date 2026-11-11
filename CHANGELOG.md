@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1](https://github.com/bRRRITSCOLD/rust-packages/compare/v0.1.0...v0.1.1) - 2026-11-11
+
+**GPUI pin:** gpui-kit 0.9.1 (`gpui-base = "=0.9.1"`, `gpui = { package = "gpui-pre", version = "=0.3.12" }` and its `gpui-pre-*` siblings at `=0.3.12`). Apps copy these lines next to the `v0.1.1` tag.
+
+**core-react pin:** 1.2.0 (tokens, library snapshot, Lucide 1.68.0, drift checker design-core-node 0.1.2 + design-core-js 0.1.1).
+
+### Added
+
+- *(tokens)* core-react 1.2.0 tokens ([#37](https://github.com/bRRRITSCOLD/rust-packages/pull/37))
+
 ## [0.1.0](https://github.com/bRRRITSCOLD/rust-packages/releases/tag/v0.1.0) - 2026-11-11
 
 **GPUI pin:** gpui-kit 0.9.1 (`gpui-base = "=0.9.1"`, `gpui = { package = "gpui-pre", version = "=0.3.12" }` and its `gpui-pre-*` siblings at `=0.3.12`). Apps copy these lines next to the `v0.1.0` tag.
