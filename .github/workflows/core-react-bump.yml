@@ -1,0 +1,47 @@
+name: core-react bump
+
+# Daily: if npm's `latest` core-react differs from the pin, vendor it and open or update one
+# advisory PR. A renamed or removed token fails core-gpui's build on that PR.
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    if: github.repository_owner == 'bRRRITSCOLD'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Compare the pin with npm latest
+        id: versions
+        run: |
+          pinned=$(sed -n '/^\[package.metadata.core-react\]/,/^\[/s/^version = "\(.*\)"/\1/p' crates/core-gpui-tokens/Cargo.toml)
+          latest=$(curl -fsSL https://registry.npmjs.org/@brrritscold%2fcore-react/latest | jq -r .version)
+          echo "pinned=$pinned" >> "$GITHUB_OUTPUT"
+          echo "latest=$latest" >> "$GITHUB_OUTPUT"
+          echo "core-react pin $pinned, npm latest $latest"
+      - if: steps.versions.outputs.pinned != steps.versions.outputs.latest
+        uses: actions-rust-lang/setup-rust-toolchain@v2
+        with:
+          cache: false
+      - if: steps.versions.outputs.pinned != steps.versions.outputs.latest
+        name: Vendor latest
+        run: |
+          cargo xtask tokens update latest
+          script/core-react-bump-body.sh "${{ steps.versions.outputs.pinned }}" "${{ steps.versions.outputs.latest }}" > "$RUNNER_TEMP/body.md"
+      - if: steps.versions.outputs.pinned != steps.versions.outputs.latest
+        uses: peter-evans/create-pull-request@v8
+        with:
+          # PRs opened with GITHUB_TOKEN don't trigger CI; set BUMP_TOKEN (a fine-grained PAT with
+          # contents + pull-requests write on this repo) so the bump PR gets its checks.
+          token: ${{ secrets.BUMP_TOKEN || secrets.GITHUB_TOKEN }}
+          branch: bump/core-react
+          title: "feat(tokens): core-react ${{ steps.versions.outputs.latest }} tokens"
+          commit-message: "feat(tokens): core-react ${{ steps.versions.outputs.latest }} tokens"
+          body-path: ${{ runner.temp }}/body.md
+          delete-branch: true

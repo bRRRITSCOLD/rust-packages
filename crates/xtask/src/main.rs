@@ -1,8 +1,11 @@
 //! Workspace tasks for rust-packages, run through the cargo aliases in `.cargo/config.toml`.
 //!
-//! `cargo xtask test <tier> [--ci] [-- <nextest args>]` runs one test tier.
+//! - `cargo xtask test <tier> [--ci] [-- <nextest args>]` runs one test tier.
+//! - `cargo xtask tokens update <version|latest>` vendors core-react's tokens at one exact version.
+//! - `cargo xtask tokens generate` regenerates `generated.rs` from the vendored tokens.
 
 mod test_chain;
+mod tokens;
 
 use std::process::ExitCode;
 
@@ -36,7 +39,8 @@ fn run(args: Vec<String>) -> anyhow::Result<ExitCode> {
                 .collect();
             Ok(test_chain::run_tier(tier, ci, &passthrough))
         }
+        Some("tokens") => tokens::run(args).map(|()| ExitCode::SUCCESS),
         Some(other) => bail!("unknown task `{other}`"),
-        None => bail!("usage: cargo xtask <task>; tasks: test"),
+        None => bail!("usage: cargo xtask <task>; tasks: test, tokens"),
     }
 }
