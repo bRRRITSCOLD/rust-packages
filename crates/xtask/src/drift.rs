@@ -27,12 +27,12 @@ const CHECKER_PREFIX: &str = "target/design-drift";
 
 /// The checker pin, `[package.metadata.design-core-node]` beside the core-react pin.
 #[derive(Debug, PartialEq, Eq)]
-struct CheckerPin {
+pub(crate) struct CheckerPin {
     /// Exact npm version of `@brrritscold/design-core-node`, the `design-drift` CLI.
-    version: String,
+    pub(crate) version: String,
     /// Exact npm version of `@brrritscold/design-core-js`, the rules themselves.
     /// design-core-node takes it by a caret range, so it's pinned too.
-    design_core_js: String,
+    pub(crate) design_core_js: String,
 }
 
 /// `cargo xtask drift`.
@@ -64,7 +64,7 @@ pub fn run(mut args: impl Iterator<Item = String>) -> Result<ExitCode> {
     }
 }
 
-fn read_checker_pin(cargo_toml: &str) -> Result<CheckerPin> {
+pub(crate) fn read_checker_pin(cargo_toml: &str) -> Result<CheckerPin> {
     let doc: DocumentMut = cargo_toml.parse()?;
     let table = doc
         .get("package")

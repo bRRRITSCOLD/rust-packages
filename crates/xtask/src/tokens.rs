@@ -181,8 +181,12 @@ fn manifest_path(root: &Path) -> PathBuf {
 
 /// Reads the core-react pin from the tokens crate's manifest.
 pub fn read_pin(root: &Path) -> Result<Pin> {
-    let text = std::fs::read_to_string(manifest_path(root))?;
-    let doc: DocumentMut = text.parse()?;
+    parse_pin(&std::fs::read_to_string(manifest_path(root))?)
+}
+
+/// The core-react pin in the text of the tokens crate's manifest.
+pub(crate) fn parse_pin(cargo_toml: &str) -> Result<Pin> {
+    let doc: DocumentMut = cargo_toml.parse()?;
     let table = doc["package"]["metadata"]["core-react"]
         .as_table()
         .context("the tokens crate has no [package.metadata.core-react]")?;

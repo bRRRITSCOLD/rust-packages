@@ -65,7 +65,7 @@ fn update(spec: &str, body: Option<&Path>) -> Result<()> {
     Ok(())
 }
 
-fn current_kit(manifest: &DocumentMut) -> Result<String> {
+pub(crate) fn current_kit(manifest: &DocumentMut) -> Result<String> {
     let requirement = manifest["workspace"]["dependencies"][KIT]
         .as_str()
         .context("[workspace.dependencies] has no `gpui-base = \"=<version>\"`")?;
