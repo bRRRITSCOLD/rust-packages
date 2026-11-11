@@ -2,7 +2,7 @@
 //!
 //! An entry names the Penpot component and its variant properties, and lists every variant
 //! combination with the real builder call that renders it. The gallery's pages, the
-//! captures and (later) the drift manifest are all generated from this list, so what the
+//! captures and the drift manifest ([`crate::manifest`]) are all generated from this list, so what the
 //! gallery shows is what gets checked.
 //!
 //! Sample content (a Button's `Button` label, its `Plus` icon) mirrors the Penpot main
@@ -18,7 +18,7 @@ pub struct Entry {
     pub name: &'static str,
     /// The Penpot variant property names, in the order every [`Variant::props`] lists them.
     pub properties: &'static [&'static str],
-    variants: fn() -> Vec<Variant>,
+    pub(crate) variants: fn() -> Vec<Variant>,
 }
 
 impl Entry {
@@ -35,7 +35,7 @@ pub struct Variant {
     /// The id of core-react's Storybook story this variant is captured from, with
     /// [`props`](Self::props) as its args. `None` when no story can show it.
     pub story: Option<&'static str>,
-    render: Box<dyn Fn(ElementId) -> AnyElement>,
+    pub(crate) render: Box<dyn Fn(ElementId) -> AnyElement>,
 }
 
 impl Variant {
