@@ -1,0 +1,262 @@
+//! `cargo xtask tokens …`: vendor core-react's tokens and library snapshot from npm at one
+//! exact version (the *core-react pin*) and generate `core-gpui-tokens/src/generated.rs`.
+
+pub mod generate;
+
+use std::io::Read as _;
+use std::path::{Path, PathBuf};
+
+use anyhow::{Context, Result, bail};
+use sha2::{Digest, Sha256};
+use toml_edit::{DocumentMut, Item, Table, value};
+
+const PACKAGE: &str = "@brrritscold/core-react";
+const TOKENS_CRATE: &str = "crates/core-gpui-tokens";
+const TOKENS_FILE: &str = "crates/core-gpui-tokens/tokens.json";
+const GENERATED_FILE: &str = "crates/core-gpui-tokens/src/generated.rs";
+/// The library snapshot rides the same pin; the drift check reads it.
+const SNAPSHOT_FILE: &str = "design/library.snapshot.json";
+
+/// The core-react pin recorded under `[package.metadata.core-react]` in the tokens crate.
+#[derive(Debug, PartialEq, Eq)]
+pub struct Pin {
+    /// Exact npm version of `@brrritscold/core-react`.
+    pub version: String,
+    /// sha256 of the vendored `tokens.json`.
+    pub tokens_sha256: String,
+    /// sha256 of the vendored `library.snapshot.json`.
+    pub snapshot_sha256: String,
+}
+
+/// `cargo xtask tokens <update <version|latest> | generate>`.
+pub fn run(mut args: impl Iterator<Item = String>) -> Result<()> {
+    match args.next().as_deref() {
+        Some("update") => {
+            let spec = args
+                .next()
+                .context("usage: cargo xtask tokens update <version|latest>")?;
+            update(&spec)
+        }
+        Some("generate") => regenerate(),
+        _ => bail!("usage: cargo xtask tokens <update <version|latest> | generate>"),
+    }
+}
+
+/// Downloads core-react at `spec`, vendors its tokens and snapshot, records the pin and
+/// regenerates `generated.rs`.
+fn update(spec: &str) -> Result<()> {
+    let root = workspace_root();
+    let manifest: serde_json::Value = ureq::get(format!(
+        "https://registry.npmjs.org/{}/{spec}",
+        PACKAGE.replace('/', "%2f")
+    ))
+    .call()
+    .with_context(|| format!("fetching {PACKAGE}@{spec} from npm"))?
+    .body_mut()
+    .read_json()?;
+    let version = manifest["version"]
+        .as_str()
+        .context("npm manifest has no version")?;
+    let tarball = manifest["dist"]["tarball"]
+        .as_str()
+        .context("npm manifest has no tarball")?;
+
+    let bytes = ureq::get(tarball)
+        .call()
+        .with_context(|| format!("downloading {tarball}"))?
+        .body_mut()
+        .with_config()
+        .limit(64 * 1024 * 1024)
+        .read_to_vec()?;
+    let tokens = extract(&bytes, "package/dist/tokens.json")?;
+    let snapshot = extract(&bytes, "package/dist/library.snapshot.json")?;
+
+    write(&root.join(TOKENS_FILE), &tokens)?;
+    write(&root.join(SNAPSHOT_FILE), &snapshot)?;
+    write_pin(
+        &root,
+        &Pin {
+            version: version.to_owned(),
+            tokens_sha256: sha256(tokens.as_bytes()),
+            snapshot_sha256: sha256(snapshot.as_bytes()),
+        },
+    )?;
+    let generated = generate::generate(&tokens, version)?;
+    write(&root.join(GENERATED_FILE), &generated)?;
+    println!("core-react pin: {version} (tokens.json, library.snapshot.json, generated.rs)");
+    Ok(())
+}
+
+/// Regenerates `generated.rs` from the vendored `tokens.json`, for a generator change.
+fn regenerate() -> Result<()> {
+    let root = workspace_root();
+    let pin = read_pin(&root)?;
+    let tokens = std::fs::read_to_string(root.join(TOKENS_FILE))?;
+    write(
+        &root.join(GENERATED_FILE),
+        &generate::generate(&tokens, &pin.version)?,
+    )
+}
+
+fn extract(tarball: &[u8], wanted: &str) -> Result<String> {
+    let mut archive = tar::Archive::new(flate2::read::GzDecoder::new(tarball));
+    for entry in archive.entries()? {
+        let mut entry = entry?;
+        if entry.path()?.as_ref() == Path::new(wanted) {
+            let mut text = String::new();
+            entry.read_to_string(&mut text)?;
+            return Ok(text);
+        }
+    }
+    bail!("the tarball has no `{wanted}`")
+}
+
+fn write(path: &Path, contents: &str) -> Result<()> {
+    if let Some(dir) = path.parent() {
+        std::fs::create_dir_all(dir)?;
+    }
+    std::fs::write(path, contents).with_context(|| format!("writing {}", path.display()))
+}
+
+fn manifest_path(root: &Path) -> PathBuf {
+    root.join(TOKENS_CRATE).join("Cargo.toml")
+}
+
+/// Reads the core-react pin from the tokens crate's manifest.
+pub fn read_pin(root: &Path) -> Result<Pin> {
+    let text = std::fs::read_to_string(manifest_path(root))?;
+    let doc: DocumentMut = text.parse()?;
+    let table = doc["package"]["metadata"]["core-react"]
+        .as_table()
+        .context("the tokens crate has no [package.metadata.core-react]")?;
+    let field = |key: &str| {
+        table
+            .get(key)
+            .and_then(Item::as_str)
+            .map(str::to_owned)
+            .with_context(|| format!("[package.metadata.core-react] has no `{key}`"))
+    };
+    Ok(Pin {
+        version: field("version")?,
+        tokens_sha256: field("tokens-sha256")?,
+        snapshot_sha256: field("snapshot-sha256")?,
+    })
+}
+
+fn write_pin(root: &Path, pin: &Pin) -> Result<()> {
+    let path = manifest_path(root);
+    let mut doc: DocumentMut = std::fs::read_to_string(&path)?.parse()?;
+    let package = doc["package"].as_table_mut().context("no [package]")?;
+    let metadata = package
+        .entry("metadata")
+        .or_insert_with(|| {
+            let mut table = Table::new();
+            table.set_implicit(true);
+            Item::Table(table)
+        })
+        .as_table_mut()
+        .context("[package.metadata] is not a table")?;
+    let mut table = Table::new();
+    table.decor_mut().set_prefix(
+        "\n# The core-react pin: tokens.json and library.snapshot.json are vendored from this exact\n\
+         # npm version by `cargo xtask tokens update`. Don't edit by hand.\n",
+    );
+    table.insert("version", value(&pin.version));
+    table.insert("tokens-sha256", value(&pin.tokens_sha256));
+    table.insert("snapshot-sha256", value(&pin.snapshot_sha256));
+    metadata.insert("core-react", Item::Table(table));
+    write(&path, &doc.to_string())
+}
+
+fn sha256(bytes: &[u8]) -> String {
+    Sha256::digest(bytes)
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect()
+}
+
+/// The workspace root, two levels above this crate.
+pub fn workspace_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .ancestors()
+        .nth(2)
+        .expect("xtask lives at crates/xtask")
+        .to_path_buf()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Staleness checks on the checked-in files: a hand edit or a forgotten regeneration fails here.
+    mod sourcegen {
+        use super::*;
+
+        #[test]
+        fn should_match_the_checked_in_generated_rs() {
+            let root = workspace_root();
+            let pin = read_pin(&root).unwrap();
+            let tokens = std::fs::read_to_string(root.join(TOKENS_FILE)).unwrap();
+            let checked_in = std::fs::read_to_string(root.join(GENERATED_FILE)).unwrap();
+            let fresh = generate::generate(&tokens, &pin.version).unwrap();
+            assert!(
+                fresh == checked_in,
+                "{GENERATED_FILE} is stale or hand-edited: run `cargo xtask tokens generate`"
+            );
+        }
+
+        #[test]
+        fn should_match_the_pinned_sha256_of_the_vendored_files() {
+            let root = workspace_root();
+            let pin = read_pin(&root).unwrap();
+            let tokens = std::fs::read(root.join(TOKENS_FILE)).unwrap();
+            let snapshot = std::fs::read(root.join(SNAPSHOT_FILE)).unwrap();
+            assert_eq!(
+                sha256(&tokens),
+                pin.tokens_sha256,
+                "{TOKENS_FILE} differs from the pin"
+            );
+            assert_eq!(
+                sha256(&snapshot),
+                pin.snapshot_sha256,
+                "{SNAPSHOT_FILE} differs from the pin"
+            );
+        }
+    }
+
+    mod tarball {
+        use super::*;
+
+        fn tarball(files: &[(&str, &str)]) -> Vec<u8> {
+            let mut builder = tar::Builder::new(flate2::write::GzEncoder::new(
+                Vec::new(),
+                flate2::Compression::fast(),
+            ));
+            for (path, contents) in files {
+                let mut header = tar::Header::new_gnu();
+                header.set_size(contents.len() as u64);
+                header.set_mode(0o644);
+                header.set_cksum();
+                builder
+                    .append_data(&mut header, path, contents.as_bytes())
+                    .unwrap();
+            }
+            builder.into_inner().unwrap().finish().unwrap()
+        }
+
+        #[test]
+        fn should_extract_one_file() {
+            let bytes = tarball(&[
+                ("package/dist/tokens.json", "{}"),
+                ("package/README.md", "x"),
+            ]);
+            assert_eq!(extract(&bytes, "package/dist/tokens.json").unwrap(), "{}");
+        }
+
+        #[test]
+        fn should_fail_when_the_file_is_missing() {
+            let bytes = tarball(&[("package/README.md", "x")]);
+            assert!(extract(&bytes, "package/dist/tokens.json").is_err());
+        }
+    }
+}
