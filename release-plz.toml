@@ -26,3 +26,7 @@ git_release_enable = false
 [[package]]
 name = "xtask"
 release = false
+
+[[package]]
+name = "brrritscold-core-gpui-gallery"
+release = false

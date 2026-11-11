@@ -1,0 +1,24 @@
+[package]
+name = "brrritscold-core-gpui-gallery"
+description = "Internal gallery of core-gpui's components: the registry, a window to browse it and headless captures."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+brrritscold-core-gpui.workspace = true
+brrritscold-core-gpui-tokens.workspace = true
+# Internal crate: `test-support` is always on, for the headless capture renderer.
+gpui = { workspace = true, features = ["test-support"] }
+gpui-base = { workspace = true, features = ["test-support"] }
+gpui-platform = { workspace = true, features = ["x11", "wayland", "test-support"] }
+image.workspace = true
+serde_json.workspace = true
+strum.workspace = true
+
+[lints]
+workspace = true
