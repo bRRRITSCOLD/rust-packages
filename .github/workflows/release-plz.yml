@@ -1,0 +1,48 @@
+name: Release-plz
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  # Tags and releases `v<version>` when a merged release PR changed the version.
+  release:
+    if: github.repository_owner == 'bRRRITSCOLD'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions-rust-lang/setup-rust-toolchain@v2
+        with:
+          cache: false
+      - uses: release-plz/action@v0.5
+        with:
+          command: release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Opens or updates the release PR (the Changesets "Version Packages" analogue).
+  release-pr:
+    if: github.repository_owner == 'bRRRITSCOLD'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      pull-requests: write
+    concurrency:
+      group: release-plz-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions-rust-lang/setup-rust-toolchain@v2
+        with:
+          cache: false
+      - uses: release-plz/action@v0.5
+        with:
+          command: release-pr
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

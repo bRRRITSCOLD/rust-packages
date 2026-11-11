@@ -1,0 +1,28 @@
+# Git-only releases: one lockstep workspace version, one repo-wide `v<version>` tag,
+# one root CHANGELOG.md. Nothing is published to crates.io.
+[workspace]
+git_only = true
+git_tag_name = "v{{ version }}"
+git_release_name = "v{{ version }}"
+publish = false
+semver_check = false
+release_always = false
+changelog_update = false
+
+[[package]]
+name = "brrritscold-core-gpui"
+version_group = "all"
+changelog_update = true
+changelog_path = "CHANGELOG.md"
+changelog_include = ["brrritscold-core-gpui-tokens"]
+
+[[package]]
+name = "brrritscold-core-gpui-tokens"
+version_group = "all"
+# Tagged by core-gpui's shared `v<version>` tag; it creates no tag or release of its own.
+git_tag_enable = false
+git_release_enable = false
+
+[[package]]
+name = "xtask"
+release = false

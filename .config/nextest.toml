@@ -1,0 +1,15 @@
+# nextest is pinned: CI installs exactly this version.
+nextest-version = { required = "0.9.151" }
+
+# One profile per tier. The tier is the Cargo target:
+#   unit        -> #[cfg(test)] modules in lib and bin targets (test doubles only)
+#   integration -> the `integration` test target (tests/integration), when a crate has one
+#   e2e         -> the `e2e` test target (tests/e2e), when a crate has one
+[profile.default]
+slow-timeout = { period = "30s", terminate-after = 4 }
+fail-fast = false
+
+[profile.unit]
+default-filter = "kind(lib) | kind(bin) | kind(proc-macro)"
+slow-timeout = { period = "30s", terminate-after = 4 }
+fail-fast = false
