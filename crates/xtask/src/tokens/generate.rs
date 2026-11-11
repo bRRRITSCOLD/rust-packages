@@ -123,7 +123,11 @@ fn write_semantic(
         if ty != dark_ty {
             bail!("semantic `{key}` is `{ty}` in light but `{dark_ty}` in dark");
         }
-        let (rust_ty, _) = rust_value(ty, &resolve(primitive, &token["$value"], &path)?, &path)?;
+        let (rust_ty, _) = rust_value(
+            ty,
+            &resolve(primitive, light, &token["$value"], &path)?,
+            &path,
+        )?;
         fields.push((key.as_str(), rust_ty));
     }
 
@@ -146,7 +150,7 @@ fn write_semantic(
         for (key, token) in set {
             let path = [set_name, key.as_str()];
             let raw = &token["$value"];
-            let resolved = resolve(primitive, raw, &path)?;
+            let resolved = resolve(primitive, set, raw, &path)?;
             let ty = token_type(token, &path)?;
             let (_, expr) = rust_value(ty, &resolved, &path)?;
             if raw == &resolved {
@@ -177,21 +181,38 @@ fn token_type<'a>(token: &'a Value, path: &[&str]) -> Result<&'a str> {
         .with_context(|| format!("`{}` has no `$type`", path.join(".")))
 }
 
-/// Resolves `{a.b.c}` against the primitive set; other values pass through.
-fn resolve(primitive: &Map<String, Value>, value: &Value, path: &[&str]) -> Result<Value> {
-    let Some(alias) = value
-        .as_str()
-        .and_then(|v| v.strip_prefix('{')?.strip_suffix('}'))
-    else {
-        return Ok(value.clone());
-    };
-    let mut node = primitive.get(alias.split('.').next().unwrap_or_default());
-    for segment in alias.split('.').skip(1) {
-        node = node.and_then(|n| n.get(segment));
+/// Resolves `{a.b.c}`: first against the same semantic set (`{background}` from
+/// `outline-background`), then against the primitive set, following aliases of aliases.
+/// Other values pass through.
+fn resolve(
+    primitive: &Map<String, Value>,
+    set: &Map<String, Value>,
+    value: &Value,
+    path: &[&str],
+) -> Result<Value> {
+    let mut current = value.clone();
+    for _ in 0..16 {
+        let Some(alias) = current
+            .as_str()
+            .and_then(|v| v.strip_prefix('{')?.strip_suffix('}'))
+            .map(str::to_owned)
+        else {
+            return Ok(current);
+        };
+        let semantic = set.get(&alias).and_then(|n| n.get("$value"));
+        let primitive_hit = || {
+            let mut node = primitive.get(alias.split('.').next().unwrap_or_default());
+            for segment in alias.split('.').skip(1) {
+                node = node.and_then(|n| n.get(segment));
+            }
+            node.and_then(|n| n.get("$value"))
+        };
+        current = semantic
+            .or_else(primitive_hit)
+            .cloned()
+            .with_context(|| format!("`{}` aliases unknown token `{{{alias}}}`", path.join(".")))?;
     }
-    node.and_then(|n| n.get("$value"))
-        .cloned()
-        .with_context(|| format!("`{}` aliases unknown token `{{{alias}}}`", path.join(".")))
+    bail!("`{}` has an alias cycle", path.join("."))
 }
 
 /// The Rust type and const expression for one token value.
@@ -251,16 +272,10 @@ fn parse_px(value: &Value, path: &[&str]) -> Result<f32> {
         .with_context(|| format!("`{}` = `{text}` is not a px length", path.join(".")))
 }
 
-/// `#rrggbb` or `#rrggbbaa` → `gpui::hsla(..)`, computed exactly as GPUI's
-/// `Hsla::from(rgba(0xrrggbbaa))` does, in f32.
-fn hsla_expr(hex: &str) -> Result<String> {
-    let digits = hex.strip_prefix('#').context("colour is not #hex")?;
-    let rgba = match digits.len() {
-        6 => u32::from_str_radix(digits, 16)? << 8 | 0xff,
-        8 => u32::from_str_radix(digits, 16)?,
-        _ => bail!("colour `{hex}` is not #rrggbb or #rrggbbaa"),
-    };
-    let [h, s, l, a] = hsla_from_rgba(rgba);
+/// A colour value → `gpui::hsla(..)`, computed exactly as GPUI's `Hsla::from(Rgba)` does, in
+/// f32. Accepts `#rrggbb`, `#rrggbbaa`, `rgb(r, g, b)`, `rgba(r, g, b, a)` and `transparent`.
+fn hsla_expr(colour: &str) -> Result<String> {
+    let [h, s, l, a] = hsla_from_channels(parse_colour(colour)?);
     Ok(format!(
         "gpui::hsla({}, {}, {}, {})",
         float(h),
@@ -270,9 +285,55 @@ fn hsla_expr(hex: &str) -> Result<String> {
     ))
 }
 
+/// Red, green, blue and alpha in 0..=1, as GPUI's `rgba()` builds them.
+fn parse_colour(colour: &str) -> Result<[f32; 4]> {
+    let colour = colour.trim();
+    if colour == "transparent" {
+        return Ok([0.0; 4]);
+    }
+    if let Some(digits) = colour.strip_prefix('#') {
+        let rgba = match digits.len() {
+            6 => u32::from_str_radix(digits, 16)? << 8 | 0xff,
+            8 => u32::from_str_radix(digits, 16)?,
+            _ => bail!("colour `{colour}` is not #rrggbb or #rrggbbaa"),
+        };
+        return Ok(rgba.to_be_bytes().map(|b| f32::from(b) / 255.0));
+    }
+    let args = colour
+        .strip_prefix("rgba(")
+        .or_else(|| colour.strip_prefix("rgb("))
+        .and_then(|rest| rest.strip_suffix(')'))
+        .with_context(|| format!("colour `{colour}` is not #hex, rgb(), rgba() or transparent"))?;
+    let parts: Vec<&str> = args.split(',').map(str::trim).collect();
+    let channel = |text: &str| -> Result<f32> {
+        let value: u8 = text
+            .parse()
+            .with_context(|| format!("`{text}` in `{colour}` is not 0–255"))?;
+        Ok(f32::from(value) / 255.0)
+    };
+    let alpha = match parts.len() {
+        3 => 1.0,
+        4 => {
+            let alpha: f32 = parts[3]
+                .parse()
+                .with_context(|| format!("alpha `{}` in `{colour}` is not a number", parts[3]))?;
+            if !(0.0..=1.0).contains(&alpha) {
+                bail!("alpha in `{colour}` is outside 0–1");
+            }
+            alpha
+        }
+        _ => bail!("colour `{colour}` needs 3 or 4 components"),
+    };
+    Ok([
+        channel(parts[0])?,
+        channel(parts[1])?,
+        channel(parts[2])?,
+        alpha,
+    ])
+}
+
 /// A line-for-line copy of GPUI's `rgba()` + `impl From<Rgba> for Hsla` (gpui `color.rs`).
-fn hsla_from_rgba(hex: u32) -> [f32; 4] {
-    let [r, g, b, a] = hex.to_be_bytes().map(|b| f32::from(b) / 255.0);
+fn hsla_from_channels([r, g, b, a]: [f32; 4]) -> [f32; 4] {
     let max = r.max(g.max(b));
     let min = r.min(g.min(b));
     let delta = max - min;
@@ -420,6 +481,28 @@ mod tests {
         }
 
         #[test]
+        fn should_resolve_a_semantic_alias_within_its_own_mode() {
+            let json = tokens(
+                r##"{"color": {"white": {"$type": "color", "$value": "#ffffff"}, "black": {"$type": "color", "$value": "#000000"}}}"##,
+                r#"{"background": {"$type": "color", "$value": "{color.white}"}, "outline-background": {"$type": "color", "$value": "{background}"}}"#,
+                r#"{"background": {"$type": "color", "$value": "{color.black}"}, "outline-background": {"$type": "color", "$value": "{background}"}}"#,
+            );
+            let out = generate(&json, "1.0.0").unwrap();
+            assert!(out.contains("// {background} = #ffffff\n        outline_background: gpui::hsla(0.0, 0.0, 1.0, 1.0),"));
+            assert!(out.contains("// {background} = #000000\n        outline_background: gpui::hsla(0.0, 0.0, 0.0, 1.0),"));
+        }
+
+        #[test]
+        fn should_fail_on_an_alias_cycle() {
+            let json = tokens(
+                "{}",
+                r#"{"a": {"$type": "color", "$value": "{b}"}, "b": {"$type": "color", "$value": "{a}"}}"#,
+                r#"{"a": {"$type": "color", "$value": "{b}"}, "b": {"$type": "color", "$value": "{a}"}}"#,
+            );
+            assert!(format!("{:#}", generate(&json, "1.0.0").unwrap_err()).contains("cycle"));
+        }
+
+        #[test]
         fn should_fail_on_an_unknown_alias() {
             let json = tokens(
                 "{}",
@@ -514,9 +597,33 @@ mod tests {
         #[test]
         fn should_match_the_prototype_values_for_red() {
             // #dc2626, as GPUI computes it (prototype/gpui-button, within f32 printing).
-            let [h, s, l, a] = hsla_from_rgba(0xdc2626ff);
+            let [h, s, l, a] = hsla_from_channels(parse_colour("#dc2626").unwrap());
             assert!(h.abs() < 1e-6 && (s - 0.722_222).abs() < 1e-6 && (l - 0.505_882).abs() < 1e-6);
             assert!((a - 1.0).abs() < f32::EPSILON);
+        }
+
+        #[test]
+        fn should_read_rgba_and_transparent_as_gpui_would() {
+            assert_eq!(
+                hsla_expr("transparent").unwrap(),
+                "gpui::hsla(0.0, 0.0, 0.0, 0.0)"
+            );
+            assert_eq!(
+                parse_colour("rgba(38, 38, 38, 0.3)").unwrap(),
+                [38.0 / 255.0, 38.0 / 255.0, 38.0 / 255.0, 0.3]
+            );
+            assert_eq!(
+                parse_colour("rgb(255, 0, 0)").unwrap(),
+                [1.0, 0.0, 0.0, 1.0]
+            );
+        }
+
+        #[test]
+        fn should_reject_a_bad_functional_colour() {
+            assert!(parse_colour("rgba(38, 38, 38)x").is_err());
+            assert!(parse_colour("rgba(300, 0, 0, 1)").is_err());
+            assert!(parse_colour("rgba(0, 0, 0, 2)").is_err());
+            assert!(parse_colour("hsl(0, 0%, 0%)").is_err());
         }
 
         #[test]
