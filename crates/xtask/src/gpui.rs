@@ -187,7 +187,7 @@ fn vendored_files(root: &Path) -> Result<Vec<(String, String, String)>> {
     Ok(found)
 }
 
-/// `// Vendored from gpui-component 0.9.1: crates/ui/src/menu/popup_menu.rs`.
+/// `// Vendored from gpui-component 0.9.1: src/menu/popup_menu.rs`.
 fn parse_header(text: &str) -> Option<(String, String)> {
     let line = text.lines().next()?.strip_prefix(VENDORED_HEADER)?;
     let (version, upstream) = line.split_once(": ")?;
@@ -374,10 +374,10 @@ anyhow = "1"
 
         #[test]
         fn should_parse_version_and_upstream_path() {
-            let header = "// Vendored from gpui-component 0.9.1: crates/ui/src/menu.rs\n//! docs";
+            let header = "// Vendored from gpui-component 0.9.1: src/menu.rs\n//! docs";
             assert_eq!(
                 parse_header(header),
-                Some(("0.9.1".into(), "crates/ui/src/menu.rs".into()))
+                Some(("0.9.1".into(), "src/menu.rs".into()))
             );
         }
 
@@ -395,14 +395,14 @@ anyhow = "1"
             let vendored = vec![(
                 "crates/core-gpui/src/menu.rs".into(),
                 "0.9.1".into(),
-                "crates/ui/src/menu.rs".into(),
+                "src/menu.rs".into(),
             )];
             let body = pr_body(
                 "0.9.1",
                 "0.9.2",
                 &[],
                 &vendored,
-                &["crates/ui/src/menu.rs".into()],
+                &["src/menu.rs".into()],
             );
             assert!(body.contains("⚠️ upstream changed"));
             assert!(body.contains("captures compare"));
