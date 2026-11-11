@@ -150,6 +150,13 @@ impl Button {
         self
     }
 
+    /// An icon after the label (`data-icon="inline-end"`), as core-react's `PaginationNext`
+    /// draws it. Not a Penpot part of Button, so it stays inside the crate.
+    pub(crate) fn icon_end(mut self, icon: IconName) -> Self {
+        self.icon_end = Some(icon);
+        self
+    }
+
     /// Dims the button to 50% and makes it inert (`disabled:opacity-50
     /// disabled:pointer-events-none`); it also leaves the Tab order.
     pub fn disabled(mut self, disabled: bool) -> Self {

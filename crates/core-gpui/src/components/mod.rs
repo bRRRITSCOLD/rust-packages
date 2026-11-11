@@ -35,8 +35,10 @@ pub mod breadcrumb;
 pub mod button;
 pub mod card;
 pub mod label;
+pub mod pagination;
 pub mod separator;
 pub mod skeleton;
+pub mod table;
 
 /// `ring-<width>`: a solid spread shadow outside the box, which takes no layout space.
 fn ring(width: f32, color: gpui::Hsla) -> gpui::BoxShadow {

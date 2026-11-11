@@ -47,8 +47,15 @@ pub use components::card::{
     Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle,
 };
 pub use components::label::Label;
+pub use components::pagination::{
+    Pagination, PaginationContent, PaginationEllipsis, PaginationLink, PaginationNext,
+    PaginationPrevious,
+};
 pub use components::separator::{Separator, SeparatorOrientation};
 pub use components::skeleton::Skeleton;
+pub use components::table::{
+    Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow,
+};
 pub use gpui_base::Root;
 pub use icons::{Icon, IconName};
 pub use theme::{ActiveTheme, Mode, Theme, ThemePreference};

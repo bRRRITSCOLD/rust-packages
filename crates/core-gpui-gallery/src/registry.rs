@@ -22,8 +22,10 @@ mod breadcrumb;
 mod button;
 mod card;
 mod label;
+mod pagination;
 mod separator;
 mod skeleton;
+mod table;
 
 use gpui::{AnyElement, ElementId, Pixels, px};
 
@@ -107,6 +109,8 @@ pub fn registry() -> Vec<Entry> {
     entries.extend(alert::entries());
     entries.extend(avatar::entries());
     entries.extend(breadcrumb::entries());
+    entries.extend(table::entries());
+    entries.extend(pagination::entries());
     entries
 }
 

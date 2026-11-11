@@ -142,5 +142,15 @@ mod tests {
             assert_eq!(props["variant"]["values"], json!(variants));
             assert_eq!(props["size"]["values"], json!(sizes));
         }
+
+        #[test]
+        fn should_list_a_part_as_an_export_of_its_own() {
+            let exports = &manifest(&registry(), &[])["exports"];
+            assert_eq!(exports["CardHeader"], json!({ "props": {} }));
+            assert_eq!(
+                exports["PaginationLink"]["props"]["isActive"]["values"],
+                json!(["false", "true"])
+            );
+        }
     }
 }
