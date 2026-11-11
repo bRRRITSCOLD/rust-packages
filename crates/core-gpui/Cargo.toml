@@ -4,12 +4,19 @@ description = "GPUI renderer of the shared design library; follows @brrritscold/
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
-# Vendored gpui-component files are Apache-2.0 only (see NOTICE).
+# Vendored gpui-component files are Apache-2.0 only (see NOTICE). Inter is OFL-1.1 (assets/fonts).
 license = "Apache-2.0 AND (MIT OR Apache-2.0)"
 repository.workspace = true
 publish.workspace = true
 
 [dependencies]
+brrritscold-core-gpui-tokens.workspace = true
+gpui.workspace = true
+gpui-base.workspace = true
+
+[dev-dependencies]
+gpui = { workspace = true, features = ["test-support"] }
+gpui-base = { workspace = true, features = ["test-support"] }
 
 [lints]
 workspace = true
