@@ -26,6 +26,7 @@ The toolchain is pinned in `rust-toolchain.toml`. On Linux, install GPUI's packa
 | `cargo test-unit` | Unit tier (nextest profile `unit`, plus doctests). |
 | `cargo test-unit-ci` | Setup → unit tier → teardown (always); exits with the tests' code. |
 | `bacon unit` | Unit tier in watch mode. |
+| `cargo xtask drift` | The drift check: the registry's code manifest against the vendored library snapshot and `tokens.json`, with core-react's checker (`design-drift`, pinned in `core-gpui-tokens`). Unbuilt library components sit in `pending` in `design/drift.config.json` and only warn; a stale entry fails. Needs Node. |
 | `cargo run -p brrritscold-core-gpui-gallery` | Opens the gallery: every registry variant, the icons, a light/dark toggle. |
 | `cargo xtask captures [--out <dir>]` | One 2x PNG per variant × theme, headless, into `target/captures/`. Needs a Vulkan driver (lavapipe works). |
 | `cargo xtask captures compare [--penpot-theme light\|dark]` | `target/captures/compare/index.html`: core-react's published Storybook \| GPUI \| Penpot, for a person to judge. Needs Node; the Penpot column needs the env in `.env.example`. |

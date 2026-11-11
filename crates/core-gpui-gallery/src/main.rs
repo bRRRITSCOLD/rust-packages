@@ -1,14 +1,16 @@
 //! `brrritscold-core-gpui-gallery`: with no arguments, opens the gallery window;
-//! `capture --out <dir>` writes the headless captures instead.
+//! `capture --out <dir>` writes the headless captures instead, and `manifest --out <file>` the
+//! drift check's code manifest.
 
 use std::path::Path;
 
 use anyhow::bail;
 use brrritscold_core_gpui::Root;
-use brrritscold_core_gpui_gallery::{capture::capture, gallery::Gallery};
+use brrritscold_core_gpui_gallery::{capture::capture, gallery::Gallery, manifest};
 use gpui::{App, AppContext as _, Bounds, WindowBounds, WindowOptions, px, size};
 
-const USAGE: &str = "usage: brrritscold-core-gpui-gallery [capture --out <dir>]";
+const USAGE: &str =
+    "usage: brrritscold-core-gpui-gallery [capture --out <dir> | manifest --out <file>]";
 
 fn main() -> anyhow::Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
@@ -23,6 +25,7 @@ fn main() -> anyhow::Result<()> {
             Ok(())
         }
         ["capture", "--out", out] => capture(Path::new(out)),
+        ["manifest", "--out", out] => manifest::write(Path::new(out)),
         _ => bail!(USAGE),
     }
 }

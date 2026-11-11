@@ -1,5 +1,7 @@
 //! Workspace tasks for rust-packages, run through the cargo aliases in `.cargo/config.toml`.
 //!
+//! - `cargo xtask drift` runs the drift check: the registry's code manifest against the
+//!   vendored library snapshot and tokens, with core-react's checker at its pin.
 //! - `cargo xtask captures [--out <dir>]` writes the gallery's headless captures (local only).
 //! - `cargo xtask captures compare [--penpot-theme light|dark]` builds the design comparison
 //!   sheet: core-react's Storybook | GPUI | Penpot.
@@ -9,6 +11,7 @@
 //! - `cargo xtask gpui update <version|latest> [--body <file>]` moves the GPUI pin.
 
 mod captures;
+mod drift;
 mod gpui;
 mod test_chain;
 mod tokens;
@@ -48,7 +51,8 @@ fn run(args: Vec<String>) -> anyhow::Result<ExitCode> {
         Some("tokens") => tokens::run(args).map(|()| ExitCode::SUCCESS),
         Some("gpui") => gpui::run(args).map(|()| ExitCode::SUCCESS),
         Some("captures") => captures::run(args).map(|()| ExitCode::SUCCESS),
+        Some("drift") => drift::run(args),
         Some(other) => bail!("unknown task `{other}`"),
-        None => bail!("usage: cargo xtask <task>; tasks: test, tokens, gpui, captures"),
+        None => bail!("usage: cargo xtask <task>; tasks: test, tokens, gpui, captures, drift"),
     }
 }
