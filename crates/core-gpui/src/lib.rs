@@ -52,6 +52,10 @@ pub use components::card::{
     Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle,
 };
 pub use components::checkbox::Checkbox;
+pub use components::combobox::{
+    Combobox, ComboboxChip, ComboboxChips, ComboboxContent, ComboboxEmpty, ComboboxGroup,
+    ComboboxInput, ComboboxItem, ComboboxLabel, ComboboxSeparator,
+};
 pub use components::dialog::{
     Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHandle,
     DialogHeader, DialogOverlay, DialogTitle,
