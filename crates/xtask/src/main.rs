@@ -9,10 +9,13 @@
 //! - `cargo xtask tokens update <version|latest>` vendors core-react's tokens at one exact version.
 //! - `cargo xtask tokens generate` regenerates `generated.rs` from the vendored tokens.
 //! - `cargo xtask gpui update <version|latest> [--body <file>]` moves the GPUI pin.
+//! - `cargo xtask release-notes` adds the GPUI and core-react pins to a changelog entry on stdin
+//!   (release-plz's changelog postprocessor).
 
 mod captures;
 mod drift;
 mod gpui;
+mod release_notes;
 mod test_chain;
 mod tokens;
 
@@ -52,7 +55,10 @@ fn run(args: Vec<String>) -> anyhow::Result<ExitCode> {
         Some("gpui") => gpui::run(args).map(|()| ExitCode::SUCCESS),
         Some("captures") => captures::run(args).map(|()| ExitCode::SUCCESS),
         Some("drift") => drift::run(args),
+        Some("release-notes") => release_notes::run(args).map(|()| ExitCode::SUCCESS),
         Some(other) => bail!("unknown task `{other}`"),
-        None => bail!("usage: cargo xtask <task>; tasks: test, tokens, gpui, captures, drift"),
+        None => bail!(
+            "usage: cargo xtask <task>; tasks: test, tokens, gpui, captures, drift, release-notes"
+        ),
     }
 }

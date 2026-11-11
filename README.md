@@ -33,4 +33,4 @@ The toolchain is pinned in `rust-toolchain.toml`. On Linux, install GPUI's packa
 
 Captures are local only: never committed, never run in CI, and nothing compares their pixels.
 
-Commits follow [Conventional Commits](https://www.conventionalcommits.org/): release-plz derives the version bump and `CHANGELOG.md` from them. Releases are git-only: one workspace version, one `v<version>` tag. Apps pin every `brrritscold-*` crate to the same tag, and copy the GPUI pin (`gpui-base`, `gpui` = `gpui-pre`) from this workspace's `Cargo.toml`.
+Commits follow [Conventional Commits](https://www.conventionalcommits.org/): release-plz derives the version bump and `CHANGELOG.md` from them. Releases are git-only: one workspace version, one `v<version>` tag. Apps pin every `brrritscold-*` crate to the same tag, and copy the GPUI pin (`gpui-base`, `gpui` = `gpui-pre`) from this workspace's `Cargo.toml`. Each release's changelog entry and GitHub release state the GPUI pin and the core-react pin, written by `cargo xtask release-notes`, which release-plz runs as a changelog postprocessor.

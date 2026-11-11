@@ -9,11 +9,22 @@ semver_check = false
 release_always = false
 changelog_update = false
 
+# Every release entry states the GPUI pin and the core-react pin under its heading. The GitHub
+# release copies its body from that entry, so it states them too. The command gets the rendered
+# entry on stdin; a non-zero exit fails the release PR rather than dropping the pins.
+[changelog]
+postprocessors = [
+  { pattern = '(?m)^## \[\d', replace_command = "cargo xtask release-notes" },
+]
+
 [[package]]
 name = "brrritscold-core-gpui"
 version_group = "all"
 changelog_update = true
 changelog_path = "CHANGELOG.md"
+# Includes only from the second release on: release-plz 0.4.3 adds `changelog_include` commits
+# only to a package with a previous release (tag `v<version>`), so the first release (v0.1.0)
+# dropped the tokens-only commit and its entry was backfilled by hand.
 changelog_include = ["brrritscold-core-gpui-tokens"]
 
 [[package]]
