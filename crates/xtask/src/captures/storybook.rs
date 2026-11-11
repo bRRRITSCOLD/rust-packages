@@ -41,6 +41,8 @@ pub fn capture(root: &Path, captures: &[Capture], out: &Path) -> Result<()> {
 }
 
 /// One job per capture with a story: the story id, its props as args, the theme and file.
+/// A `true` / `false` value goes as a boolean: a component reads the string `"false"` as
+/// truthy, so a `disabled: "false"` arg would disable it.
 fn jobs(captures: &[Capture]) -> Vec<Value> {
     captures
         .iter()
@@ -49,7 +51,14 @@ fn jobs(captures: &[Capture]) -> Vec<Value> {
             let args: Map<String, Value> = capture
                 .props
                 .iter()
-                .map(|(property, value)| (property.clone(), json!(value)))
+                .map(|(property, value)| {
+                    let arg = match value.as_str() {
+                        "true" => json!(true),
+                        "false" => json!(false),
+                        _ => json!(value),
+                    };
+                    (property.clone(), arg)
+                })
                 .collect();
             Some(json!({
                 "story": story,
@@ -125,6 +134,25 @@ mod tests {
                     "theme": "dark",
                     "file": "b.png",
                 })]
+            );
+        }
+
+        #[test]
+        fn should_pass_true_and_false_as_booleans() {
+            let capture = Capture {
+                component: "Checkbox".into(),
+                props: vec![
+                    ("checked".into(), "true".into()),
+                    ("disabled".into(), "false".into()),
+                ],
+                theme: "light".into(),
+                file: "c.png".into(),
+                story: Some("components-checkbox--default".into()),
+                background: "#ffffff".into(),
+            };
+            assert_eq!(
+                jobs(&[capture])[0]["args"],
+                json!({ "checked": true, "disabled": false })
             );
         }
     }
