@@ -34,7 +34,14 @@ mod root;
 pub mod theme;
 
 pub use components::alert::{Alert, AlertAction, AlertDescription, AlertTitle, AlertVariant};
+pub use components::avatar::{
+    Avatar, AvatarBadge, AvatarFallback, AvatarGroup, AvatarGroupCount, AvatarImage, AvatarSize,
+};
 pub use components::badge::{Badge, BadgeVariant};
+pub use components::breadcrumb::{
+    Breadcrumb, BreadcrumbEllipsis, BreadcrumbLink, BreadcrumbList, BreadcrumbPage,
+    BreadcrumbSeparator,
+};
 pub use components::button::{Button, ButtonSize, ButtonVariant};
 pub use components::card::{
     Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle,

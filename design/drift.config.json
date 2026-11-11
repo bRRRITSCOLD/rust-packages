@@ -11,8 +11,6 @@
 		"AlertDialogMedia": "*",
 		"AlertDialogOverlay": "*",
 		"AlertDialogTitle": "*",
-		"Avatar": "*",
-		"Breadcrumb": "*",
 		"Calendar": "*",
 		"CalendarDayButton": "*",
 		"Checkbox": "*",

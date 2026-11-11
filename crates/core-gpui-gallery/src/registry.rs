@@ -16,7 +16,9 @@
 //! `TableHeader`, `TableBody`) are not entries: the library has no twin to check them against.
 
 mod alert;
+mod avatar;
 mod badge;
+mod breadcrumb;
 mod button;
 mod card;
 mod label;
@@ -103,6 +105,8 @@ pub fn registry() -> Vec<Entry> {
     ];
     entries.extend(card::entries());
     entries.extend(alert::entries());
+    entries.extend(avatar::entries());
+    entries.extend(breadcrumb::entries());
     entries
 }
 
