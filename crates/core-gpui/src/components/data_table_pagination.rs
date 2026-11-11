@@ -191,7 +191,7 @@ impl RenderOnce for DataTablePagination {
                     .into_any_element(),
             });
         // <Pagination className="mr-0 w-auto">
-        let pagination = Pagination::new().w_auto().mx_0().child(
+        let pagination = Pagination::new().w_auto().mr_0().child(
             PaginationContent::new()
                 .child(
                     PaginationPrevious::new(child("previous"))

@@ -80,7 +80,8 @@ async function open(page, slot) {
 
 /** The element to crop to: the story root, unless the component's own slot is portalled or the root fills the viewport. */
 async function target(page, component) {
-	const root = page.locator('#storybook-root > *').first()
+	// An open Base UI menu puts focus-guard spans around its trigger, the story's first child.
+	const root = page.locator('#storybook-root > :not([data-base-ui-focus-guard])').first()
 	const slot = slotOf(component)
 	if ((await root.getAttribute('data-slot')) === slot) return root
 	// Only an overlay's part is worth opening a trigger for; anything else is shot as before.

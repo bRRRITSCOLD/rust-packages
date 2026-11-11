@@ -14,6 +14,17 @@ use strum::IntoEnumIterator as _;
 use super::support::Stateful;
 use super::{Entry, STORY_WIDTH, Variant, one};
 
+/// The story a column header's `sort` is captured from. Each story's play function picks
+/// another order (Desc, or Asc from Descending) and the header keeps it, so `asc` is shot from
+/// the Descending story and `desc` from the Ascending one. No story ends unsorted.
+fn story(sort: DataTableSort) -> Option<&'static str> {
+    match sort {
+        DataTableSort::None => None,
+        DataTableSort::Asc => Some("components-datatablecolumnheader--descending"),
+        DataTableSort::Desc => Some("components-datatablecolumnheader--ascending"),
+    }
+}
+
 /// The Default story's filter after its play function typed into it.
 fn ken(window: &mut Window, cx: &mut Context<InputState>) -> InputState {
     InputState::new(window, cx)
@@ -30,11 +41,7 @@ pub(super) fn entries() -> Vec<Entry> {
                 DataTableSort::iter()
                     .map(|sort| Variant {
                         props: vec![("sort", sort.into())],
-                        story: Some(match sort {
-                            DataTableSort::None => "components-datatablecolumnheader--unsorted",
-                            DataTableSort::Asc => "components-datatablecolumnheader--ascending",
-                            DataTableSort::Desc => "components-datatablecolumnheader--descending",
-                        }),
+                        story: story(sort),
                         // The story's header cell: <Table><TableHeader><TableRow><TableHead>
                         render: Box::new(move |id| {
                             let header = DataTableColumnHeader::new(id, "Email")

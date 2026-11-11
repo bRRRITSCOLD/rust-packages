@@ -1,15 +1,16 @@
 //! `Tabs` (Penpot property `orientation`) and its parts (`TabsList` `variant`, `TabsTrigger`
 //! `disabled`), with the story's settings tabs. The stories' play functions select Password,
-//! so the entries show it selected; Penpot's main components show Account.
+//! so the entries show it selected; Penpot's main components show Account. The stories' root
+//! is a block-level flex box, so the entries render at the story's full width.
 
 use brrritscold_core_gpui::{
     Tabs, TabsContent, TabsList, TabsListVariant, TabsOrientation, TabsTrigger,
 };
-use gpui::{IntoElement as _, ParentElement as _};
+use gpui::{IntoElement as _, ParentElement as _, Styled as _};
 use strum::IntoEnumIterator as _;
 
 use super::support::{BOOLS, value};
-use super::{Entry, Variant, one};
+use super::{Entry, STORY_WIDTH, Variant, one};
 
 const TABS: [(&str, &str, &str); 3] = [
     ("account", "Account", "Change your name and email address."),
@@ -51,7 +52,9 @@ pub(super) fn entries() -> Vec<Entry> {
                             TabsOrientation::Vertical => "components-tabs--vertical",
                         }),
                         render: Box::new(move |id| {
-                            tabs(id, orientation, TabsListVariant::Default).into_any_element()
+                            tabs(id, orientation, TabsListVariant::Default)
+                                .w(STORY_WIDTH)
+                                .into_any_element()
                         }),
                     })
                     .collect()
@@ -74,6 +77,7 @@ pub(super) fn entries() -> Vec<Entry> {
                             Tabs::new(id)
                                 .default_value(SELECTED)
                                 .list(list(variant))
+                                .w(STORY_WIDTH)
                                 .into_any_element()
                         }),
                     })

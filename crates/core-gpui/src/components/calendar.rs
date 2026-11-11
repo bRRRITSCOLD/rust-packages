@@ -385,6 +385,7 @@ impl RenderOnce for CalendarDayButton {
             .when_some(on_click, |b, on_click| {
                 b.on_click(move |_, window, cx| on_click(window, cx))
             })
+            .border_0()
             .font_weight(font_weight::NORMAL)
             .text_color(text);
         div()
