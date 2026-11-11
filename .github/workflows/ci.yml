@@ -17,6 +17,7 @@ env:
 jobs:
   fmt:
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
       - uses: actions-rust-lang/setup-rust-toolchain@v2
@@ -26,9 +27,11 @@ jobs:
 
   clippy:
     runs-on: ubuntu-24.04
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
       - run: script/install-linux-deps.sh
+        timeout-minutes: 10
       - uses: actions-rust-lang/setup-rust-toolchain@v2
         with:
           cache-save-if: ${{ github.ref == 'refs/heads/main' }}
@@ -37,9 +40,11 @@ jobs:
 
   test-unit:
     runs-on: ubuntu-24.04
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
       - run: script/install-linux-deps.sh
+        timeout-minutes: 10
       - uses: actions-rust-lang/setup-rust-toolchain@v2
         with:
           cache-save-if: ${{ github.ref == 'refs/heads/main' }}
@@ -51,11 +56,13 @@ jobs:
 
   doc:
     runs-on: ubuntu-24.04
+    timeout-minutes: 45
     env:
       RUSTDOCFLAGS: -D warnings
     steps:
       - uses: actions/checkout@v7
       - run: script/install-linux-deps.sh
+        timeout-minutes: 10
       - uses: actions-rust-lang/setup-rust-toolchain@v2
         with:
           cache-save-if: ${{ github.ref == 'refs/heads/main' }}
@@ -66,9 +73,11 @@ jobs:
   # core-react's checker at the pin in core-gpui-tokens' [package.metadata.design-core-node].
   drift:
     runs-on: ubuntu-24.04
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
       - run: script/install-linux-deps.sh
+        timeout-minutes: 10
       - uses: actions-rust-lang/setup-rust-toolchain@v2
         with:
           cache-save-if: ${{ github.ref == 'refs/heads/main' }}
