@@ -76,7 +76,8 @@ fn env() -> Result<[String; 3]> {
     Ok(values.map(|value| value.unwrap_or_default()))
 }
 
-/// The snapshot's id for the library component with this capture's name and variant props.
+/// The snapshot's id for the library component with this capture's export name and variant
+/// props.
 fn component_id<'a>(snapshot: &'a Value, capture: &Capture) -> Result<&'a str> {
     let components = snapshot["components"]
         .as_object()
@@ -85,7 +86,7 @@ fn component_id<'a>(snapshot: &'a Value, capture: &Capture) -> Result<&'a str> {
         .iter()
         .find(|(_, component)| {
             let properties = &component["variantProperties"];
-            component["name"] == capture.component.as_str()
+            export_name(component).as_deref() == Some(capture.component.as_str())
                 && properties.as_object().map(|p| p.len()) == Some(capture.props.len())
                 && capture
                     .props
@@ -99,6 +100,23 @@ fn component_id<'a>(snapshot: &'a Value, capture: &Capture) -> Result<&'a str> {
                 capture.component, capture.props
             )
         })
+}
+
+/// The export a library component links to, by the naming convention: its path below
+/// `Components` and its name, joined (`Components/Card` + `Header` → `CardHeader`). Parts share
+/// names (`Label` is also `Field/Label`), so the name alone isn't enough.
+fn export_name(component: &Value) -> Option<String> {
+    let path = component["path"].as_str().unwrap_or_default();
+    let mut groups: Vec<&str> = path
+        .split('/')
+        .map(str::trim)
+        .filter(|group| !group.is_empty())
+        .collect();
+    if groups.first() == Some(&"Components") {
+        groups.remove(0);
+    }
+    groups.push(component["name"].as_str()?);
+    Some(groups.concat())
 }
 
 /// A logged-in automation-profile session.
@@ -227,10 +245,20 @@ mod tests {
 
         fn snapshot() -> Value {
             json!({ "components": {
-                "id-a": { "name": "Button", "variantProperties": { "size": "sm", "variant": "default" } },
-                "id-b": { "name": "Button", "variantProperties": { "size": "sm", "variant": "outline" } },
-                "id-c": { "name": "Badge", "variantProperties": { "variant": "outline" } },
+                "id-a": { "path": "Components", "name": "Button", "variantProperties": { "size": "sm", "variant": "default" } },
+                "id-b": { "path": "Components", "name": "Button", "variantProperties": { "size": "sm", "variant": "outline" } },
+                "id-c": { "path": "Components", "name": "Badge", "variantProperties": { "variant": "outline" } },
+                "id-d": { "path": "Components/Field", "name": "Label", "variantProperties": {} },
+                "id-e": { "path": "Components", "name": "Label", "variantProperties": {} },
             }})
+        }
+
+        fn part(component: &str) -> Capture {
+            Capture {
+                component: component.into(),
+                props: Vec::new(),
+                ..capture("default", "sm")
+            }
         }
 
         #[test]
@@ -238,6 +266,15 @@ mod tests {
             assert_eq!(
                 component_id(&snapshot(), &capture("outline", "sm")).unwrap(),
                 "id-b"
+            );
+        }
+
+        #[test]
+        fn should_match_the_export_name_not_the_bare_layer_name() {
+            assert_eq!(component_id(&snapshot(), &part("Label")).unwrap(), "id-e");
+            assert_eq!(
+                component_id(&snapshot(), &part("FieldLabel")).unwrap(),
+                "id-d"
             );
         }
 

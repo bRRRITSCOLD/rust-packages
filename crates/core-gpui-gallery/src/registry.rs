@@ -7,10 +7,32 @@
 //!
 //! Sample content (a Button's `Button` label, its `Plus` icon) mirrors the Penpot main
 //! component, so the core-react, GPUI and Penpot columns of a comparison show the same thing.
+//! Where the Penpot main component and the Storybook story a variant is captured from
+//! disagree (an Alert's action, a Table's columns), the entry follows the story: core-react is
+//! the comparison's reference. Its module says what Penpot shows instead.
+//!
+//! A compound component's parts that are library components of their own (`CardHeader`) are
+//! entries of their own, named as their exports. Code-only parts (`AvatarGroup`,
+//! `TableHeader`, `TableBody`) are not entries: the library has no twin to check them against.
 
+mod alert;
+mod avatar;
+mod badge;
+mod breadcrumb;
 mod button;
+mod card;
+mod label;
+mod pagination;
+mod separator;
+mod skeleton;
+mod table;
 
-use gpui::{AnyElement, ElementId};
+use gpui::{AnyElement, ElementId, Pixels, px};
+
+/// The width a full-width story root fills in the published Storybook: its 640px capture
+/// viewport less the padded layout's 1rem each side. Entries for `w-full` components render
+/// at it, so their captures line up with the core-react column.
+const STORY_WIDTH: Pixels = px(608.);
 
 /// One component in the registry.
 pub struct Entry {
@@ -50,8 +72,12 @@ impl Variant {
         values.join(" / ")
     }
 
-    /// A file-name-safe key: `variant-outline--size-icon-sm`.
+    /// A file-name-safe key: `variant-outline--size-icon-sm`, or `default` for a component
+    /// with no variant properties.
     pub fn slug(&self) -> String {
+        if self.props.is_empty() {
+            return "default".into();
+        }
         let pairs: Vec<String> = self
             .props
             .iter()
@@ -61,9 +87,31 @@ impl Variant {
     }
 }
 
-/// Every component, in sidebar order.
+/// The one variant of a component with no variant properties.
+fn one(story: Option<&'static str>, render: impl Fn() -> AnyElement + 'static) -> Vec<Variant> {
+    vec![Variant {
+        props: Vec::new(),
+        story,
+        render: Box::new(move |_| render()),
+    }]
+}
+
+/// Every component, in sidebar order: each component, then its parts.
 pub fn registry() -> Vec<Entry> {
-    vec![button::entry()]
+    let mut entries = vec![
+        button::entry(),
+        badge::entry(),
+        label::entry(),
+        separator::entry(),
+        skeleton::entry(),
+    ];
+    entries.extend(card::entries());
+    entries.extend(alert::entries());
+    entries.extend(avatar::entries());
+    entries.extend(breadcrumb::entries());
+    entries.extend(table::entries());
+    entries.extend(pagination::entries());
+    entries
 }
 
 #[cfg(test)]
@@ -162,6 +210,12 @@ mod tests {
         #[test]
         fn should_slug_by_property_and_value() {
             assert_eq!(outline_icon_sm().slug(), "variant-outline--size-icon-sm");
+        }
+
+        #[test]
+        fn should_slug_a_component_without_properties_as_default() {
+            let skeleton = &one(None, || gpui::Empty.into_any_element())[0];
+            assert_eq!(skeleton.slug(), "default");
         }
     }
 }

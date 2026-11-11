@@ -82,6 +82,8 @@ impl Gallery {
                 .on_click(cx.listener(move |this, _, _, cx| this.show(page, cx)))
         });
         div()
+            .id("sidebar")
+            .overflow_y_scroll()
             .w(px(224.))
             .flex_none()
             .h_full()
