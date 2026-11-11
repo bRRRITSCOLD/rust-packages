@@ -84,8 +84,9 @@ pub fn generate(names: &[String], version: &str) -> String {
     );
     out.push_str(
         "/// Every canonical Lucide icon core-react ships, named as lucide-react names it\n\
-         /// (without the `Icon` suffix).\n\
-         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]\n\
+         /// (without the `Icon` suffix). `<&str>::from` gives the variant name: the drift\n\
+         /// manifest's `<Name>Icon` is that plus `Icon`.\n\
+         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, strum::IntoStaticStr)]\n\
          pub enum IconName {\n",
     );
     for name in names {
@@ -158,6 +159,13 @@ mod tests {
             assert!(out.contains("    ArrowDown01,\n"));
             assert!(out.contains("IconName::Plus => \"plus\","));
             assert!(out.contains("IconName::Plus => include_bytes!(\"../../icons/plus.svg\"),"));
+        }
+
+        /// The drift manifest names icons `<Variant>Icon` from strum, with no case transform.
+        #[test]
+        fn should_give_each_icon_its_variant_name_as_a_static_str() {
+            let out = generate(&["plus".into()], "1.0.0");
+            assert!(out.contains("strum::IntoStaticStr)]\npub enum IconName"));
         }
     }
 
