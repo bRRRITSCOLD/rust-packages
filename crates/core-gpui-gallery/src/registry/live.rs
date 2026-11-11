@@ -3,16 +3,18 @@
 //! dismissal are seen here, by using them.
 
 use brrritscold_core_gpui::{
-    AlertDialog, AlertDialogContentSize, Button, ButtonSize, ButtonVariant, Dialog, DropdownMenu,
-    DropdownMenuCheckboxItem, DropdownMenuRadioItem, DropdownMenuSubTrigger, IconName, Popover,
-    Select, SelectTrigger, Sheet, SheetContentSide, Toast, ToastAction, ToastDescription,
-    ToastExt as _, ToastTitle, ToastType, Tooltip, TooltipContent, TooltipContentSide,
+    AlertDialog, AlertDialogContentSize, Button, ButtonSize, ButtonVariant, Combobox,
+    ComboboxChips, ComboboxInput, Dialog, DropdownMenu, DropdownMenuCheckboxItem,
+    DropdownMenuRadioItem, DropdownMenuSubTrigger, IconName, Popover, Select, SelectTrigger, Sheet,
+    SheetContentSide, Toast, ToastAction, ToastDescription, ToastExt as _, ToastTitle, ToastType,
+    Tooltip, TooltipContent, TooltipContentSide,
 };
 use brrritscold_core_gpui_tokens::primitive::space;
 use gpui::{AnyElement, ElementId, IntoElement as _, ParentElement as _, Styled as _, div};
 use strum::IntoEnumIterator as _;
 
-use super::{alert_dialog, dialog, dropdown_menu, popover, select, sheet};
+use super::support::Stateful;
+use super::{alert_dialog, combobox, dialog, dropdown_menu, popover, select, sheet};
 
 fn outline(id: impl Into<ElementId>, label: &'static str) -> Button {
     Button::new(id).variant(ButtonVariant::Outline).label(label)
@@ -73,6 +75,28 @@ pub fn live(name: &str) -> Option<AnyElement> {
             .trigger(SelectTrigger::new().placeholder("Pick one"))
             .content(select::content())
             .into_any_element(),
+        "ComboboxInput" | "ComboboxContent" | "ComboboxItem" | "ComboboxLabel"
+        | "ComboboxSeparator" | "ComboboxEmpty" => {
+            Stateful::new("live-combobox-input", combobox::framework, |state| {
+                Combobox::new("live-combobox")
+                    .input(ComboboxInput::new(state).show_clear(true))
+                    .content(combobox::content())
+                    .w(combobox::FIELD_WIDTH)
+                    .into_any_element()
+            })
+            .into_any_element()
+        }
+        "ComboboxChips" | "ComboboxChip" => {
+            Stateful::new("live-combobox-chips", combobox::frameworks, |state| {
+                Combobox::new("live-combobox-multiple")
+                    .chips(ComboboxChips::new(state))
+                    .content(combobox::content())
+                    .default_values(["Next.js"])
+                    .w(combobox::FIELD_WIDTH)
+                    .into_any_element()
+            })
+            .into_any_element()
+        }
         "DropdownMenuContent" => DropdownMenu::new("live-dropdown-menu")
             .trigger(outline("live-dropdown-menu-open", "Open menu"))
             .content(
@@ -170,6 +194,16 @@ mod tests {
         fn should_open_the_popover_and_select(cx: &mut TestAppContext) {
             for name in ["PopoverContent", "SelectContent"] {
                 let cx = open(cx, name);
+                cx.simulate_keystrokes("escape");
+                draw(cx);
+            }
+        }
+
+        #[gpui::test]
+        fn should_open_both_comboboxes_from_their_field(cx: &mut TestAppContext) {
+            for name in ["ComboboxInput", "ComboboxChips"] {
+                let cx = open(cx, name);
+                assert!(cx.debug_bounds("combobox-content").is_some(), "{name}");
                 cx.simulate_keystrokes("escape");
                 draw(cx);
             }

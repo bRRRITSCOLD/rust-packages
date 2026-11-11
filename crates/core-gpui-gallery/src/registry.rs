@@ -23,6 +23,7 @@ mod breadcrumb;
 mod button;
 mod card;
 mod checkbox;
+mod combobox;
 mod dialog;
 mod dropdown_menu;
 mod field;
@@ -148,6 +149,7 @@ pub fn registry() -> Vec<Entry> {
     entries.extend(popover::entries());
     entries.extend(tooltip::entries());
     entries.extend(select::entries());
+    entries.extend(combobox::entries());
     entries.extend(dropdown_menu::entries());
     entries.extend(toast::entries());
     entries

@@ -10,8 +10,8 @@
 // no focus ring or half-finished hover in the shot.
 //
 // An overlay part renders outside the story root (a portal) or inside a full-screen layout div,
-// so the shot crops to the component's own `data-slot` (core-react's kebab-case export name)
-// when it is portalled or the root fills the viewport. A part that isn't showing is opened from
+// so the shot crops to the component's own `data-slot` (core-react's kebab-case export name, or
+// the one `SLOTS` names) when it is portalled or the root fills the viewport. A part that isn't showing is opened from
 // its story's trigger first (hovered for a tooltip), and a submenu from its sub-trigger. Modal
 // backdrops are hidden: GPUI captures the surface alone.
 const fs = require('node:fs')
@@ -23,8 +23,14 @@ const jobs = JSON.parse(fs.readFileSync(jobsFile, 'utf8'))
 const MARGIN = 4
 const VIEWPORT = { width: 640, height: 320 }
 
+/** Exports whose root element carries another component's `data-slot`. */
+const SLOTS = {
+	// ComboboxInput renders its InputGroup.
+	ComboboxInput: 'input-group',
+}
+
 /** core-react's `data-slot` for an export: `AlertDialogContent` → `alert-dialog-content`. */
-const slotOf = (component) => component.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
+const slotOf = (component) => SLOTS[component] ?? component.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
 
 /** The first visible element with this `data-slot`, or null. */
 const findSlot = (page, slot) =>
@@ -78,7 +84,9 @@ async function target(page, component) {
 	const slot = slotOf(component)
 	if ((await root.getAttribute('data-slot')) === slot) return root
 	// Only an overlay's part is worth opening a trigger for; anything else is shot as before.
-	const opens = slot.startsWith('toast') || (await page.locator('#storybook-root [data-slot$="-trigger"]').count()) > 0
+	const opens =
+		slot.startsWith('toast') ||
+		(await page.locator('#storybook-root [data-slot$="-trigger"], #storybook-root [role="combobox"]').count()) > 0
 	if (!opens && !(await waitForSlot(page, slot, 0))) return root
 	// The story's `play` may still be opening or closing it, so it must stay up for a moment.
 	let el = null
