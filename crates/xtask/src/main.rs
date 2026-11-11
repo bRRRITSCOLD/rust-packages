@@ -3,7 +3,9 @@
 //! - `cargo xtask test <tier> [--ci] [-- <nextest args>]` runs one test tier.
 //! - `cargo xtask tokens update <version|latest>` vendors core-react's tokens at one exact version.
 //! - `cargo xtask tokens generate` regenerates `generated.rs` from the vendored tokens.
+//! - `cargo xtask gpui update <version|latest> [--body <file>]` moves the GPUI pin.
 
+mod gpui;
 mod test_chain;
 mod tokens;
 
@@ -40,7 +42,8 @@ fn run(args: Vec<String>) -> anyhow::Result<ExitCode> {
             Ok(test_chain::run_tier(tier, ci, &passthrough))
         }
         Some("tokens") => tokens::run(args).map(|()| ExitCode::SUCCESS),
+        Some("gpui") => gpui::run(args).map(|()| ExitCode::SUCCESS),
         Some(other) => bail!("unknown task `{other}`"),
-        None => bail!("usage: cargo xtask <task>; tasks: test, tokens"),
+        None => bail!("usage: cargo xtask <task>; tasks: test, tokens, gpui"),
     }
 }

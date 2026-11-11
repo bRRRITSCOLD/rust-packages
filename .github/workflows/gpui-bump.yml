@@ -1,0 +1,39 @@
+name: GPUI bump
+
+# Weekly on Tuesday, the day after gpui-kit's Monday release: if a newer gpui-base exists,
+# move the GPUI pin and open or update one advisory PR. Versions may be skipped.
+on:
+  schedule:
+    - cron: "23 6 * * 2"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    if: github.repository_owner == 'bRRRITSCOLD'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions-rust-lang/setup-rust-toolchain@v2
+        with:
+          cache: false
+      - name: Move the pin
+        id: bump
+        run: |
+          cargo xtask gpui update latest --body "$RUNNER_TEMP/body.md"
+          echo "kit=$(sed -n 's/^gpui-base = "=\(.*\)"/\1/p' Cargo.toml)" >> "$GITHUB_OUTPUT"
+      - name: Re-resolve Cargo.lock
+        run: cargo update --workspace
+      - uses: peter-evans/create-pull-request@v8
+        with:
+          # PRs opened with GITHUB_TOKEN don't trigger CI; BUMP_TOKEN (a fine-grained PAT with
+          # contents + pull-requests write) lets the bump PR get its checks.
+          token: ${{ secrets.BUMP_TOKEN || secrets.GITHUB_TOKEN }}
+          branch: bump/gpui
+          title: "feat(gpui): gpui-kit ${{ steps.bump.outputs.kit }}"
+          commit-message: "feat(gpui): gpui-kit ${{ steps.bump.outputs.kit }}"
+          body-path: ${{ runner.temp }}/body.md
+          delete-branch: true
