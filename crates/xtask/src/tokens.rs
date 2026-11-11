@@ -14,11 +14,12 @@ use sha2::{Digest, Sha256};
 use toml_edit::{DocumentMut, Item, Table, value};
 
 const PACKAGE: &str = "@brrritscold/core-react";
-const TOKENS_CRATE: &str = "crates/core-gpui-tokens";
-const TOKENS_FILE: &str = "crates/core-gpui-tokens/tokens.json";
+/// The tokens crate's manifest, which holds the core-react pin and the drift checker pin.
+pub(crate) const TOKENS_CARGO_TOML: &str = "crates/core-gpui-tokens/Cargo.toml";
+pub(crate) const TOKENS_FILE: &str = "crates/core-gpui-tokens/tokens.json";
 const GENERATED_FILE: &str = "crates/core-gpui-tokens/src/generated.rs";
 /// The library snapshot rides the same pin; the drift check reads it.
-const SNAPSHOT_FILE: &str = "design/library.snapshot.json";
+pub(crate) const SNAPSHOT_FILE: &str = "design/library.snapshot.json";
 
 /// The core-react pin recorded under `[package.metadata.core-react]` in the tokens crate.
 #[derive(Debug, PartialEq, Eq)]
@@ -167,7 +168,7 @@ pub(crate) fn write(path: &Path, contents: &str) -> Result<()> {
 }
 
 fn manifest_path(root: &Path) -> PathBuf {
-    root.join(TOKENS_CRATE).join("Cargo.toml")
+    root.join(TOKENS_CARGO_TOML)
 }
 
 /// Reads the core-react pin from the tokens crate's manifest.

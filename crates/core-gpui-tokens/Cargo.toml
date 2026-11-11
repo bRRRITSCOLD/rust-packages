@@ -16,6 +16,14 @@ tokens-sha256 = "085015b42d62fcdd9660093679ecb18f8d13ec47fa5976ce748ea0d9bf125ad
 snapshot-sha256 = "f594dc01371f72e557970d4d0c07cfee4b0af9cc4aeddab2ae17899308996fd1"
 lucide = "1.68.0"
 
+# The drift checker pin: `cargo xtask drift` runs `design-drift check` from this exact
+# @brrritscold/design-core-node. The rules live in @brrritscold/design-core-js, which
+# design-core-node takes by a caret range, so it's pinned too. Move both with the core-react
+# pin, so the checker understands the snapshot's `schemaVersion`.
+[package.metadata.design-core-node]
+version = "0.1.0"
+design-core-js = "0.1.0"
+
 [dependencies]
 gpui.workspace = true
 

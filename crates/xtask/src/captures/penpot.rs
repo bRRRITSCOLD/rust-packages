@@ -14,6 +14,7 @@ use anyhow::{Context, Result, bail};
 use serde_json::{Value, json};
 
 use super::Capture;
+use crate::tokens::SNAPSHOT_FILE;
 
 /// The env the Penpot column needs.
 const ENV: [&str; 3] = [
@@ -21,9 +22,6 @@ const ENV: [&str; 3] = [
     "PENPOT_AUTOMATION_EMAIL",
     "PENPOT_AUTOMATION_PASSWORD",
 ];
-
-/// The vendored library snapshot: component ids and their variant properties.
-const SNAPSHOT_FILE: &str = "design/library.snapshot.json";
 
 /// The exporter's scale, matching the GPUI captures.
 const SCALE: f32 = 2.;
