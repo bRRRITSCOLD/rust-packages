@@ -650,6 +650,14 @@ mod tests {
                 r#"crate::FontStack { family: crate::PLATFORM_MONO, fallbacks: &["SFMono-Regular", "Menlo"] }"#
             );
         }
+
+        #[test]
+        fn should_lead_with_a_named_mono_family_and_fall_back_to_the_platform_mono_font() {
+            assert_eq!(
+                font_stack_expr("JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, monospace"),
+                r#"crate::FontStack { family: "JetBrains Mono", fallbacks: &[crate::PLATFORM_MONO, "SFMono-Regular", "Menlo"] }"#
+            );
+        }
     }
 
     mod names {

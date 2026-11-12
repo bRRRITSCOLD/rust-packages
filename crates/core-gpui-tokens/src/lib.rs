@@ -33,11 +33,13 @@ impl FontStack {
 }
 
 /// The platform's monospace font, standing in for the CSS `ui-monospace` / `monospace`
-/// generics. GPUI has no alias for it, and no mono font is bundled.
+/// generics, which GPUI has no alias for. A fallback only: core-gpui bundles the family that
+/// heads `font-family.mono`.
 #[cfg(target_os = "macos")]
 pub const PLATFORM_MONO: &str = "Menlo";
 /// The platform's monospace font, standing in for the CSS `ui-monospace` / `monospace`
-/// generics. GPUI has no alias for it, and no mono font is bundled.
+/// generics, which GPUI has no alias for. A fallback only: core-gpui bundles the family that
+/// heads `font-family.mono`.
 #[cfg(not(target_os = "macos"))]
 pub const PLATFORM_MONO: &str = "DejaVu Sans Mono";
 
@@ -90,6 +92,15 @@ mod tests {
         fn should_resolve_the_sans_stack_to_inter_then_the_system_ui_font() {
             assert_eq!(primitive::font_family::SANS.family, "Inter");
             assert_eq!(primitive::font_family::SANS.fallbacks, &[".SystemUIFont"]);
+        }
+
+        #[test]
+        fn should_resolve_the_mono_stack_to_jetbrains_mono_then_the_platform_mono_font() {
+            assert_eq!(primitive::font_family::MONO.family, "JetBrains Mono");
+            assert_eq!(
+                primitive::font_family::MONO.fallbacks,
+                &[PLATFORM_MONO, "SFMono-Regular", "Menlo"]
+            );
         }
     }
 }

@@ -8,6 +8,12 @@ third-party files under their own licences:
   assets/fonts/, licensed under the SIL Open Font License 1.1
   (assets/fonts/OFL.txt). Copyright (c) 2016 The Inter Project Authors.
 
+- JetBrains Mono 2.304 (https://github.com/JetBrains/JetBrainsMono), the
+  static TTFs assets/fonts/JetBrainsMono-Regular.ttf and
+  assets/fonts/JetBrainsMono-Bold.ttf, licensed under the SIL Open Font
+  License 1.1 (assets/fonts/JetBrainsMono-OFL.txt). Copyright 2020 The
+  JetBrains Mono Project Authors.
+
 - Lucide icons (https://lucide.dev), the SVGs in icons/, vendored from
   lucide-static at the version core-react pins, licensed under the ISC
   License (icons/LICENSE). Copyright (c) Lucide Icons and Contributors.
