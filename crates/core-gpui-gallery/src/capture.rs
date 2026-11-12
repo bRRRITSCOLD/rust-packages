@@ -14,8 +14,9 @@ use anyhow::{Context as _, bail, ensure};
 use brrritscold_core_gpui::{Mode, Root, Theme, ThemePreference};
 use brrritscold_core_gpui_tokens::primitive::{font_family, font_weight};
 use gpui::{
-    AppContext as _, Bounds, Context, Font, HeadlessAppContext, IntoElement, ParentElement as _,
-    Pixels, Render, Rgba, Size, Styled as _, TextSystem, Window, div, font, px, size,
+    AppContext as _, Bounds, Context, Font, FontWeight, HeadlessAppContext, IntoElement,
+    ParentElement as _, Pixels, Render, Rgba, Size, Styled as _, TextSystem, Window, div, font, px,
+    size,
 };
 use serde_json::json;
 
@@ -43,7 +44,7 @@ pub fn capture(out: &Path) -> anyhow::Result<()> {
             brrritscold_core_gpui::init(cx);
             Theme::set_preference(mode.pick(ThemePreference::Light, ThemePreference::Dark), cx);
         });
-        cx.update(|cx| ensure_inter(cx.text_system()))?;
+        cx.update(|cx| ensure_bundled_fonts(cx.text_system()))?;
         let theme = mode.pick("light", "dark");
         let background = hex(mode.semantic().background.to_rgb());
         for entry in registry() {
@@ -91,27 +92,54 @@ fn hex(color: Rgba) -> String {
     )
 }
 
-/// Fails unless the sans family resolves to the bundled Inter with a face per weight, so a
-/// capture never shows a fallback font that looks almost right.
-fn ensure_inter(text_system: &TextSystem) -> anyhow::Result<()> {
-    let sans = font_family::SANS.family;
+/// Fails unless each bundled family resolves to itself with a face per weight the library
+/// uses: sans to Inter at 400 and 500, mono to JetBrains Mono at 400 and 700. A capture then
+/// never shows a fallback font that looks almost right.
+fn ensure_bundled_fonts(text_system: &TextSystem) -> anyhow::Result<()> {
+    ensure_family(
+        text_system,
+        font_family::SANS.family,
+        font_weight::NORMAL,
+        font_weight::MEDIUM,
+    )?;
+    ensure_family(
+        text_system,
+        font_family::MONO.family,
+        font_weight::NORMAL,
+        font_weight::BOLD,
+    )
+}
+
+/// Fails unless `family` resolves to itself at both weights, with a different face for each.
+fn ensure_family(
+    text_system: &TextSystem,
+    family: &str,
+    regular: FontWeight,
+    heavier: FontWeight,
+) -> anyhow::Result<()> {
     let resolve = |weight| {
         let id = text_system.resolve_font(&Font {
             weight,
-            ..font(sans)
+            ..font(family.to_owned())
         });
-        let family = text_system.get_font_for_id(id).map(|f| f.family);
-        (id, family)
+        let resolved = text_system.get_font_for_id(id).map(|f| f.family);
+        (id, resolved)
     };
-    let (regular, regular_family) = resolve(font_weight::NORMAL);
-    let (medium, medium_family) = resolve(font_weight::MEDIUM);
+    let (regular_id, regular_family) = resolve(regular);
+    let (heavier_id, heavier_family) = resolve(heavier);
+    for (weight, resolved) in [(regular, &regular_family), (heavier, &heavier_family)] {
+        ensure!(
+            resolved.as_deref() == Some(family),
+            "`{family}` at weight {} resolves to {resolved:?}; core_gpui::init should have \
+             registered it",
+            weight.0
+        );
+    }
     ensure!(
-        regular_family.as_deref() == Some(sans) && medium_family.as_deref() == Some(sans),
-        "`{sans}` resolves to {medium_family:?}; core_gpui::init should have registered it"
-    );
-    ensure!(
-        regular != medium,
-        "`{sans}` has no medium face; weight 500 would render as 400"
+        regular_id != heavier_id,
+        "`{family}` has no face at weight {}; it would render as {}",
+        heavier.0,
+        regular.0
     );
     Ok(())
 }

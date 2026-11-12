@@ -41,6 +41,21 @@
 				"$type": "color",
 				"$value": "{color.neutral.50}"
 			},
+			"info": {
+				"$type": "color",
+				"$value": "{color.blue.400}",
+				"$description": "The info status colour: Badge `info`'s text. `blue.700` in light, `blue.400` in dark."
+			},
+			"info-background": {
+				"$type": "color",
+				"$value": "rgba(96, 165, 250, 0.2)",
+				"$description": "The tint behind `info` text: Badge `info`. `blue.600` at 10% in light, `info` (`blue.400`) at 20% in dark."
+			},
+			"info-foreground": {
+				"$type": "color",
+				"$value": "{color.neutral.950}",
+				"$description": "Text on a solid `info` fill, at 4.5:1 or more: `white` on light's `blue.700`, `neutral.950` on dark's `blue.400`."
+			},
 			"input": {
 				"$type": "color",
 				"$value": "{color.neutral.800}"
@@ -62,6 +77,11 @@
 				"$type": "color",
 				"$value": "{input-background}",
 				"$description": "The fill of an outlined control raised on its surface: Button `outline`, the active tab. `background` in light, `input-background` in dark."
+			},
+			"overlay": {
+				"$type": "color",
+				"$value": "rgba(10, 10, 10, 0.1)",
+				"$description": "The scrim behind a modal popup: Dialog, AlertDialog and Sheet's overlay. `foreground` at 10% in light, `background` at 10% in dark: near-black in both modes."
 			},
 			"popover": {
 				"$type": "color",
@@ -114,6 +134,36 @@
 			"secondary-foreground": {
 				"$type": "color",
 				"$value": "{color.neutral.50}"
+			},
+			"success": {
+				"$type": "color",
+				"$value": "{color.green.400}",
+				"$description": "The success status colour: Badge `success`'s text. `green.800` in light, `green.400` in dark."
+			},
+			"success-background": {
+				"$type": "color",
+				"$value": "rgba(74, 222, 128, 0.2)",
+				"$description": "The tint behind `success` text: Badge `success`. `green.600` at 10% in light, `success` (`green.400`) at 20% in dark."
+			},
+			"success-foreground": {
+				"$type": "color",
+				"$value": "{color.neutral.950}",
+				"$description": "Text on a solid `success` fill, at 4.5:1 or more: `white` on light's `green.800`, `neutral.950` on dark's `green.400`."
+			},
+			"warning": {
+				"$type": "color",
+				"$value": "{color.amber.400}",
+				"$description": "The warning status colour: Badge `warning`'s text. `amber.800` in light, `amber.400` in dark."
+			},
+			"warning-background": {
+				"$type": "color",
+				"$value": "rgba(251, 191, 36, 0.2)",
+				"$description": "The tint behind `warning` text: Badge `warning`. `amber.600` at 10% in light, `warning` (`amber.400`) at 20% in dark."
+			},
+			"warning-foreground": {
+				"$type": "color",
+				"$value": "{color.neutral.950}",
+				"$description": "Text on a solid `warning` fill, at 4.5:1 or more: `white` on light's `amber.800`, `neutral.950` on dark's `amber.400`."
 			}
 		},
 		"light": {
@@ -154,6 +204,21 @@
 				"$type": "color",
 				"$value": "{color.neutral.950}"
 			},
+			"info": {
+				"$type": "color",
+				"$value": "{color.blue.700}",
+				"$description": "The info status colour: Badge `info`'s text. `blue.700` in light, `blue.400` in dark."
+			},
+			"info-background": {
+				"$type": "color",
+				"$value": "rgba(37, 99, 235, 0.1)",
+				"$description": "The tint behind `info` text: Badge `info`. `blue.600` at 10% in light, `info` (`blue.400`) at 20% in dark."
+			},
+			"info-foreground": {
+				"$type": "color",
+				"$value": "{color.white}",
+				"$description": "Text on a solid `info` fill, at 4.5:1 or more: `white` on light's `blue.700`, `neutral.950` on dark's `blue.400`."
+			},
 			"input": {
 				"$type": "color",
 				"$value": "{color.neutral.200}"
@@ -175,6 +240,11 @@
 				"$type": "color",
 				"$value": "{background}",
 				"$description": "The fill of an outlined control raised on its surface: Button `outline`, the active tab. `background` in light, `input-background` in dark."
+			},
+			"overlay": {
+				"$type": "color",
+				"$value": "rgba(10, 10, 10, 0.1)",
+				"$description": "The scrim behind a modal popup: Dialog, AlertDialog and Sheet's overlay. `foreground` at 10% in light, `background` at 10% in dark: near-black in both modes."
 			},
 			"popover": {
 				"$type": "color",
@@ -227,6 +297,36 @@
 			"secondary-foreground": {
 				"$type": "color",
 				"$value": "{color.neutral.900}"
+			},
+			"success": {
+				"$type": "color",
+				"$value": "{color.green.800}",
+				"$description": "The success status colour: Badge `success`'s text. `green.800` in light, `green.400` in dark."
+			},
+			"success-background": {
+				"$type": "color",
+				"$value": "rgba(22, 163, 74, 0.1)",
+				"$description": "The tint behind `success` text: Badge `success`. `green.600` at 10% in light, `success` (`green.400`) at 20% in dark."
+			},
+			"success-foreground": {
+				"$type": "color",
+				"$value": "{color.white}",
+				"$description": "Text on a solid `success` fill, at 4.5:1 or more: `white` on light's `green.800`, `neutral.950` on dark's `green.400`."
+			},
+			"warning": {
+				"$type": "color",
+				"$value": "{color.amber.800}",
+				"$description": "The warning status colour: Badge `warning`'s text. `amber.800` in light, `amber.400` in dark."
+			},
+			"warning-background": {
+				"$type": "color",
+				"$value": "rgba(217, 119, 6, 0.1)",
+				"$description": "The tint behind `warning` text: Badge `warning`. `amber.600` at 10% in light, `warning` (`amber.400`) at 20% in dark."
+			},
+			"warning-foreground": {
+				"$type": "color",
+				"$value": "{color.white}",
+				"$description": "Text on a solid `warning` fill, at 4.5:1 or more: `white` on light's `amber.800`, `neutral.950` on dark's `amber.400`."
 			}
 		},
 		"primitive": {
@@ -261,9 +361,51 @@
 				}
 			},
 			"color": {
+				"amber": {
+					"400": {
+						"$type": "color",
+						"$value": "#fbbf24"
+					},
+					"600": {
+						"$type": "color",
+						"$value": "#d97706"
+					},
+					"800": {
+						"$type": "color",
+						"$value": "#92400e"
+					}
+				},
 				"black": {
 					"$type": "color",
 					"$value": "#000000"
+				},
+				"blue": {
+					"400": {
+						"$type": "color",
+						"$value": "#60a5fa"
+					},
+					"600": {
+						"$type": "color",
+						"$value": "#2563eb"
+					},
+					"700": {
+						"$type": "color",
+						"$value": "#1d4ed8"
+					}
+				},
+				"green": {
+					"400": {
+						"$type": "color",
+						"$value": "#4ade80"
+					},
+					"600": {
+						"$type": "color",
+						"$value": "#16a34a"
+					},
+					"800": {
+						"$type": "color",
+						"$value": "#166534"
+					}
 				},
 				"neutral": {
 					"50": {
@@ -338,6 +480,7 @@
 				"mono": {
 					"$type": "fontFamilies",
 					"$value": [
+						"JetBrains Mono",
 						"ui-monospace",
 						"SFMono-Regular",
 						"Menlo",
@@ -15597,8 +15740,7 @@
 						"Components / Dialog / Overlay"
 					],
 					"appliedTokens": {
-						"fill": "foreground",
-						"opacity": "opacity.10"
+						"fill": "overlay"
 					},
 					"unbound": []
 				}
@@ -16292,8 +16434,7 @@
 						"Components / AlertDialog / Overlay"
 					],
 					"appliedTokens": {
-						"fill": "foreground",
-						"opacity": "opacity.10"
+						"fill": "overlay"
 					},
 					"unbound": []
 				}
@@ -21311,6 +21452,132 @@
 						"font-family": "font-family.sans",
 						"font-size": "font-size.sm",
 						"font-weight": "font-weight.normal"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef2a2543f3fe": {
+			"path": "Components",
+			"name": "Badge",
+			"variantProperties": {
+				"variant": "success"
+			},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef2a2543f3ff": {
+					"namePath": [
+						"Components / Badge"
+					],
+					"appliedTokens": {
+						"fill": "success-background",
+						"r1": "border-radius.full",
+						"r2": "border-radius.full",
+						"r3": "border-radius.full",
+						"r4": "border-radius.full",
+						"p1": "space.0-5",
+						"p2": "space.2",
+						"p3": "space.0-5",
+						"p4": "space.2",
+						"column-gap": "space.1"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef2a2543f401": {
+					"namePath": [
+						"Components / Badge",
+						"Label"
+					],
+					"appliedTokens": {
+						"fill": "success",
+						"font-family": "font-family.sans",
+						"font-size": "font-size.xs",
+						"font-weight": "font-weight.medium"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef2a2a08c336": {
+			"path": "Components",
+			"name": "Badge",
+			"variantProperties": {
+				"variant": "warning"
+			},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef2a2a08c337": {
+					"namePath": [
+						"Components / Badge"
+					],
+					"appliedTokens": {
+						"fill": "warning-background",
+						"r1": "border-radius.full",
+						"r2": "border-radius.full",
+						"r3": "border-radius.full",
+						"r4": "border-radius.full",
+						"p1": "space.0-5",
+						"p2": "space.2",
+						"p3": "space.0-5",
+						"p4": "space.2",
+						"column-gap": "space.1"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef2a2a08c339": {
+					"namePath": [
+						"Components / Badge",
+						"Label"
+					],
+					"appliedTokens": {
+						"fill": "warning",
+						"font-family": "font-family.sans",
+						"font-size": "font-size.xs",
+						"font-weight": "font-weight.medium"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef2a2adf7aea": {
+			"path": "Components",
+			"name": "Badge",
+			"variantProperties": {
+				"variant": "info"
+			},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef2a2adf7aeb": {
+					"namePath": [
+						"Components / Badge"
+					],
+					"appliedTokens": {
+						"fill": "info-background",
+						"r1": "border-radius.full",
+						"r2": "border-radius.full",
+						"r3": "border-radius.full",
+						"r4": "border-radius.full",
+						"p1": "space.0-5",
+						"p2": "space.2",
+						"p3": "space.0-5",
+						"p4": "space.2",
+						"column-gap": "space.1"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef2a2adf7aed": {
+					"namePath": [
+						"Components / Badge",
+						"Label"
+					],
+					"appliedTokens": {
+						"fill": "info",
+						"font-family": "font-family.sans",
+						"font-size": "font-size.xs",
+						"font-weight": "font-weight.medium"
 					},
 					"unbound": []
 				}

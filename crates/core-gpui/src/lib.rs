@@ -119,9 +119,9 @@ use gpui::App;
 
 /// Sets core-gpui up for this application. Required, once, before the first window opens.
 ///
-/// It initialises `gpui-base`, registers the bundled Inter fonts, installs the [`Theme`]
-/// (preference [`ThemePreference::System`]) and registers the root plugins: the one that feeds
-/// each window's OS appearance into it, and the one hosting each window's toasts
+/// It initialises `gpui-base`, registers the bundled Inter and JetBrains Mono fonts, installs
+/// the [`Theme`] (preference [`ThemePreference::System`]) and registers the root plugins: the
+/// one that feeds each window's OS appearance into it, and the one hosting each window's toasts
 /// ([`ToastExt::push_toast`]).
 pub fn init(cx: &mut App) {
     gpui_base::init(cx);

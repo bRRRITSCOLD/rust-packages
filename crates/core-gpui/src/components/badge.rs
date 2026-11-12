@@ -34,6 +34,12 @@ pub enum BadgeVariant {
     Secondary,
     /// `destructive`
     Destructive,
+    /// `success`
+    Success,
+    /// `warning`
+    Warning,
+    /// `info`
+    Info,
     /// `outline`
     Outline,
     /// `ghost`
@@ -144,6 +150,24 @@ impl BadgeVariant {
                 text: s.destructive,
                 ..base
             },
+            // bg-success-background text-success
+            BadgeVariant::Success => VariantStyle {
+                fill: Some(s.success_background),
+                text: s.success,
+                ..base
+            },
+            // bg-warning-background text-warning
+            BadgeVariant::Warning => VariantStyle {
+                fill: Some(s.warning_background),
+                text: s.warning,
+                ..base
+            },
+            // bg-info-background text-info
+            BadgeVariant::Info => VariantStyle {
+                fill: Some(s.info_background),
+                text: s.info,
+                ..base
+            },
             // border-border text-foreground
             BadgeVariant::Outline => VariantStyle {
                 border: Some(s.border),
@@ -240,6 +264,9 @@ mod tests {
                     "default",
                     "secondary",
                     "destructive",
+                    "success",
+                    "warning",
+                    "info",
                     "outline",
                     "ghost",
                     "link"
@@ -262,6 +289,24 @@ mod tests {
                 dark.fill,
                 Some(Mode::Dark.semantic().destructive.opacity(0.2))
             );
+        }
+
+        #[gpui::test]
+        fn should_read_each_status_tokens_in_both_modes(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            for mode in [Mode::Light, Mode::Dark] {
+                let s = mode.semantic();
+                let theme = theme(cx, mode);
+                for (variant, fill, text) in [
+                    (BadgeVariant::Success, s.success_background, s.success),
+                    (BadgeVariant::Warning, s.warning_background, s.warning),
+                    (BadgeVariant::Info, s.info_background, s.info),
+                ] {
+                    let style = variant.style(&theme);
+                    assert_eq!(style.fill, Some(fill), "{variant} {mode:?}");
+                    assert_eq!(style.text, text, "{variant} {mode:?}");
+                }
+            }
         }
 
         #[gpui::test]
