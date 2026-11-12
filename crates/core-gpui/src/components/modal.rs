@@ -136,13 +136,11 @@ impl Overlay {
 
 impl RenderOnce for Overlay {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
-        let theme = cx.theme();
-        let s = theme.semantic();
-        // fixed inset-0 bg-foreground/10 dark:bg-background/10
+        // fixed inset-0 bg-overlay
         div()
             .absolute()
             .inset_0()
-            .bg(theme.mode().pick(s.foreground, s.background).opacity(0.1))
+            .bg(cx.theme().semantic().overlay)
             .refine_style(&self.style)
     }
 }
