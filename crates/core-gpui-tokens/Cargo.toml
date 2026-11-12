@@ -11,9 +11,9 @@ publish.workspace = true
 # The core-react pin: tokens.json and library.snapshot.json are vendored from this exact
 # npm version by `cargo xtask tokens update`. Don't edit by hand.
 [package.metadata.core-react]
-version = "1.2.0"
-tokens-sha256 = "c2ceec68d4bced5bbd94cc9362b9a034ec70174160b11170e2ab2a1223fe1e2a"
-snapshot-sha256 = "cbc7a29a642f81e2326bf30fbc32c66de1ec5ddc9c78ff5514de4e2ea12adbca"
+version = "1.3.0"
+tokens-sha256 = "71c54460dd9852ba2ec510c20feda2d8970d46e0696bea8286dbf5e29a4517f6"
+snapshot-sha256 = "0f5d6aaf60cae8f522b4682f77935aa4c58798f6200ee9ba6ed1e2899342d83a"
 lucide = "1.68.0"
 
 # The drift checker pin: `cargo xtask drift` runs `design-drift check` from this exact
@@ -22,7 +22,7 @@ lucide = "1.68.0"
 # pin, so the checker understands the snapshot's `schemaVersion`.
 [package.metadata.design-core-node]
 version = "0.1.2"
-design-core-js = "0.1.1"
+design-core-js = "0.1.2"
 
 [dependencies]
 gpui.workspace = true
