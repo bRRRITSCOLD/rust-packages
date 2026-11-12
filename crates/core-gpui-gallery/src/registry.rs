@@ -41,6 +41,7 @@ mod radio_group;
 mod select;
 mod separator;
 mod sheet;
+mod sidebar;
 mod skeleton;
 mod support;
 mod switch;
@@ -162,6 +163,7 @@ pub fn registry() -> Vec<Entry> {
     entries.extend(calendar::entries());
     entries.push(date_picker::entry());
     entries.extend(data_table::entries());
+    entries.extend(sidebar::entries());
     entries
 }
 

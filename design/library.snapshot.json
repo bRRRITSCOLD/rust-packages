@@ -135,6 +135,46 @@
 				"$type": "color",
 				"$value": "{color.neutral.50}"
 			},
+			"sidebar": {
+				"$type": "color",
+				"$value": "{color.neutral.900}",
+				"$description": "The sidebar's fill: Sidebar. `neutral.50` in light, set off from the white `background`; `neutral.900` in dark, equal to `card`."
+			},
+			"sidebar-accent": {
+				"$type": "color",
+				"$value": "{color.neutral.800}",
+				"$description": "A sidebar row's hover and active fill: SidebarMenuButton. Equal to `accent` in both modes."
+			},
+			"sidebar-accent-foreground": {
+				"$type": "color",
+				"$value": "{color.neutral.50}",
+				"$description": "Text on `sidebar-accent`: a hovered or active SidebarMenuButton. Equal to `accent-foreground` in both modes."
+			},
+			"sidebar-border": {
+				"$type": "color",
+				"$value": "{color.neutral.800}",
+				"$description": "Rules inside the sidebar: SidebarSeparator. Equal to `border` in both modes (shadcn's dark white at 10% is not used)."
+			},
+			"sidebar-foreground": {
+				"$type": "color",
+				"$value": "{color.neutral.50}",
+				"$description": "Text on `sidebar`: Sidebar and SidebarMenuButton. Equal to `foreground` in both modes."
+			},
+			"sidebar-primary": {
+				"$type": "color",
+				"$value": "{color.neutral.200}",
+				"$description": "A solid emphasis fill inside the sidebar. Equal to `primary` in both modes (shadcn's dark blue is not used)."
+			},
+			"sidebar-primary-foreground": {
+				"$type": "color",
+				"$value": "{color.neutral.900}",
+				"$description": "Text on `sidebar-primary`. Equal to `primary-foreground` in both modes."
+			},
+			"sidebar-ring": {
+				"$type": "color",
+				"$value": "{color.neutral.500}",
+				"$description": "The focus ring of a sidebar control: SidebarMenuButton. Equal to `ring` in both modes."
+			},
 			"success": {
 				"$type": "color",
 				"$value": "{color.green.400}",
@@ -297,6 +337,46 @@
 			"secondary-foreground": {
 				"$type": "color",
 				"$value": "{color.neutral.900}"
+			},
+			"sidebar": {
+				"$type": "color",
+				"$value": "{color.neutral.50}",
+				"$description": "The sidebar's fill: Sidebar. `neutral.50` in light, set off from the white `background`; `neutral.900` in dark, equal to `card`."
+			},
+			"sidebar-accent": {
+				"$type": "color",
+				"$value": "{color.neutral.100}",
+				"$description": "A sidebar row's hover and active fill: SidebarMenuButton. Equal to `accent` in both modes."
+			},
+			"sidebar-accent-foreground": {
+				"$type": "color",
+				"$value": "{color.neutral.900}",
+				"$description": "Text on `sidebar-accent`: a hovered or active SidebarMenuButton. Equal to `accent-foreground` in both modes."
+			},
+			"sidebar-border": {
+				"$type": "color",
+				"$value": "{color.neutral.200}",
+				"$description": "Rules inside the sidebar: SidebarSeparator. Equal to `border` in both modes (shadcn's dark white at 10% is not used)."
+			},
+			"sidebar-foreground": {
+				"$type": "color",
+				"$value": "{color.neutral.950}",
+				"$description": "Text on `sidebar`: Sidebar and SidebarMenuButton. Equal to `foreground` in both modes."
+			},
+			"sidebar-primary": {
+				"$type": "color",
+				"$value": "{color.neutral.900}",
+				"$description": "A solid emphasis fill inside the sidebar. Equal to `primary` in both modes (shadcn's dark blue is not used)."
+			},
+			"sidebar-primary-foreground": {
+				"$type": "color",
+				"$value": "{color.neutral.50}",
+				"$description": "Text on `sidebar-primary`. Equal to `primary-foreground` in both modes."
+			},
+			"sidebar-ring": {
+				"$type": "color",
+				"$value": "{color.neutral.400}",
+				"$description": "The focus ring of a sidebar control: SidebarMenuButton. Equal to `ring` in both modes."
 			},
 			"success": {
 				"$type": "color",
@@ -771,6 +851,10 @@
 				"36": {
 					"$type": "spacing",
 					"$value": "144px"
+				},
+				"64": {
+					"$type": "spacing",
+					"$value": "256px"
 				},
 				"72": {
 					"$type": "spacing",
@@ -21580,6 +21664,1172 @@
 						"font-weight": "font-weight.medium"
 					},
 					"unbound": []
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef33c7c4475b": {
+			"path": "icon",
+			"name": "Hash",
+			"variantProperties": {},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef33b6022831": {
+					"namePath": [
+						"icon / Hash",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef33b6022832": {
+					"namePath": [
+						"icon / Hash",
+						"Stroke 2"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef33b6024ac0": {
+					"namePath": [
+						"icon / Hash",
+						"Stroke 3"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef33b6028de3": {
+					"namePath": [
+						"icon / Hash",
+						"Stroke 4"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef33de03ace3": {
+			"path": "icon",
+			"name": "Inbox",
+			"variantProperties": {},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef33dde78597": {
+					"namePath": [
+						"icon / Inbox",
+						"Stroke 2"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef33dde7e4b3": {
+					"namePath": [
+						"icon / Inbox",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef33de2c08d4": {
+			"path": "icon",
+			"name": "ListTodo",
+			"variantProperties": {},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef33de0760f2": {
+					"namePath": [
+						"icon / ListTodo",
+						"Stroke 5"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef33de0798b9": {
+					"namePath": [
+						"icon / ListTodo",
+						"Stroke 4"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef33de0798ba": {
+					"namePath": [
+						"icon / ListTodo",
+						"Stroke 3"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef33de0798bb": {
+					"namePath": [
+						"icon / ListTodo",
+						"Stroke 2"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef33de07db90": {
+					"namePath": [
+						"icon / ListTodo",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef33de4d9a37": {
+			"path": "icon",
+			"name": "GitPullRequest",
+			"variantProperties": {},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef33de2fa94a": {
+					"namePath": [
+						"icon / GitPullRequest",
+						"Stroke 4"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef33de2fa94b": {
+					"namePath": [
+						"icon / GitPullRequest",
+						"Stroke 3"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef33de2fd42f": {
+					"namePath": [
+						"icon / GitPullRequest",
+						"Stroke 2"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef33de2fd430": {
+					"namePath": [
+						"icon / GitPullRequest",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef33de671ce4": {
+			"path": "icon",
+			"name": "PanelRight",
+			"variantProperties": {},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef33de513b87": {
+					"namePath": [
+						"icon / PanelRight",
+						"Stroke 2"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef33de5159ed": {
+					"namePath": [
+						"icon / PanelRight",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef33de80006d": {
+			"path": "icon",
+			"name": "StickyNote",
+			"variantProperties": {},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef33de6b04ea": {
+					"namePath": [
+						"icon / StickyNote",
+						"Stroke 2"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef33de6b04eb": {
+					"namePath": [
+						"icon / StickyNote",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef33de9c3c38": {
+			"path": "icon",
+			"name": "GitBranch",
+			"variantProperties": {},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef33de836544": {
+					"namePath": [
+						"icon / GitBranch",
+						"Stroke 3"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef33de836545": {
+					"namePath": [
+						"icon / GitBranch",
+						"Stroke 2"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef33de836546": {
+					"namePath": [
+						"icon / GitBranch",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef33deaf9089": {
+			"path": "icon",
+			"name": "Folder",
+			"variantProperties": {},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef33de9fb9b3": {
+					"namePath": [
+						"icon / Folder",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef33dec7d3d9": {
+			"path": "icon",
+			"name": "Crown",
+			"variantProperties": {},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef33deb2974a": {
+					"namePath": [
+						"icon / Crown",
+						"Stroke 2"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef33deb2d982": {
+					"namePath": [
+						"icon / Crown",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef33dee9a350": {
+			"path": "icon",
+			"name": "Maximize2",
+			"variantProperties": {},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef33decb60b5": {
+					"namePath": [
+						"icon / Maximize2",
+						"Stroke 4"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef33decb60b6": {
+					"namePath": [
+						"icon / Maximize2",
+						"Stroke 3"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef33decb60b7": {
+					"namePath": [
+						"icon / Maximize2",
+						"Stroke 2"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef33decb60b8": {
+					"namePath": [
+						"icon / Maximize2",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef33defd0948": {
+			"path": "icon",
+			"name": "Minus",
+			"variantProperties": {},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef33deed3feb": {
+					"namePath": [
+						"icon / Minus",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef33df1f4847": {
+			"path": "icon",
+			"name": "Scan",
+			"variantProperties": {},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef33df000812": {
+					"namePath": [
+						"icon / Scan",
+						"Stroke 4"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef33df000813": {
+					"namePath": [
+						"icon / Scan",
+						"Stroke 3"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef33df0053bb": {
+					"namePath": [
+						"icon / Scan",
+						"Stroke 2"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef33df0053bc": {
+					"namePath": [
+						"icon / Scan",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef33df31608b": {
+			"path": "icon",
+			"name": "MousePointer2",
+			"variantProperties": {},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef33df22c6be": {
+					"namePath": [
+						"icon / MousePointer2",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef4e01cdb7b7": {
+			"path": "Components/Sidebar",
+			"name": "GroupLabel",
+			"variantProperties": {},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef4e0162724d": {
+					"namePath": [
+						"Components / Sidebar / GroupLabel"
+					],
+					"appliedTokens": {
+						"p2": "space.2",
+						"p4": "space.2"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef4e019875ec": {
+					"namePath": [
+						"Components / Sidebar / GroupLabel",
+						"Text"
+					],
+					"appliedTokens": {
+						"fill": "muted-foreground",
+						"font-family": "font-family.sans",
+						"font-size": "font-size.xs",
+						"font-weight": "font-weight.medium"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef4e01f3d8c2": {
+			"path": "Components/Sidebar",
+			"name": "Separator",
+			"variantProperties": {},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef4e01d47f0d": {
+					"namePath": [
+						"Components / Sidebar / Separator"
+					],
+					"appliedTokens": {
+						"fill": "sidebar-border"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef4e0259ad10": {
+			"path": "Components/Sidebar",
+			"name": "MenuBadge",
+			"variantProperties": {},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef4e01fc2a62": {
+					"namePath": [
+						"Components / Sidebar / MenuBadge"
+					],
+					"appliedTokens": {
+						"p2": "space.1",
+						"p4": "space.1",
+						"column-gap": "space.1"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef4e02260d5d": {
+					"namePath": [
+						"Components / Sidebar / MenuBadge",
+						"Text"
+					],
+					"appliedTokens": {
+						"fill": "muted-foreground",
+						"font-family": "font-family.sans",
+						"font-size": "font-size.xs",
+						"font-weight": "font-weight.normal"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef4e02e0fd56": {
+			"path": "Components/Sidebar",
+			"name": "MenuButton",
+			"variantProperties": {
+				"isActive": "false"
+			},
+			"parts": {
+				"Icon": {
+					"componentId": "411cee6b-cc3d-8041-8008-eacbe3bb726f"
+				}
+			},
+			"wrappers": [],
+			"exceptionsRecord": {
+				"v": 1,
+				"slots": [
+					"Icon"
+				]
+			},
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef4e0260ed71": {
+					"namePath": [
+						"Components / Sidebar / MenuButton"
+					],
+					"appliedTokens": {
+						"r1": "radius-md",
+						"r2": "radius-md",
+						"r3": "radius-md",
+						"r4": "radius-md",
+						"p2": "space.2",
+						"p4": "space.2",
+						"column-gap": "space.2"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef4e02979d47": {
+					"namePath": [
+						"Components / Sidebar / MenuButton",
+						"Icon"
+					],
+					"appliedTokens": {},
+					"unbound": [
+						"fill",
+						"stroke-color"
+					]
+				},
+				"eb51704c-a48d-804c-8008-ef4e02979d48": {
+					"namePath": [
+						"Components / Sidebar / MenuButton",
+						"Icon",
+						"Role"
+					],
+					"appliedTokens": {},
+					"unbound": [
+						"fill"
+					]
+				},
+				"eb51704c-a48d-804c-8008-ef4e02ac851b": {
+					"namePath": [
+						"Components / Sidebar / MenuButton",
+						"Label"
+					],
+					"appliedTokens": {
+						"fill": "sidebar-foreground",
+						"font-family": "font-family.sans",
+						"font-size": "font-size.sm",
+						"font-weight": "font-weight.normal"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef4e0910393e": {
+			"path": "Components/Sidebar",
+			"name": "MenuButton",
+			"variantProperties": {
+				"isActive": "true"
+			},
+			"parts": {
+				"Icon": {
+					"componentId": "411cee6b-cc3d-8041-8008-eacbe3bb726f"
+				}
+			},
+			"wrappers": [],
+			"exceptionsRecord": {
+				"v": 1,
+				"slots": [
+					"Icon"
+				]
+			},
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef4e0910393f": {
+					"namePath": [
+						"Components / Sidebar / MenuButton"
+					],
+					"appliedTokens": {
+						"fill": "sidebar-accent",
+						"r1": "radius-md",
+						"r2": "radius-md",
+						"r3": "radius-md",
+						"r4": "radius-md",
+						"p2": "space.2",
+						"p4": "space.2",
+						"column-gap": "space.2"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef4e09103941": {
+					"namePath": [
+						"Components / Sidebar / MenuButton",
+						"Label"
+					],
+					"appliedTokens": {
+						"fill": "sidebar-accent-foreground",
+						"font-family": "font-family.sans",
+						"font-size": "font-size.sm",
+						"font-weight": "font-weight.medium"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef4e09103942": {
+					"namePath": [
+						"Components / Sidebar / MenuButton",
+						"Icon"
+					],
+					"appliedTokens": {},
+					"unbound": [
+						"fill",
+						"stroke-color"
+					]
+				},
+				"eb51704c-a48d-804c-8008-ef4e09103943": {
+					"namePath": [
+						"Components / Sidebar / MenuButton",
+						"Icon",
+						"Role"
+					],
+					"appliedTokens": {},
+					"unbound": [
+						"fill"
+					]
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef4e4593b95c": {
+			"path": "Components/Sidebar",
+			"name": "MenuItem",
+			"variantProperties": {},
+			"parts": {
+				"Components / Sidebar / MenuBadge": {
+					"componentId": "eb51704c-a48d-804c-8008-ef4e0259ad10"
+				},
+				"Components / Sidebar / MenuButton": {
+					"componentId": "eb51704c-a48d-804c-8008-ef4e02e0fd56"
+				}
+			},
+			"wrappers": [],
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef4e457195d5": {
+					"namePath": [
+						"Components / Sidebar / MenuItem",
+						"Components / Sidebar / MenuButton"
+					],
+					"appliedTokens": {
+						"r1": "radius-md",
+						"r2": "radius-md",
+						"r3": "radius-md",
+						"r4": "radius-md",
+						"p2": "space.2",
+						"p4": "space.2",
+						"column-gap": "space.2"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef4e457195d6": {
+					"namePath": [
+						"Components / Sidebar / MenuItem",
+						"Components / Sidebar / MenuButton",
+						"Label"
+					],
+					"appliedTokens": {
+						"fill": "sidebar-foreground",
+						"font-family": "font-family.sans",
+						"font-size": "font-size.sm",
+						"font-weight": "font-weight.normal"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef4e457195d7": {
+					"namePath": [
+						"Components / Sidebar / MenuItem",
+						"Components / Sidebar / MenuButton",
+						"Icon"
+					],
+					"appliedTokens": {},
+					"unbound": [
+						"fill",
+						"stroke-color"
+					]
+				},
+				"eb51704c-a48d-804c-8008-ef4e457195d8": {
+					"namePath": [
+						"Components / Sidebar / MenuItem",
+						"Components / Sidebar / MenuButton",
+						"Icon",
+						"Role"
+					],
+					"appliedTokens": {},
+					"unbound": [
+						"fill"
+					]
+				},
+				"eb51704c-a48d-804c-8008-ef4e457fc8c4": {
+					"namePath": [
+						"Components / Sidebar / MenuItem",
+						"Components / Sidebar / MenuBadge"
+					],
+					"appliedTokens": {
+						"p2": "space.1",
+						"p4": "space.1",
+						"column-gap": "space.1"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef4e457fc8c5": {
+					"namePath": [
+						"Components / Sidebar / MenuItem",
+						"Components / Sidebar / MenuBadge",
+						"Text"
+					],
+					"appliedTokens": {
+						"fill": "muted-foreground",
+						"font-family": "font-family.sans",
+						"font-size": "font-size.xs",
+						"font-weight": "font-weight.normal"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef4e45ef7a1c": {
+			"path": "Components/Sidebar",
+			"name": "Group",
+			"variantProperties": {},
+			"parts": {
+				"Body": {
+					"componentId": "411cee6b-cc3d-8041-8008-eacbe3bb726f"
+				},
+				"Components / Sidebar / GroupLabel": {
+					"componentId": "eb51704c-a48d-804c-8008-ef4e01cdb7b7"
+				}
+			},
+			"wrappers": [],
+			"exceptionsRecord": {
+				"v": 1,
+				"slots": [
+					"Body"
+				]
+			},
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef4e459a6664": {
+					"namePath": [
+						"Components / Sidebar / Group"
+					],
+					"appliedTokens": {
+						"p1": "space.2",
+						"p2": "space.2",
+						"p3": "space.2",
+						"p4": "space.2"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef4e45cc626d": {
+					"namePath": [
+						"Components / Sidebar / Group",
+						"Components / Sidebar / GroupLabel"
+					],
+					"appliedTokens": {
+						"p2": "space.2",
+						"p4": "space.2"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef4e45cc626e": {
+					"namePath": [
+						"Components / Sidebar / Group",
+						"Components / Sidebar / GroupLabel",
+						"Text"
+					],
+					"appliedTokens": {
+						"fill": "muted-foreground",
+						"font-family": "font-family.sans",
+						"font-size": "font-size.xs",
+						"font-weight": "font-weight.medium"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef4e45d987fe": {
+					"namePath": [
+						"Components / Sidebar / Group",
+						"Body"
+					],
+					"appliedTokens": {},
+					"unbound": [
+						"fill",
+						"stroke-color"
+					]
+				},
+				"eb51704c-a48d-804c-8008-ef4e45d987ff": {
+					"namePath": [
+						"Components / Sidebar / Group",
+						"Body",
+						"Role"
+					],
+					"appliedTokens": {},
+					"unbound": [
+						"fill"
+					]
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef4e463a8bb8": {
+			"path": "Components/Sidebar",
+			"name": "Header",
+			"variantProperties": {},
+			"parts": {
+				"Body": {
+					"componentId": "411cee6b-cc3d-8041-8008-eacbe3bb726f"
+				}
+			},
+			"wrappers": [],
+			"exceptionsRecord": {
+				"v": 1,
+				"slots": [
+					"Body"
+				]
+			},
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef4e45f62934": {
+					"namePath": [
+						"Components / Sidebar / Header"
+					],
+					"appliedTokens": {
+						"p1": "space.2",
+						"p2": "space.2",
+						"p3": "space.2",
+						"p4": "space.2",
+						"row-gap": "space.2"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef4e4623d79c": {
+					"namePath": [
+						"Components / Sidebar / Header",
+						"Body"
+					],
+					"appliedTokens": {},
+					"unbound": [
+						"fill",
+						"stroke-color"
+					]
+				},
+				"eb51704c-a48d-804c-8008-ef4e4623d79d": {
+					"namePath": [
+						"Components / Sidebar / Header",
+						"Body",
+						"Role"
+					],
+					"appliedTokens": {},
+					"unbound": [
+						"fill"
+					]
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef4e4683ed18": {
+			"path": "Components/Sidebar",
+			"name": "Content",
+			"variantProperties": {},
+			"parts": {
+				"Body": {
+					"componentId": "411cee6b-cc3d-8041-8008-eacbe3bb726f"
+				}
+			},
+			"wrappers": [],
+			"exceptionsRecord": {
+				"v": 1,
+				"slots": [
+					"Body"
+				]
+			},
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef4e464140d9": {
+					"namePath": [
+						"Components / Sidebar / Content"
+					],
+					"appliedTokens": {
+						"row-gap": "space.2"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef4e466db223": {
+					"namePath": [
+						"Components / Sidebar / Content",
+						"Body"
+					],
+					"appliedTokens": {},
+					"unbound": [
+						"fill",
+						"stroke-color"
+					]
+				},
+				"eb51704c-a48d-804c-8008-ef4e466db224": {
+					"namePath": [
+						"Components / Sidebar / Content",
+						"Body",
+						"Role"
+					],
+					"appliedTokens": {},
+					"unbound": [
+						"fill"
+					]
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef4e46cbef70": {
+			"path": "Components/Sidebar",
+			"name": "Footer",
+			"variantProperties": {},
+			"parts": {
+				"Body": {
+					"componentId": "411cee6b-cc3d-8041-8008-eacbe3bb726f"
+				}
+			},
+			"wrappers": [],
+			"exceptionsRecord": {
+				"v": 1,
+				"slots": [
+					"Body"
+				]
+			},
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef4e468a2fe9": {
+					"namePath": [
+						"Components / Sidebar / Footer"
+					],
+					"appliedTokens": {
+						"p1": "space.2",
+						"p2": "space.2",
+						"p3": "space.2",
+						"p4": "space.2",
+						"row-gap": "space.2"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef4e46b6b48b": {
+					"namePath": [
+						"Components / Sidebar / Footer",
+						"Body"
+					],
+					"appliedTokens": {},
+					"unbound": [
+						"fill",
+						"stroke-color"
+					]
+				},
+				"eb51704c-a48d-804c-8008-ef4e46b6b48c": {
+					"namePath": [
+						"Components / Sidebar / Footer",
+						"Body",
+						"Role"
+					],
+					"appliedTokens": {},
+					"unbound": [
+						"fill"
+					]
+				}
+			}
+		},
+		"eb51704c-a48d-804c-8008-ef4e500805c5": {
+			"path": "Components",
+			"name": "Sidebar",
+			"variantProperties": {},
+			"parts": {
+				"Components / Sidebar / Content": {
+					"componentId": "eb51704c-a48d-804c-8008-ef4e4683ed18"
+				},
+				"Components / Sidebar / Footer": {
+					"componentId": "eb51704c-a48d-804c-8008-ef4e46cbef70"
+				},
+				"Components / Sidebar / Header": {
+					"componentId": "eb51704c-a48d-804c-8008-ef4e463a8bb8"
+				}
+			},
+			"wrappers": [],
+			"layers": {
+				"eb51704c-a48d-804c-8008-ef4e4fae1c4a": {
+					"namePath": [
+						"Components / Sidebar"
+					],
+					"appliedTokens": {
+						"fill": "sidebar"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef4e4fe16924": {
+					"namePath": [
+						"Components / Sidebar",
+						"Components / Sidebar / Header"
+					],
+					"appliedTokens": {
+						"p1": "space.2",
+						"p2": "space.2",
+						"p3": "space.2",
+						"p4": "space.2",
+						"row-gap": "space.2"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef4e4fe16925": {
+					"namePath": [
+						"Components / Sidebar",
+						"Components / Sidebar / Header",
+						"Body"
+					],
+					"appliedTokens": {},
+					"unbound": [
+						"fill",
+						"stroke-color"
+					]
+				},
+				"eb51704c-a48d-804c-8008-ef4e4fe16926": {
+					"namePath": [
+						"Components / Sidebar",
+						"Components / Sidebar / Header",
+						"Body",
+						"Role"
+					],
+					"appliedTokens": {},
+					"unbound": [
+						"fill"
+					]
+				},
+				"eb51704c-a48d-804c-8008-ef4e4fee0295": {
+					"namePath": [
+						"Components / Sidebar",
+						"Components / Sidebar / Content"
+					],
+					"appliedTokens": {
+						"row-gap": "space.2"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef4e4fee0296": {
+					"namePath": [
+						"Components / Sidebar",
+						"Components / Sidebar / Content",
+						"Body"
+					],
+					"appliedTokens": {},
+					"unbound": [
+						"fill",
+						"stroke-color"
+					]
+				},
+				"eb51704c-a48d-804c-8008-ef4e4fee0297": {
+					"namePath": [
+						"Components / Sidebar",
+						"Components / Sidebar / Content",
+						"Body",
+						"Role"
+					],
+					"appliedTokens": {},
+					"unbound": [
+						"fill"
+					]
+				},
+				"eb51704c-a48d-804c-8008-ef4e4ffcf7a8": {
+					"namePath": [
+						"Components / Sidebar",
+						"Components / Sidebar / Footer"
+					],
+					"appliedTokens": {
+						"p1": "space.2",
+						"p2": "space.2",
+						"p3": "space.2",
+						"p4": "space.2",
+						"row-gap": "space.2"
+					},
+					"unbound": []
+				},
+				"eb51704c-a48d-804c-8008-ef4e4ffcf7a9": {
+					"namePath": [
+						"Components / Sidebar",
+						"Components / Sidebar / Footer",
+						"Body"
+					],
+					"appliedTokens": {},
+					"unbound": [
+						"fill",
+						"stroke-color"
+					]
+				},
+				"eb51704c-a48d-804c-8008-ef4e4ffcf7aa": {
+					"namePath": [
+						"Components / Sidebar",
+						"Components / Sidebar / Footer",
+						"Body",
+						"Role"
+					],
+					"appliedTokens": {},
+					"unbound": [
+						"fill"
+					]
 				}
 			}
 		}
