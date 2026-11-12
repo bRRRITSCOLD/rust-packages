@@ -94,6 +94,10 @@ pub use components::separator::{Separator, SeparatorOrientation};
 pub use components::sheet::{
     Sheet, SheetContent, SheetContentSide, SheetDescription, SheetFooter, SheetHeader, SheetTitle,
 };
+pub use components::sidebar::{
+    Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader,
+    SidebarMenu, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarSeparator,
+};
 pub use components::skeleton::Skeleton;
 pub use components::switch::{Switch, SwitchSize};
 pub use components::table::{

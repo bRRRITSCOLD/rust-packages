@@ -58,6 +58,7 @@ pub mod radio_group;
 pub mod select;
 pub mod separator;
 pub mod sheet;
+pub mod sidebar;
 pub mod skeleton;
 pub mod switch;
 pub mod table;
