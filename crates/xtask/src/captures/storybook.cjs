@@ -11,7 +11,8 @@
 //
 // An overlay part renders outside the story root (a portal) or inside a full-screen layout div,
 // so the shot crops to the component's own `data-slot` (core-react's kebab-case export name, or
-// the one `SLOTS` names) when it is portalled or the root fills the viewport. A part that isn't showing is opened from
+// the one `SLOTS` names) when it is portalled or the root fills the viewport, or always for a
+// part `INSIDE` lists. A part that isn't showing is opened from
 // its story's trigger first (hovered for a tooltip), and a submenu from its sub-trigger. Modal
 // backdrops are hidden: GPUI captures the surface alone.
 const fs = require('node:fs')
@@ -28,6 +29,18 @@ const SLOTS = {
 	// ComboboxInput renders its InputGroup.
 	ComboboxInput: 'input-group',
 }
+
+/** Parts shot on their own, cropped to their first `data-slot` inside a story of the whole component. */
+const INSIDE = new Set([
+	'SidebarHeader',
+	'SidebarContent',
+	'SidebarGroup',
+	'SidebarGroupLabel',
+	'SidebarMenuItem',
+	'SidebarMenuButton',
+	'SidebarSeparator',
+	'SidebarFooter',
+])
 
 /** core-react's `data-slot` for an export: `AlertDialogContent` → `alert-dialog-content`. */
 const slotOf = (component) => SLOTS[component] ?? component.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
@@ -84,6 +97,10 @@ async function target(page, component) {
 	const root = page.locator('#storybook-root > :not([data-base-ui-focus-guard])').first()
 	const slot = slotOf(component)
 	if ((await root.getAttribute('data-slot')) === slot) return root
+	if (INSIDE.has(component)) {
+		if (!(await waitForSlot(page, slot, 2000))) throw new Error(`${component}: no [data-slot="${slot}"] in its story`)
+		return page.locator(`[data-slot="${slot}"]`).filter({ visible: true }).first()
+	}
 	// Only an overlay's part is worth opening a trigger for; anything else is shot as before.
 	const opens =
 		slot.startsWith('toast') ||
