@@ -691,7 +691,7 @@ dependencies = [
 
 [[package]]
 name = "brrritscold-core-gpui"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "brrritscold-core-gpui-tokens",
  "chrono",
@@ -702,7 +702,7 @@ dependencies = [
 
 [[package]]
 name = "brrritscold-core-gpui-gallery"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "anyhow",
  "brrritscold-core-gpui",
@@ -718,7 +718,7 @@ dependencies = [
 
 [[package]]
 name = "brrritscold-core-gpui-tokens"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "gpui-pre",
 ]
@@ -7562,7 +7562,7 @@ checksum = "ec7a2a501ed189703dba8b08142f057e887dfc4b2cc4db2d343ac6376ba3e0b9"
 
 [[package]]
 name = "xtask"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "anyhow",
  "flate2",
