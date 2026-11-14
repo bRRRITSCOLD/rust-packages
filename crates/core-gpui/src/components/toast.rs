@@ -30,7 +30,7 @@ use brrritscold_core_gpui_tokens::primitive::{font_size, font_weight, shadow, si
 use gpui::{
     Anchor, App, ClickEvent, Context, ElementId, Empty, FocusHandle, InteractiveElement as _,
     IntoElement, ParentElement as _, Render, RenderOnce, SharedString, StyleRefinement, Styled,
-    Task, Window, div, prelude::FluentBuilder as _,
+    Task, Window, deferred, div, prelude::FluentBuilder as _,
 };
 use gpui_base::{
     RootPlugin, StyledExt as _, ToastManager, ToastMotion, ToastOptions, ToastStack,
@@ -425,6 +425,10 @@ impl ToastPlugin {
     }
 }
 
+/// The stack's paint priority: above dialogs, alert dialogs and sheets (gpui-base paints a
+/// dialog at `10 + layer`, a sheet at 1), below tooltips (200).
+const TOAST_PRIORITY: usize = 100;
+
 impl Render for ToastPlugin {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         if self.manager.is_empty() {
@@ -452,15 +456,19 @@ impl Render for ToastPlugin {
                 stack.item(ElementId::Integer(id), item)
             },
         );
-        // ToastViewport: pointer-events-none fixed right-4 bottom-4 w-full max-w-sm
-        div()
-            .absolute()
-            .right(space::S4)
-            .bottom(space::S4)
-            .w(size::SM)
-            .occlude()
-            .child(stack)
-            .into_any_element()
+        // ToastViewport: pointer-events-none fixed right-4 bottom-4 w-full max-w-sm. Sonner's
+        // toaster sits above every dialog, so the stack paints after them.
+        deferred(
+            div()
+                .absolute()
+                .right(space::S4)
+                .bottom(space::S4)
+                .w(size::SM)
+                .occlude()
+                .child(stack),
+        )
+        .with_priority(TOAST_PRIORITY)
+        .into_any_element()
     }
 }
 
@@ -470,24 +478,29 @@ impl RootPlugin for ToastPlugin {}
 mod tests {
     use std::cell::Cell;
 
-    use gpui::{AppContext as _, Modifiers, TestAppContext, VisualTestContext};
+    use gpui::{AnyElement, AppContext as _, Modifiers, TestAppContext, VisualTestContext};
     use strum::IntoEnumIterator as _;
 
     use super::*;
 
-    struct Blank;
+    struct Page(fn() -> AnyElement);
 
-    impl Render for Blank {
+    impl Render for Page {
         fn render(&mut self, _: &mut Window, _: &mut Context<Self>) -> impl IntoElement {
-            div()
+            div().size_full().child((self.0)())
         }
     }
 
     fn window(cx: &mut TestAppContext) -> &mut VisualTestContext {
+        window_with(cx, || div().into_any_element())
+    }
+
+    /// A window whose page is what `page` renders.
+    fn window_with(cx: &mut TestAppContext, page: fn() -> AnyElement) -> &mut VisualTestContext {
         cx.update(crate::init);
         let window = cx.add_window(|window, cx| {
-            let blank = cx.new(|_| Blank);
-            crate::Root::new(blank, window, cx)
+            let page = cx.new(|_| Page(page));
+            crate::Root::new(page, window, cx)
         });
         let cx = VisualTestContext::from_window(*window, cx).into_mut();
         draw(cx);
@@ -570,6 +583,23 @@ mod tests {
             wait(cx, motion().duration);
             let toast = cx.debug_bounds("toast").expect("shown");
             // The close button: the toast's last child, 16px in from its right edge.
+            let close = gpui::point(toast.right() - space::S4 - gpui::px(16.), toast.center().y);
+            cx.simulate_click(close, Modifiers::default());
+            wait(cx, motion().exit_duration + TICK);
+            assert!(!showing(cx));
+        }
+
+        #[gpui::test]
+        fn should_take_clicks_above_an_open_dialog(cx: &mut TestAppContext) {
+            let cx = window_with(cx, || {
+                crate::Dialog::new("dialog")
+                    .default_open(true)
+                    .content(crate::DialogContent::new())
+                    .into_any_element()
+            });
+            cx.update(|window, cx| window.push_toast(event_created().timeout(None), cx));
+            wait(cx, motion().duration);
+            let toast = cx.debug_bounds("toast").expect("shown");
             let close = gpui::point(toast.right() - space::S4 - gpui::px(16.), toast.center().y);
             cx.simulate_click(close, Modifiers::default());
             wait(cx, motion().exit_duration + TICK);
