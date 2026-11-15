@@ -59,7 +59,8 @@ pub enum ToastType {
     Warning,
     /// An `OctagonX` in `destructive`: what a failed action reports.
     Error,
-    /// A spinning `LoaderCircle`.
+    /// A spinning `LoaderCircle`, stepping at a capped frame rate. A loading toast is
+    /// short-lived and the stack renders it, not the app, so it has no switch to hold it still.
     Loading,
 }
 
@@ -163,7 +164,7 @@ impl RenderOnce for Toast {
                     icon.text_color(s.destructive)
                 });
             if kind.spins() {
-                icon.spin("toast-spin").into_any_element()
+                icon.spin().into_any_element()
             } else {
                 icon.into_any_element()
             }

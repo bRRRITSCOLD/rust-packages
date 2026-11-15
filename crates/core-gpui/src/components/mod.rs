@@ -88,6 +88,7 @@ pub(crate) mod test_support {
 
     use std::cell::Cell;
     use std::rc::Rc;
+    use std::time::Duration;
 
     use gpui::{
         AnyElement, AppContext as _, Bounds, Context, IntoElement, ParentElement as _, Pixels,
@@ -136,6 +137,37 @@ pub(crate) mod test_support {
         cx.update(|window, cx| window.draw(cx).clear(cx));
         let drawn = bounds.get().expect("the element was laid out");
         (cx, drawn)
+    }
+
+    /// Draws the element `make` builds as [`render`] does, then plays one second of a 60 Hz
+    /// display and returns how often its view rendered again: what an animation inside it
+    /// costs the window. A still element returns 0.
+    pub(crate) fn redraws_in_one_second<E: IntoElement>(
+        cx: &mut TestAppContext,
+        make: impl Fn() -> E + 'static,
+    ) -> usize {
+        let renders = Rc::new(Cell::new(0));
+        let (cx, _) = render(cx, {
+            let renders = renders.clone();
+            move || {
+                renders.set(renders.get() + 1);
+                make()
+            }
+        });
+        let drawn = renders.get();
+        for _ in 0..60 {
+            play_frame(cx);
+        }
+        renders.get() - drawn
+    }
+
+    /// Moves the clock on by one frame of a 60 Hz display, delivers the frame and lets the
+    /// window redraw whatever it woke.
+    pub(crate) fn play_frame(cx: &mut VisualTestContext) {
+        cx.executor()
+            .advance_clock(Duration::from_secs_f64(1. / 60.));
+        cx.update(|window, cx| window.simulate_next_frame(cx));
+        cx.run_until_parked();
     }
 
     /// Creates an entity that needs a window to start, such as an input's state, in a window

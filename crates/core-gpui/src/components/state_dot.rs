@@ -4,6 +4,8 @@
 //!
 //! The styles mirror core-react's cva table arm by arm; each arm names the Tailwind classes it
 //! stands for. `working`'s `LoaderCircle` spins (`animate-spin`); Penpot draws it at rest.
+//! A turning icon redraws its window, so it steps at a capped frame rate, not every frame,
+//! and [`StateDot::spin`] holds it still: an app stops it while its window is inactive.
 //!
 //! Not mirrored: `aria-hidden` on the icon and the caller's `role="img"` / `aria-label`, since
 //! GPUI elements carry no ARIA attributes.
@@ -96,9 +98,20 @@ impl StateDotState {
 /// let working = StateDot::new(StateDotState::Working);
 /// let failed = StateDot::new(StateDotState::ExitedError);
 /// ```
+///
+/// `working`'s icon turns until [`spin`](Self::spin) says otherwise; hold it still while the
+/// window is inactive, so an idle app doesn't keep redrawing:
+///
+/// ```no_run
+/// use brrritscold_core_gpui::{StateDot, StateDotState};
+/// # fn mark(window: &gpui::Window) -> StateDot {
+/// StateDot::new(StateDotState::Working).spin(window.is_window_active())
+/// # }
+/// ```
 #[derive(IntoElement)]
 pub struct StateDot {
     state: StateDotState,
+    spin: bool,
     style: StyleRefinement,
 }
 
@@ -107,8 +120,16 @@ impl StateDot {
     pub fn new(state: StateDotState) -> Self {
         Self {
             state,
+            spin: true,
             style: StyleRefinement::default(),
         }
+    }
+
+    /// Whether `working`'s `LoaderCircle` turns: `true` by default. `false` draws it at rest
+    /// and schedules no redraws. Other states never turn.
+    pub fn spin(mut self, spin: bool) -> Self {
+        self.spin = spin;
+        self
     }
 }
 
@@ -117,10 +138,9 @@ impl RenderOnce for StateDot {
         let mark = self.state.mark(cx.theme());
         let content = match mark.icon {
             // size-4
-            Some(name) if mark.spins => Icon::new(name)
-                .size(space::S4)
-                .spin("state-dot-spin")
-                .into_any_element(),
+            Some(name) if mark.spins && self.spin => {
+                Icon::new(name).size(space::S4).spin().into_any_element()
+            }
             Some(name) => Icon::new(name).size(space::S4).into_any_element(),
             // size-2 rounded-full bg-current
             None => div()
@@ -211,6 +231,34 @@ mod tests {
                 let spins = state.mark(&theme).spins;
                 assert_eq!(spins, state == StateDotState::Working, "{state}");
             }
+        }
+    }
+
+    mod spin {
+        use super::*;
+        use crate::components::test_support::redraws_in_one_second;
+
+        #[gpui::test]
+        fn should_turn_by_default(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            assert!(redraws_in_one_second(cx, || StateDot::new(StateDotState::Working)) > 0);
+        }
+
+        #[gpui::test]
+        fn should_hold_still_without_redrawing_when_off(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            assert_eq!(
+                redraws_in_one_second(cx, || StateDot::new(StateDotState::Working).spin(false)),
+                0
+            );
+        }
+
+        #[gpui::test]
+        fn should_keep_its_size_when_off(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            let (_, turning) = render(cx, || StateDot::new(StateDotState::Working));
+            let (_, still) = render(cx, || StateDot::new(StateDotState::Working).spin(false));
+            assert_eq!(still.size, turning.size);
         }
     }
 

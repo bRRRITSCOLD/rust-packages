@@ -3,6 +3,8 @@
 //!
 //! The styles mirror core-react's cva table arm by arm; each arm names the Tailwind classes it
 //! stands for. `pending`'s `LoaderCircle` spins (`animate-spin`); Penpot draws it at rest.
+//! A turning icon redraws its window, so it steps at a capped frame rate, not every frame,
+//! and [`Checks::spin`] holds it still: an app stops it while its window is inactive.
 //! The label inherits the root surface's line height (1.5, an 18px row), as core-react's does;
 //! Penpot's `Label` keeps its 1.2.
 //!
@@ -76,10 +78,21 @@ impl ChecksState {
 /// let passing = Checks::new(ChecksState::Success).label("passing");
 /// let icon_only = Checks::new(ChecksState::Pending);
 /// ```
+///
+/// `pending`'s icon turns until [`spin`](Self::spin) says otherwise; hold it still while the
+/// window is inactive, so an idle app doesn't keep redrawing:
+///
+/// ```no_run
+/// use brrritscold_core_gpui::{Checks, ChecksState};
+/// # fn checks(window: &gpui::Window) -> Checks {
+/// Checks::new(ChecksState::Pending).spin(window.is_window_active())
+/// # }
+/// ```
 #[derive(IntoElement)]
 pub struct Checks {
     state: ChecksState,
     label: Option<SharedString>,
+    spin: bool,
     style: StyleRefinement,
 }
 
@@ -89,6 +102,7 @@ impl Checks {
         Self {
             state,
             label: None,
+            spin: true,
             style: StyleRefinement::default(),
         }
     }
@@ -98,6 +112,13 @@ impl Checks {
         self.label = Some(label.into());
         self
     }
+
+    /// Whether `pending`'s `LoaderCircle` turns: `true` by default. `false` draws it at rest
+    /// and schedules no redraws. Other states never turn.
+    pub fn spin(mut self, spin: bool) -> Self {
+        self.spin = spin;
+        self
+    }
 }
 
 impl RenderOnce for Checks {
@@ -105,8 +126,8 @@ impl RenderOnce for Checks {
         let v = self.state.style(cx.theme());
         // size-3.5
         let icon = Icon::new(v.icon).size(space::S3_5);
-        let icon = if v.spins {
-            icon.spin("checks-spin").into_any_element()
+        let icon = if v.spins && self.spin {
+            icon.spin().into_any_element()
         } else {
             icon.into_any_element()
         };
@@ -169,6 +190,34 @@ mod tests {
                 let spins = state.style(&theme).spins;
                 assert_eq!(spins, state == ChecksState::Pending, "{state}");
             }
+        }
+    }
+
+    mod spin {
+        use super::*;
+        use crate::components::test_support::redraws_in_one_second;
+
+        #[gpui::test]
+        fn should_turn_by_default(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            assert!(redraws_in_one_second(cx, || Checks::new(ChecksState::Pending)) > 0);
+        }
+
+        #[gpui::test]
+        fn should_hold_still_without_redrawing_when_off(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            assert_eq!(
+                redraws_in_one_second(cx, || Checks::new(ChecksState::Pending).spin(false)),
+                0
+            );
+        }
+
+        #[gpui::test]
+        fn should_keep_its_size_when_off(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            let (_, turning) = render(cx, || Checks::new(ChecksState::Pending));
+            let (_, still) = render(cx, || Checks::new(ChecksState::Pending).spin(false));
+            assert_eq!(still.size, turning.size);
         }
     }
 
