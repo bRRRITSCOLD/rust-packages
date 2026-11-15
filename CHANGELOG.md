@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.5](https://github.com/bRRRITSCOLD/rust-packages/compare/v0.1.4...v0.1.5) - 2026-11-15
+
+**GPUI pin:** gpui-kit 0.9.1 (`gpui-base = "=0.9.1"`, `gpui = { package = "gpui-pre", version = "=0.3.12" }` and its `gpui-pre-*` siblings at `=0.3.12`). Apps copy these lines next to the `v0.1.5` tag.
+
+**core-react pin:** 1.4.0 (tokens, library snapshot, Lucide 1.68.0, drift checker design-core-node/js 0.1.2).
+
+### Fixed
+
+- *(gpui)* step spinning icons on a shared 15 fps tick; spin(bool) on StateDot and Checks ([#53](https://github.com/bRRRITSCOLD/rust-packages/pull/53))
+
 ## [0.1.4](https://github.com/bRRRITSCOLD/rust-packages/compare/v0.1.3...v0.1.4) - 2026-11-15
 
 **GPUI pin:** gpui-kit 0.9.1 (`gpui-base = "=0.9.1"`, `gpui = { package = "gpui-pre", version = "=0.3.12" }` and its `gpui-pre-*` siblings at `=0.3.12`). Apps copy these lines next to the `v0.1.4` tag.
