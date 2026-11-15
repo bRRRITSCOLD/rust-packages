@@ -54,6 +54,7 @@ pub use components::card::{
     Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle,
 };
 pub use components::checkbox::Checkbox;
+pub use components::checks::{Checks, ChecksState};
 pub use components::combobox::{
     Combobox, ComboboxChip, ComboboxChips, ComboboxContent, ComboboxEmpty, ComboboxGroup,
     ComboboxInput, ComboboxItem, ComboboxLabel, ComboboxSeparator,
@@ -99,6 +100,7 @@ pub use components::sidebar::{
     SidebarMenu, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarSeparator,
 };
 pub use components::skeleton::Skeleton;
+pub use components::state_dot::{StateDot, StateDotState};
 pub use components::switch::{Switch, SwitchSize};
 pub use components::table::{
     Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow,

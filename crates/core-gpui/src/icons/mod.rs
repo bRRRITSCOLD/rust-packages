@@ -9,15 +9,20 @@ mod generated;
 
 pub use generated::IconName;
 
+use std::f32::consts::TAU;
+use std::time::Duration;
+
 use gpui::{
-    App, Bounds, Element, ElementId, GlobalElementId, InspectorElementId, IntoElement, LayoutId,
-    Pixels, Refineable as _, StyleRefinement, Styled, Svg, Window, rems, svg,
+    Animation, AnimationElement, AnimationExt as _, App, Bounds, Element, ElementId,
+    GlobalElementId, InspectorElementId, IntoElement, LayoutId, Pixels, Radians, Refineable as _,
+    StyleRefinement, Styled, Svg, Transformation, Window, radians, rems, svg,
 };
 
 /// One Lucide icon. `1rem` square by default, in the inherited text colour; style it like
 /// any element (`.size_4()`, `.text_color(..)`).
 pub struct Icon {
     name: IconName,
+    rotation: Option<Radians>,
     style: StyleRefinement,
 }
 
@@ -26,9 +31,31 @@ impl Icon {
     pub fn new(name: IconName) -> Self {
         Self {
             name,
+            rotation: None,
             style: StyleRefinement::default(),
         }
     }
+
+    /// Turns the drawn icon about its centre; layout is unchanged.
+    fn rotate(mut self, angle: Radians) -> Self {
+        self.rotation = Some(angle);
+        self
+    }
+
+    /// Tailwind's `animate-spin`: one clockwise turn a second, linear, forever. `id` keys the
+    /// animation's start time. GPUI draws the icon at rest when the app reduces motion.
+    pub(crate) fn spin(self, id: impl Into<ElementId>) -> AnimationElement<Self> {
+        self.with_animation(
+            id,
+            Animation::new(Duration::from_secs(1)).repeat(),
+            |icon, delta| icon.rotate(spin_angle(delta)),
+        )
+    }
+}
+
+/// `@keyframes spin { to { transform: rotate(360deg) } }`: `delta` runs 0 → 1 each second.
+fn spin_angle(delta: f32) -> Radians {
+    radians(delta * TAU)
 }
 
 impl From<IconName> for Icon {
@@ -48,6 +75,9 @@ impl IntoElement for Icon {
 
     fn into_element(self) -> IconElement {
         let mut svg = svg().data(self.name.svg()).size(rems(1.)).flex_none();
+        if let Some(angle) = self.rotation {
+            svg = svg.with_transformation(Transformation::rotate(angle));
+        }
         svg.style().refine(&self.style);
         IconElement {
             svg,
@@ -150,6 +180,19 @@ mod tests {
                 let svg = std::str::from_utf8(name.svg()).unwrap();
                 assert!(svg.contains("<svg"), "{} isn't an SVG", name.file_name());
             }
+        }
+    }
+
+    mod spin {
+        use std::f32::consts::PI;
+
+        use super::*;
+
+        #[test]
+        fn should_turn_once_clockwise_each_cycle() {
+            assert_eq!(spin_angle(0.), radians(0.));
+            assert_eq!(spin_angle(0.25), radians(PI / 2.));
+            assert_eq!(spin_angle(1.), radians(TAU));
         }
     }
 }
