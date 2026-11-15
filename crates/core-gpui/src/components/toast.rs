@@ -21,7 +21,7 @@
 //! # }
 //! ```
 //!
-//! Not mirrored: the enter and exit slides, swipe-to-dismiss, and the loading icon's spin.
+//! Not mirrored: the enter and exit slides and swipe-to-dismiss.
 
 use std::rc::Rc;
 use std::time::Duration;
@@ -59,7 +59,7 @@ pub enum ToastType {
     Warning,
     /// An `OctagonX` in `destructive`: what a failed action reports.
     Error,
-    /// A `LoaderCircle`.
+    /// A spinning `LoaderCircle`.
     Loading,
 }
 
@@ -72,6 +72,11 @@ impl ToastType {
             ToastType::Error => IconName::OctagonX,
             ToastType::Loading => IconName::LoaderCircle,
         }
+    }
+
+    /// `animate-spin` on the loading icon.
+    fn spins(self) -> bool {
+        self == ToastType::Loading
     }
 }
 
@@ -149,13 +154,19 @@ impl RenderOnce for Toast {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let s = cx.theme().semantic();
         let icon = self.toast_type.map(|kind| {
-            // [&_svg:not([class*='size-'])]:size-4; the error icon is text-destructive
-            Icon::new(kind.icon())
+            // [&_svg:not([class*='size-'])]:size-4; the error icon is text-destructive, the
+            // loading icon animate-spin
+            let icon = Icon::new(kind.icon())
                 .size(space::S4)
                 .flex_none()
                 .when(kind == ToastType::Error, |icon| {
                     icon.text_color(s.destructive)
-                })
+                });
+            if kind.spins() {
+                icon.spin("toast-spin").into_any_element()
+            } else {
+                icon.into_any_element()
+            }
         });
         // Toast: w-full rounded-xl border bg-popover text-popover-foreground shadow-lg
         // ToastContent: flex h-full items-center gap-3 overflow-hidden p-4
@@ -535,6 +546,13 @@ mod tests {
         fn should_name_its_kinds_as_core_react_does() {
             let kinds: Vec<&str> = ToastType::iter().map(Into::into).collect();
             assert_eq!(kinds, ["success", "info", "warning", "error", "loading"]);
+        }
+
+        #[test]
+        fn should_spin_only_the_loading_icon() {
+            for kind in ToastType::iter() {
+                assert_eq!(kind.spins(), kind == ToastType::Loading, "{kind}");
+            }
         }
     }
 

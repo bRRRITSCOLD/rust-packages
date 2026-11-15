@@ -41,6 +41,9 @@ pub fn capture(out: &Path) -> anyhow::Result<()> {
             gpui_platform::current_headless_renderer,
         );
         cx.update(|cx| {
+            // A settled frame: every animation (a spinning LoaderCircle, Skeleton's pulse) at
+            // rest, as the compare's Storybook shots stop CSS animations and Penpot has none.
+            cx.set_reduce_motion(true);
             brrritscold_core_gpui::init(cx);
             Theme::set_preference(mode.pick(ThemePreference::Light, ThemePreference::Dark), cx);
         });

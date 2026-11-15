@@ -25,6 +25,7 @@ mod button;
 mod calendar;
 mod card;
 mod checkbox;
+mod checks;
 mod combobox;
 mod data_table;
 mod date_picker;
@@ -43,6 +44,7 @@ mod separator;
 mod sheet;
 mod sidebar;
 mod skeleton;
+mod state_dot;
 mod support;
 mod switch;
 mod table;
@@ -132,6 +134,8 @@ pub fn registry() -> Vec<Entry> {
         label::entry(),
         separator::entry(),
         skeleton::entry(),
+        state_dot::entry(),
+        checks::entry(),
     ];
     entries.extend(card::entries());
     entries.extend(alert::entries());
