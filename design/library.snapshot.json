@@ -906,6 +906,84 @@
 		}
 	],
 	"components": {
+		"2541531f-7822-802e-8008-f32048e2f75e": {
+			"path": "icon",
+			"name": "BellOff",
+			"variantProperties": {},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"2541531f-7822-802e-8008-f320347ddab2": {
+					"namePath": [
+						"icon / BellOff",
+						"Stroke 4"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"2541531f-7822-802e-8008-f320347e3470": {
+					"namePath": [
+						"icon / BellOff",
+						"Stroke 3"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"2541531f-7822-802e-8008-f320347e3471": {
+					"namePath": [
+						"icon / BellOff",
+						"Stroke 2"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"2541531f-7822-802e-8008-f320347e78d4": {
+					"namePath": [
+						"icon / BellOff",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"2541531f-7822-802e-8008-f32057266322": {
+			"path": "icon",
+			"name": "MessageSquareDot",
+			"variantProperties": {},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"2541531f-7822-802e-8008-f32052bab4ea": {
+					"namePath": [
+						"icon / MessageSquareDot",
+						"Stroke 2"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"2541531f-7822-802e-8008-f32052bab4eb": {
+					"namePath": [
+						"icon / MessageSquareDot",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				}
+			}
+		},
 		"2d55422c-4cf4-80e5-8008-eb6353e4f2fc": {
 			"path": "Components/Toast",
 			"name": "Title",
@@ -21535,6 +21613,399 @@
 						"fill": "muted-foreground",
 						"font-family": "font-family.sans",
 						"font-size": "font-size.sm",
+						"font-weight": "font-weight.normal"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"430a1ca5-6deb-8016-8008-f32a824292d0": {
+			"path": "Components",
+			"name": "StateDot",
+			"variantProperties": {
+				"state": "working"
+			},
+			"parts": {
+				"Icon": {
+					"componentId": "34194205-34cb-806a-8008-ea142f6dfb3c"
+				}
+			},
+			"wrappers": [],
+			"layers": {
+				"430a1ca5-6deb-8016-8008-f32a604c14b6": {
+					"namePath": [
+						"Components / StateDot",
+						"Icon",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "info"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"430a1ca5-6deb-8016-8008-f32a828befbf": {
+			"path": "Components",
+			"name": "StateDot",
+			"variantProperties": {
+				"state": "done"
+			},
+			"parts": {
+				"Icon": {
+					"componentId": "34194205-34cb-806a-8008-ea142f4df7b5"
+				}
+			},
+			"wrappers": [],
+			"layers": {
+				"430a1ca5-6deb-8016-8008-f32a6dd67be2": {
+					"namePath": [
+						"Components / StateDot",
+						"Icon",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "success"
+					},
+					"unbound": []
+				},
+				"430a1ca5-6deb-8016-8008-f32a6dd67be3": {
+					"namePath": [
+						"Components / StateDot",
+						"Icon",
+						"Stroke 2"
+					],
+					"appliedTokens": {
+						"stroke-color": "success"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"430a1ca5-6deb-8016-8008-f32a82d37a65": {
+			"path": "Components",
+			"name": "StateDot",
+			"variantProperties": {
+				"state": "unknown"
+			},
+			"parts": {
+				"Icon": {
+					"componentId": "34194205-34cb-806a-8008-ea142ede2bbf"
+				}
+			},
+			"wrappers": [],
+			"layers": {
+				"430a1ca5-6deb-8016-8008-f32a73cb2f27": {
+					"namePath": [
+						"Components / StateDot",
+						"Icon",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "muted-foreground"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"430a1ca5-6deb-8016-8008-f32a831a0b84": {
+			"path": "Components",
+			"name": "StateDot",
+			"variantProperties": {
+				"state": "exited"
+			},
+			"parts": {
+				"Icon": {
+					"componentId": "34194205-34cb-806a-8008-ea142ef3e605"
+				}
+			},
+			"wrappers": [],
+			"layers": {
+				"430a1ca5-6deb-8016-8008-f32a7483a88d": {
+					"namePath": [
+						"Components / StateDot",
+						"Icon",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "muted-foreground"
+					},
+					"unbound": []
+				},
+				"430a1ca5-6deb-8016-8008-f32a7483a88e": {
+					"namePath": [
+						"Components / StateDot",
+						"Icon",
+						"Stroke 2"
+					],
+					"appliedTokens": {
+						"stroke-color": "muted-foreground"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"430a1ca5-6deb-8016-8008-f32a83610292": {
+			"path": "Components",
+			"name": "StateDot",
+			"variantProperties": {
+				"state": "exited-error"
+			},
+			"parts": {
+				"Icon": {
+					"componentId": "34194205-34cb-806a-8008-ea142f66eaf0"
+				}
+			},
+			"wrappers": [],
+			"layers": {
+				"430a1ca5-6deb-8016-8008-f32a7545f337": {
+					"namePath": [
+						"Components / StateDot",
+						"Icon",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "destructive"
+					},
+					"unbound": []
+				},
+				"430a1ca5-6deb-8016-8008-f32a7545f338": {
+					"namePath": [
+						"Components / StateDot",
+						"Icon",
+						"Stroke 2"
+					],
+					"appliedTokens": {
+						"stroke-color": "destructive"
+					},
+					"unbound": []
+				},
+				"430a1ca5-6deb-8016-8008-f32a7545f339": {
+					"namePath": [
+						"Components / StateDot",
+						"Icon",
+						"Stroke 3"
+					],
+					"appliedTokens": {
+						"stroke-color": "destructive"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"430a1ca5-6deb-8016-8008-f32a83a8596f": {
+			"path": "Components",
+			"name": "StateDot",
+			"variantProperties": {
+				"state": "blocked"
+			},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"430a1ca5-6deb-8016-8008-f32a7a7f053b": {
+					"namePath": [
+						"Components / StateDot",
+						"Dot"
+					],
+					"appliedTokens": {
+						"fill": "destructive"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"430a1ca5-6deb-8016-8008-f32a83f08e1f": {
+			"path": "Components",
+			"name": "StateDot",
+			"variantProperties": {
+				"state": "idle"
+			},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"430a1ca5-6deb-8016-8008-f32a7aebccfa": {
+					"namePath": [
+						"Components / StateDot",
+						"Dot"
+					],
+					"appliedTokens": {
+						"fill": "muted-foreground"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"430a1ca5-6deb-8016-8008-f32ac364c0bf": {
+			"path": "Components",
+			"name": "Checks",
+			"variantProperties": {
+				"state": "success"
+			},
+			"parts": {
+				"Icon": {
+					"componentId": "34194205-34cb-806a-8008-ea142f4df7b5"
+				}
+			},
+			"wrappers": [],
+			"layers": {
+				"430a1ca5-6deb-8016-8008-f32a9659ea0f": {
+					"namePath": [
+						"Components / Checks"
+					],
+					"appliedTokens": {
+						"column-gap": "space.1"
+					},
+					"unbound": []
+				},
+				"430a1ca5-6deb-8016-8008-f32a967cfa8e": {
+					"namePath": [
+						"Components / Checks",
+						"Icon",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "success"
+					},
+					"unbound": []
+				},
+				"430a1ca5-6deb-8016-8008-f32a967cfa8f": {
+					"namePath": [
+						"Components / Checks",
+						"Icon",
+						"Stroke 2"
+					],
+					"appliedTokens": {
+						"stroke-color": "success"
+					},
+					"unbound": []
+				},
+				"430a1ca5-6deb-8016-8008-f32a96962186": {
+					"namePath": [
+						"Components / Checks",
+						"Label"
+					],
+					"appliedTokens": {
+						"fill": "success",
+						"font-family": "font-family.sans",
+						"font-size": "font-size.xs",
+						"font-weight": "font-weight.normal"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"430a1ca5-6deb-8016-8008-f32ac3ad2aa7": {
+			"path": "Components",
+			"name": "Checks",
+			"variantProperties": {
+				"state": "pending"
+			},
+			"parts": {
+				"Icon": {
+					"componentId": "34194205-34cb-806a-8008-ea142f6dfb3c"
+				}
+			},
+			"wrappers": [],
+			"layers": {
+				"430a1ca5-6deb-8016-8008-f32aad39330b": {
+					"namePath": [
+						"Components / Checks"
+					],
+					"appliedTokens": {
+						"column-gap": "space.1"
+					},
+					"unbound": []
+				},
+				"430a1ca5-6deb-8016-8008-f32aad5e9e9e": {
+					"namePath": [
+						"Components / Checks",
+						"Icon",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "info"
+					},
+					"unbound": []
+				},
+				"430a1ca5-6deb-8016-8008-f32aad755ce3": {
+					"namePath": [
+						"Components / Checks",
+						"Label"
+					],
+					"appliedTokens": {
+						"fill": "info",
+						"font-family": "font-family.sans",
+						"font-size": "font-size.xs",
+						"font-weight": "font-weight.normal"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"430a1ca5-6deb-8016-8008-f32ac3f4c1ab": {
+			"path": "Components",
+			"name": "Checks",
+			"variantProperties": {
+				"state": "failure"
+			},
+			"parts": {
+				"Icon": {
+					"componentId": "34194205-34cb-806a-8008-ea142f66eaf0"
+				}
+			},
+			"wrappers": [],
+			"layers": {
+				"430a1ca5-6deb-8016-8008-f32aaf44ddf0": {
+					"namePath": [
+						"Components / Checks"
+					],
+					"appliedTokens": {
+						"column-gap": "space.1"
+					},
+					"unbound": []
+				},
+				"430a1ca5-6deb-8016-8008-f32aaf685f2b": {
+					"namePath": [
+						"Components / Checks",
+						"Icon",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "destructive"
+					},
+					"unbound": []
+				},
+				"430a1ca5-6deb-8016-8008-f32aaf685f2c": {
+					"namePath": [
+						"Components / Checks",
+						"Icon",
+						"Stroke 2"
+					],
+					"appliedTokens": {
+						"stroke-color": "destructive"
+					},
+					"unbound": []
+				},
+				"430a1ca5-6deb-8016-8008-f32aaf685f2d": {
+					"namePath": [
+						"Components / Checks",
+						"Icon",
+						"Stroke 3"
+					],
+					"appliedTokens": {
+						"stroke-color": "destructive"
+					},
+					"unbound": []
+				},
+				"430a1ca5-6deb-8016-8008-f32aaf873208": {
+					"namePath": [
+						"Components / Checks",
+						"Label"
+					],
+					"appliedTokens": {
+						"fill": "destructive",
+						"font-family": "font-family.sans",
+						"font-size": "font-size.xs",
 						"font-weight": "font-weight.normal"
 					},
 					"unbound": []
