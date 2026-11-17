@@ -415,17 +415,16 @@ struct TriggerStyle {
 impl SelectTrigger {
     fn colors(&self, theme: &Theme) -> TriggerStyle {
         let s = theme.semantic();
-        let m = theme.mode();
         // border-input, the focus-visible and aria-invalid arms: Input's outline.
         let outline = Outline::new(theme, self.aria_invalid);
         let (mut border, ring) = match outline.focus.filter(|_| self.focus_visible) {
             Some((border, ring)) => (border, Some(ring)),
             None => (outline.border, outline.ring),
         };
-        // bg-input-background dark:hover:bg-input/50, made opaque: it sits on shadow-xs and
-        // the ring
+        // bg-input-background hover:bg-input-hover, made opaque: it sits on shadow-xs and the
+        // ring. In light, input-hover is input-background, so the hover repaints the rest fill.
         let mut fill = on_background(theme, s.input_background);
-        let hover_fill = m.pick(None, Some(on_background(theme, s.input.opacity(0.5))));
+        let hover_fill = Some(on_background(theme, s.input_hover));
         let mut shadows = shadows(ring, true);
         if self.disabled {
             // disabled:opacity-50, layer by layer
@@ -926,6 +925,21 @@ mod tests {
             let destructive = theme.semantic().destructive;
             assert_eq!(colors.border, destructive);
             assert_eq!(colors.shadows[0].color, destructive.opacity(0.2));
+        }
+
+        #[gpui::test]
+        fn should_hover_with_input_hover_in_both_modes(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            for mode in [crate::Mode::Light, crate::Mode::Dark] {
+                let s = mode.semantic();
+                let theme = crate::components::test_support::theme(cx, mode);
+                let colors = SelectTrigger::new().colors(&theme);
+                assert_eq!(
+                    colors.hover_fill,
+                    Some(s.background.blend(s.input_hover)),
+                    "{mode:?}"
+                );
+            }
         }
     }
 

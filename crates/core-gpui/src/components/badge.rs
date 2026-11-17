@@ -119,10 +119,9 @@ struct VariantStyle {
 }
 
 impl BadgeVariant {
-    /// core-react's `variant` arms. Dark-only arms go through [`crate::Mode::pick`].
+    /// core-react's `variant` arms.
     fn style(self, theme: &Theme) -> VariantStyle {
         let s = theme.semantic();
-        let m = theme.mode();
         let base = VariantStyle {
             fill: None,
             text: s.foreground,
@@ -173,9 +172,9 @@ impl BadgeVariant {
                 border: Some(s.border),
                 ..base
             },
-            // hover:bg-muted hover:text-muted-foreground
+            // hover:bg-muted-hover hover:text-muted-foreground
             BadgeVariant::Ghost => VariantStyle {
-                hover_fill: Some(m.pick(s.muted, s.muted.opacity(0.5))), // dark:hover:bg-muted/50
+                hover_fill: Some(s.muted_hover),
                 hover_text: Some(s.muted_foreground),
                 ..base
             },
@@ -306,6 +305,19 @@ mod tests {
                     assert_eq!(style.fill, Some(fill), "{variant} {mode:?}");
                     assert_eq!(style.text, text, "{variant} {mode:?}");
                 }
+            }
+        }
+
+        #[gpui::test]
+        fn should_hover_ghost_with_muted_hover_in_both_modes(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            for mode in [Mode::Light, Mode::Dark] {
+                let style = BadgeVariant::Ghost.style(&theme(cx, mode));
+                assert_eq!(
+                    style.hover_fill,
+                    Some(mode.semantic().muted_hover),
+                    "{mode:?}"
+                );
             }
         }
 

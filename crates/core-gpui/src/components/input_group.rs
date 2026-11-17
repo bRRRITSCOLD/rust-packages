@@ -205,8 +205,8 @@ impl RenderOnce for InputGroupButton {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = cx.theme();
         let s = theme.semantic();
-        // ghost: hover:bg-muted hover:text-foreground dark:hover:bg-muted/50
-        let hover_fill = theme.mode().pick(s.muted, s.muted.opacity(0.5));
+        // ghost: hover:bg-muted-hover hover:text-foreground
+        let hover_fill = s.muted_hover;
         let foreground = s.foreground;
         // size-6 rounded-sm p-0, disabled:opacity-50
         gpui_base::Button::new(self.id)

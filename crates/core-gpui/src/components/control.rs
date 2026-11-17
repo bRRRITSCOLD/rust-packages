@@ -28,13 +28,12 @@ impl Outline {
     /// The outline of a control that is, or isn't, `aria-invalid`.
     pub(crate) fn new(theme: &Theme, invalid: bool) -> Self {
         let s = theme.semantic();
-        let m = theme.mode();
         if invalid {
             Self {
-                // aria-invalid:border-destructive dark:aria-invalid:border-destructive/50
-                border: on_background(theme, m.pick(s.destructive, s.destructive.opacity(0.5))),
-                // aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40
-                ring: Some(s.destructive.opacity(m.pick(0.2, 0.4))),
+                // aria-invalid:border-destructive-border
+                border: on_background(theme, s.destructive_border),
+                // aria-invalid:ring-destructive-ring
+                ring: Some(s.destructive_ring),
                 focus: None,
             }
         } else {
@@ -128,6 +127,23 @@ mod tests {
                     .blend(destructive(Mode::Dark).opacity(0.5))
             );
             assert_eq!(dark.ring, Some(destructive(Mode::Dark).opacity(0.4)));
+        }
+
+        #[gpui::test]
+        fn should_read_the_destructive_border_and_ring_tokens_when_invalid(
+            cx: &mut TestAppContext,
+        ) {
+            cx.update(crate::init);
+            for mode in [Mode::Light, Mode::Dark] {
+                let s = mode.semantic();
+                let outline = Outline::new(&theme(cx, mode), true);
+                assert_eq!(
+                    outline.border,
+                    s.background.blend(s.destructive_border),
+                    "{mode:?}"
+                );
+                assert_eq!(outline.ring, Some(s.destructive_ring), "{mode:?}");
+            }
         }
     }
 }
