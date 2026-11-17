@@ -199,6 +199,9 @@ impl RenderOnce for FieldContent {
         div()
             .flex()
             .flex_1()
+            // Not a class: a GPUI text's min-content width is its whole line, where CSS's is
+            // its longest word, so without it a long description won't shrink and wrap.
+            .min_w_0()
             .flex_col()
             .gap(space::S1)
             .line_height(relative(line_height::SNUG))
@@ -579,6 +582,32 @@ mod tests {
             // The content block sets the row's height: a 20px label line, 4px, a 20px
             // description.
             assert_eq!(bounds.size.height, px(20. + 4. + 20.));
+        }
+
+        #[gpui::test]
+        fn should_wrap_a_description_longer_than_the_field(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            let (_, bounds) = render(cx, || {
+                Field::new()
+                    .orientation(FieldOrientation::Horizontal)
+                    .w(px(384.))
+                    .child(Switch::new("s"))
+                    .content(
+                        FieldContent::new()
+                            .child(FieldLabel::new().child("Ask before quitting"))
+                            .child(FieldDescription::new(
+                                "Ask for confirmation before quitting while agents are still \
+                                 running, so a stray shortcut doesn't stop their work.",
+                            )),
+                    )
+            });
+            // One line of description would leave the row at 20 + 4 + 20; wrapped, it grows.
+            assert!(bounds.size.width <= px(384.), "the field kept its width");
+            assert!(
+                bounds.size.height > px(20. + 4. + 20.),
+                "the description wrapped: {:?}",
+                bounds.size
+            );
         }
     }
 

@@ -50,6 +50,23 @@ pub enum DropdownMenuItemVariant {
     Destructive,
 }
 
+/// Where the menu lines up with its trigger: core-react's `DropdownMenuContent` `align` prop.
+/// Not a Penpot variant property. Cases are its values in PascalCase; [`Display`] gives the
+/// prop's value back.
+#[derive(
+    Debug, Clone, Copy, Default, PartialEq, Eq, Hash, EnumIter, Display, AsRefStr, IntoStaticStr,
+)]
+#[strum(serialize_all = "kebab-case")]
+pub enum DropdownMenuAlign {
+    /// `start`, core-react's default: the menu's left edge on the trigger's.
+    #[default]
+    Start,
+    /// `center`: the menu centred under the trigger.
+    Center,
+    /// `end`: the menu's right edge on the trigger's.
+    End,
+}
+
 type ClickHandler = Rc<dyn Fn(&ClickEvent, &mut Window, &mut App)>;
 type CheckedHandler = Rc<dyn Fn(bool, &mut Window, &mut App)>;
 
@@ -83,7 +100,7 @@ pub struct DropdownMenu {
     id: ElementId,
     trigger: Option<Button>,
     content: DropdownMenuContent,
-    anchor: Anchor,
+    align: DropdownMenuAlign,
 }
 
 impl DropdownMenu {
@@ -93,7 +110,7 @@ impl DropdownMenu {
             id: id.into(),
             trigger: None,
             content: DropdownMenuContent::new(),
-            anchor: Anchor::TopLeft,
+            align: DropdownMenuAlign::Start,
         }
     }
 
@@ -109,10 +126,10 @@ impl DropdownMenu {
         self
     }
 
-    /// Lines the menu's right edge up with the trigger's (`align="end"`); by default their left
-    /// edges line up (`align="start"`). Not a Penpot property, so it stays inside the crate.
-    pub(crate) fn align_end(mut self) -> Self {
-        self.anchor = Anchor::TopRight;
+    /// Where the menu lines up with its trigger, 4px below it: core-react's
+    /// `DropdownMenuContent` `align` prop. [`DropdownMenuAlign::Start`] by default.
+    pub fn align(mut self, align: DropdownMenuAlign) -> Self {
+        self.align = align;
         self
     }
 }
@@ -129,9 +146,13 @@ impl RenderOnce for DropdownMenu {
             window.use_keyed_state(self.id.clone(), cx, |_, _| DropdownMenuState::default());
         let content = self.content;
         let trigger = self.trigger;
-        // side="bottom" align="start" (or "end") sideOffset={4}
+        // side="bottom" align={align} sideOffset={4}
         gpui_base::Popover::new(self.id)
-            .anchor(self.anchor)
+            .anchor(match self.align {
+                DropdownMenuAlign::Start => Anchor::TopLeft,
+                DropdownMenuAlign::Center => Anchor::TopCenter,
+                DropdownMenuAlign::End => Anchor::TopRight,
+            })
             .offset(space::S1)
             // The menu dismisses itself on a press outside, so a press on a submenu isn't one.
             .overlay_closable(false)
@@ -841,6 +862,71 @@ mod tests {
         fn should_name_values_as_penpot_does() {
             let values: Vec<&str> = DropdownMenuItemVariant::iter().map(Into::into).collect();
             assert_eq!(values, ["default", "destructive"]);
+        }
+    }
+
+    mod align {
+        use super::*;
+
+        /// Room left of the trigger for a menu wider than it.
+        const ROOM: Pixels = px(300.);
+
+        /// Opens a 224px menu under a narrow trigger aligned `align`, and returns the trigger's
+        /// bounds and the open menu's.
+        fn open_aligned(
+            cx: &mut TestAppContext,
+            align: DropdownMenuAlign,
+        ) -> (Bounds<Pixels>, Bounds<Pixels>) {
+            cx.update(crate::init);
+            let (cx, page) = render(cx, move || {
+                div().flex().pl(ROOM).pt(INSET).child(
+                    DropdownMenu::new("aligned")
+                        .align(align)
+                        .trigger(Button::new("open").label("Open"))
+                        .content(
+                            DropdownMenuContent::new()
+                                .w(px(224.))
+                                .item(DropdownMenuItem::new("Profile")),
+                        ),
+                )
+            });
+            let trigger = Bounds::new(
+                page.origin + point(ROOM, INSET),
+                gpui::size(page.size.width - ROOM, page.size.height - INSET),
+            );
+            cx.simulate_click(trigger.center(), Modifiers::default());
+            draw(cx);
+            let menu = cx
+                .debug_bounds("dropdown-menu-content")
+                .expect("the menu opened");
+            (trigger, menu)
+        }
+
+        #[test]
+        fn should_name_values_as_core_react_does() {
+            let values: Vec<&str> = DropdownMenuAlign::iter().map(Into::into).collect();
+            assert_eq!(values, ["start", "center", "end"]);
+        }
+
+        #[gpui::test]
+        fn should_line_up_left_edges_4px_below_by_default(cx: &mut TestAppContext) {
+            let (trigger, menu) = open_aligned(cx, DropdownMenuAlign::Start);
+            assert_eq!(menu.left(), trigger.left());
+            assert_eq!(menu.top(), trigger.bottom() + px(4.));
+        }
+
+        #[gpui::test]
+        fn should_centre_under_the_trigger(cx: &mut TestAppContext) {
+            let (trigger, menu) = open_aligned(cx, DropdownMenuAlign::Center);
+            assert_eq!(menu.center().x, trigger.center().x);
+            assert_eq!(menu.top(), trigger.bottom() + px(4.));
+        }
+
+        #[gpui::test]
+        fn should_line_up_right_edges_4px_below_at_end(cx: &mut TestAppContext) {
+            let (trigger, menu) = open_aligned(cx, DropdownMenuAlign::End);
+            assert_eq!(menu.right(), trigger.right());
+            assert_eq!(menu.top(), trigger.bottom() + px(4.));
         }
     }
 

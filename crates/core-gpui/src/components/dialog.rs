@@ -1,5 +1,6 @@
 //! Dialog: core-react's `dialog.tsx` on `gpui-base`'s unstyled [`gpui_base::Dialog`], which
-//! owns the focus trap, Escape, backdrop dismissal and the dialog role.
+//! owns the focus trap, Escape, backdrop dismissal and the dialog role. Enter doesn't close it,
+//! as in core-react: an app's `InputEvent::PressEnter` handler decides what Enter does.
 //!
 //! [`DialogContent`] is the surface and renders on its own, the way the gallery and captures
 //! show it; [`Dialog`] puts it over a [`DialogOverlay`], centred in the window, while open. The
@@ -112,6 +113,10 @@ impl RenderOnce for Dialog {
                 gpui_base::Dialog::new(cx)
                     .focus_handle(focus)
                     .handle(handle)
+                    // Base UI's dialog doesn't close on Enter: Enter belongs to the form inside,
+                    // whose input already reported it (InputEvent::PressEnter) before passing
+                    // it up as gpui-base's Confirm.
+                    .on_ok(|_, _, _| false)
                     .when_some(title, |d, title| d.accessibility_label(title))
                     .backdrop(DialogOverlay::new())
                     .popup(gpui_base::DialogPopup::new().children(self.content)),
@@ -556,6 +561,71 @@ mod tests {
             cx.simulate_keystrokes("escape");
             draw(cx);
             assert!(cx.update(|window, _| outside.is_focused(window)));
+        }
+    }
+
+    mod enter {
+        use std::cell::Cell;
+        use std::rc::Rc;
+
+        use gpui::Entity;
+
+        use super::*;
+        use crate::{Input, InputState};
+
+        /// A dialog whose content is a form with one input.
+        struct Form {
+            handle: DialogHandle,
+            input: Entity<InputState>,
+        }
+
+        impl Render for Form {
+            fn render(&mut self, _: &mut Window, _: &mut Context<Self>) -> impl IntoElement {
+                Dialog::new("form")
+                    .handle(self.handle.clone())
+                    .content(DialogContent::new().child(Input::new(&self.input)))
+            }
+        }
+
+        #[gpui::test]
+        fn should_leave_enter_in_an_input_to_the_form(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            let handle = DialogHandle::new(false);
+            let presses = Rc::new(Cell::new(0));
+            let mut input = None;
+            let window = cx.add_window({
+                let handle = handle.clone();
+                let presses = presses.clone();
+                let input = &mut input;
+                move |window, cx| {
+                    let state = cx.new(|cx| InputState::new(window, cx));
+                    // The app's handler refuses to submit: it only counts the press.
+                    cx.subscribe(&state, move |_, _, event, _| {
+                        if matches!(event, gpui_base::input::InputEvent::PressEnter { .. }) {
+                            presses.set(presses.get() + 1);
+                        }
+                    })
+                    .detach();
+                    *input = Some(state.clone());
+                    let form = cx.new(|_| Form {
+                        handle,
+                        input: state,
+                    });
+                    crate::Root::new(form, window, cx)
+                }
+            });
+            let cx = VisualTestContext::from_window(*window, cx).into_mut();
+            cx.update(|window, cx| handle.open(window, cx));
+            draw(cx);
+            let input = input.expect("the window built the input");
+            cx.update(|window, cx| input.update(cx, |input, cx| input.focus(window, cx)));
+            draw(cx);
+
+            cx.simulate_keystrokes("enter");
+            draw(cx);
+
+            assert_eq!(presses.get(), 1, "the input's handler ran");
+            assert!(handle.is_open(), "Enter left the dialog open");
         }
     }
 }

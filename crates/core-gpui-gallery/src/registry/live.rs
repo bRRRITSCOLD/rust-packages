@@ -4,10 +4,10 @@
 
 use brrritscold_core_gpui::{
     AlertDialog, AlertDialogContentSize, Button, ButtonSize, ButtonVariant, Combobox,
-    ComboboxChips, ComboboxInput, Dialog, DropdownMenu, DropdownMenuCheckboxItem,
-    DropdownMenuRadioItem, DropdownMenuSubTrigger, IconName, Popover, Select, SelectTrigger, Sheet,
-    SheetContentSide, Toast, ToastAction, ToastDescription, ToastExt as _, ToastTitle, ToastType,
-    Tooltip, TooltipContent, TooltipContentSide,
+    ComboboxChips, ComboboxInput, Dialog, DropdownMenu, DropdownMenuAlign,
+    DropdownMenuCheckboxItem, DropdownMenuRadioItem, DropdownMenuSubTrigger, IconName, Popover,
+    Select, SelectTrigger, Sheet, SheetContentSide, Toast, ToastAction, ToastDescription,
+    ToastExt as _, ToastTitle, ToastType, Tooltip, TooltipContent, TooltipContentSide,
 };
 use brrritscold_core_gpui_tokens::primitive::space;
 use gpui::{AnyElement, ElementId, IntoElement as _, ParentElement as _, Styled as _, div};
@@ -97,20 +97,25 @@ pub fn live(name: &str) -> Option<AnyElement> {
             })
             .into_any_element()
         }
-        "DropdownMenuContent" => DropdownMenu::new("live-dropdown-menu")
-            .trigger(outline("live-dropdown-menu-open", "Open menu"))
-            .content(
-                dropdown_menu::content()
-                    .separator(Default::default())
-                    .checkbox_item(DropdownMenuCheckboxItem::new("Status bar").checked(true))
-                    .radio_item(DropdownMenuRadioItem::new("Top"))
-                    .radio_item(DropdownMenuRadioItem::new("Bottom").checked(true))
-                    .sub(
-                        DropdownMenuSubTrigger::new("Share"),
-                        dropdown_menu::sub_content(),
-                    ),
-            )
-            .into_any_element(),
+        // One trigger per `align`, so the end-aligned menu can be seen against its trigger.
+        "DropdownMenuContent" => row(DropdownMenuAlign::iter().map(|align| {
+            let label: &'static str = align.into();
+            DropdownMenu::new(("live-dropdown-menu", align as usize))
+                .align(align)
+                .trigger(outline(("live-dropdown-menu-open", align as usize), label))
+                .content(
+                    dropdown_menu::content()
+                        .separator(Default::default())
+                        .checkbox_item(DropdownMenuCheckboxItem::new("Status bar").checked(true))
+                        .radio_item(DropdownMenuRadioItem::new("Top"))
+                        .radio_item(DropdownMenuRadioItem::new("Bottom").checked(true))
+                        .sub(
+                            DropdownMenuSubTrigger::new("Share"),
+                            dropdown_menu::sub_content(),
+                        ),
+                )
+                .into_any_element()
+        })),
         "Toast" => row(ToastType::iter().map(|kind| {
             let label: &'static str = kind.into();
             Button::new(("live-toast", kind as usize))

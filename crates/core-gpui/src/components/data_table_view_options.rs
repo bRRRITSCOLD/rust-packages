@@ -12,8 +12,8 @@ use gpui_base::StyledExt as _;
 
 use super::button::{Button, ButtonSize, ButtonVariant};
 use super::dropdown_menu::{
-    DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel,
-    DropdownMenuSeparator,
+    DropdownMenu, DropdownMenuAlign, DropdownMenuCheckboxItem, DropdownMenuContent,
+    DropdownMenuLabel, DropdownMenuSeparator,
 };
 use crate::icons::IconName;
 
@@ -128,7 +128,7 @@ impl RenderOnce for DataTableViewOptions {
         DropdownMenu::new(self.id)
             .trigger(trigger)
             .content(content)
-            .align_end()
+            .align(DropdownMenuAlign::End)
     }
 }
 
