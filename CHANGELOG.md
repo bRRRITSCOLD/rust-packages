@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.8](https://github.com/bRRRITSCOLD/rust-packages/compare/v0.1.7...v0.1.8) - 2026-11-17
+
+**GPUI pin:** gpui-kit 0.9.1 (`gpui-base = "=0.9.1"`, `gpui = { package = "gpui-pre", version = "=0.3.12" }` and its `gpui-pre-*` siblings at `=0.3.12`). Apps copy these lines next to the `v0.1.8` tag.
+
+**core-react pin:** 1.7.0 (tokens, library snapshot, Lucide 1.68.0, drift checker design-core-node 0.1.3 + design-core-js 0.2.0).
+
+### Added
+
+- *(tokens)* core-react 1.7.0 tokens ([#64](https://github.com/bRRRITSCOLD/rust-packages/pull/64))
+- *(gpui)* DropdownMenu::align; fix field wrap, input selection, dialog Enter ([#65](https://github.com/bRRRITSCOLD/rust-packages/pull/65))
+
+### Other
+
+- *(gpui)* read core-react's per-mode state tokens ([#68](https://github.com/bRRRITSCOLD/rust-packages/pull/68))
+
 ## [0.1.7](https://github.com/bRRRITSCOLD/rust-packages/compare/v0.1.6...v0.1.7) - 2026-11-17
 
 **GPUI pin:** gpui-kit 0.9.1 (`gpui-base = "=0.9.1"`, `gpui = { package = "gpui-pre", version = "=0.3.12" }` and its `gpui-pre-*` siblings at `=0.3.12`). Apps copy these lines next to the `v0.1.7` tag.
