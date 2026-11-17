@@ -96,6 +96,15 @@ impl Theme {
         self.semantic().ring.opacity(primitive::opacity::O50)
     }
 
+    /// The text selection fill: `blue.700` at 50% opacity in both modes. core-react's
+    /// controls set no `selection:` colour, so the browser's highlight shows there (an opaque
+    /// blue, `#3367d1` light and `#0337a1` dark in the published Storybook, under white text).
+    /// gpui-base paints the selection under glyphs it draws in one colour, so the closest
+    /// match is a translucent blue that keeps both modes' text legible.
+    pub(crate) fn selection(&self) -> Hsla {
+        selection()
+    }
+
     /// Sets the preference and shows the mode it resolves to.
     pub fn set_preference(preference: ThemePreference, cx: &mut App) {
         let mode = preference.resolve(cx.window_appearance());
@@ -140,6 +149,12 @@ fn set_mode(mode: Mode, cx: &mut App) {
     cx.refresh_windows();
 }
 
+/// [`Theme::selection`], which no mode changes: over each mode's surface it lands near the
+/// browser's lighter and darker blues.
+fn selection() -> Hsla {
+    primitive::color::blue::B700.opacity(primitive::opacity::O50)
+}
+
 /// Projects a mode onto `gpui-base`'s theme, so its behaviour-layer defaults (scrollbars,
 /// resizable handles, text selection) use our tokens.
 pub(crate) fn base_theme(mode: Mode) -> gpui_base::Theme {
@@ -169,6 +184,7 @@ pub(crate) fn base_theme(mode: Mode) -> gpui_base::Theme {
     colors.border = s.border;
     colors.input = s.input;
     colors.ring = s.ring;
+    colors.selection = selection();
 
     let radius = &mut theme.tokens.radius;
     radius.none = px(0.);
@@ -260,6 +276,17 @@ mod tests {
             assert_eq!(base.appearance, gpui_base::ThemeAppearance::Dark);
             assert_eq!(base.tokens.colors.background, Semantic::DARK.background);
             assert_eq!(base.tokens.radius.lg, Semantic::DARK.radius_lg);
+        }
+
+        #[gpui::test]
+        fn should_select_text_in_blue_at_half_opacity_in_both_modes(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            let blue_at_half = primitive::color::blue::B700.opacity(0.5);
+            for preference in [ThemePreference::Light, ThemePreference::Dark] {
+                cx.update(|cx| Theme::set_preference(preference, cx));
+                assert_eq!(cx.read(|cx| cx.theme().selection()), blue_at_half);
+                assert_eq!(base(cx).tokens.colors.selection, blue_at_half);
+            }
         }
 
         #[gpui::test]

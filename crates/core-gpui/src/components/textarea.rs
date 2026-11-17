@@ -13,7 +13,7 @@ use gpui::{App, Entity, Focusable as _, IntoElement, RenderOnce, StyleRefinement
 use gpui_base::StyledExt as _;
 pub use gpui_base::input::TextareaState;
 
-use super::input::frame;
+use super::input::{editor_style, frame};
 
 /// A multi-line text input, styled like core-react's `Textarea`. One builder per Penpot
 /// variant property ([`aria_invalid`](Self::aria_invalid), [`disabled`](Self::disabled)) over
@@ -76,8 +76,11 @@ impl Textarea {
 impl RenderOnce for Textarea {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let disabled = self.disabled;
-        self.state
-            .update(cx, |state, cx| state.set_disabled(disabled, cx));
+        let style = editor_style(cx);
+        self.state.update(cx, |state, cx| {
+            state.set_disabled(disabled, cx);
+            state.set_editor_style(style);
+        });
         let focused = self.state.read(cx).focus_handle(cx).is_focused(window);
         // flex field-sizing-content min-h-16 w-full py-2
         frame(

@@ -12,6 +12,10 @@
 //!   text.
 //! - The `file:` arms: GPUI has no file input.
 //! - `cursor-not-allowed` while disabled.
+//! - The browser's text selection (core-react sets no `selection:` colour): an opaque blue under
+//!   white text. gpui-base draws the selection under glyphs it paints in one colour, so it is
+//!   a translucent blue under unchanged text. Input, Textarea and the internal InputGroup
+//!   project it onto their state with [`InputState::set_editor_style`].
 
 use brrritscold_core_gpui_tokens::primitive::{font_size, space};
 use gpui::{
@@ -19,8 +23,8 @@ use gpui::{
     StyleRefinement, Styled, Window, div,
 };
 use gpui_base::StyledExt as _;
-use gpui_base::input::InputBase;
 pub use gpui_base::input::InputState;
+use gpui_base::input::{InputBase, InputEditorStyle};
 
 use super::control::{Outline, dimmed, dimmed_shadows, on_background, shadows};
 use crate::theme::ActiveTheme as _;
@@ -86,8 +90,11 @@ impl Input {
 impl RenderOnce for Input {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let disabled = self.disabled;
-        self.state
-            .update(cx, |state, cx| state.set_disabled(disabled, cx));
+        let style = editor_style(cx);
+        self.state.update(cx, |state, cx| {
+            state.set_disabled(disabled, cx);
+            state.set_editor_style(style);
+        });
         let focused = self.state.read(cx).focus_handle(cx).is_focused(window);
         // h-9 w-full min-w-0 px-2.5 py-1, and its text vertically centred like a native input
         frame(
@@ -107,6 +114,16 @@ impl RenderOnce for Input {
 }
 
 impl_styled!(Input);
+
+/// The editor style Input and Textarea project onto their state: the theme's selection, every
+/// other colour left for gpui-base to fill from the palette.
+/// Unset, gpui-base selects on `accent` at 40%, which barely shows in either mode.
+pub(super) fn editor_style(cx: &App) -> InputEditorStyle {
+    InputEditorStyle {
+        selection: cx.theme().selection(),
+        ..InputEditorStyle::default()
+    }
+}
 
 /// The frame Input and Textarea share around `editor` (whose state `editor_id` names):
 /// `w-full min-w-0 rounded-md border border-input bg-input-background px-2.5 shadow-xs md:text-sm`,
@@ -159,6 +176,7 @@ mod tests {
     use gpui::{TestAppContext, VisualTestContext, px};
 
     use super::*;
+    use crate::ThemePreference;
     use crate::components::test_support::{render, state};
 
     /// Renders an input 320px wide on a fresh state and returns the state with the window.
@@ -194,6 +212,16 @@ mod tests {
             cx.update(|window, cx| state.update(cx, |state, cx| state.focus(window, cx)));
             cx.simulate_input("ada@example.com");
             assert_eq!(cx.read(|cx| state.read(cx).value()), "ada@example.com");
+        }
+
+        #[gpui::test]
+        fn should_select_text_on_the_themes_selection(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            for preference in [ThemePreference::Light, ThemePreference::Dark] {
+                cx.update(|cx| crate::Theme::set_preference(preference, cx));
+                let style = cx.read(editor_style);
+                assert_eq!(style.selection, cx.read(|cx| cx.theme().selection()));
+            }
         }
 
         #[gpui::test]
