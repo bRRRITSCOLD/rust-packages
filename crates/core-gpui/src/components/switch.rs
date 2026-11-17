@@ -162,11 +162,11 @@ impl StateStyle {
                 thumb: m.pick(s.background, s.primary_foreground),
             }
         } else {
-            // data-unchecked:bg-input dark:data-unchecked:bg-input/80;
+            // data-unchecked:bg-unchecked-background;
             // thumb bg-background dark:data-unchecked:bg-foreground
             Self {
                 // made opaque: the track sits on shadow-xs
-                track: on_background(theme, m.pick(s.input, s.input.opacity(0.8))),
+                track: on_background(theme, s.unchecked_background),
                 thumb: m.pick(s.background, s.foreground),
             }
         }
@@ -283,6 +283,20 @@ mod tests {
             assert_eq!(on.thumb, dark.primary_foreground);
             assert_eq!(off.thumb, dark.foreground);
             assert_eq!(off.track, dark.background.blend(dark.input.opacity(0.8)));
+        }
+
+        #[gpui::test]
+        fn should_fill_an_unchecked_track_with_unchecked_background(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            for mode in [Mode::Light, Mode::Dark] {
+                let s = mode.semantic();
+                let off = StateStyle::new(&theme(cx, mode), false);
+                assert_eq!(
+                    off.track,
+                    s.background.blend(s.unchecked_background),
+                    "{mode:?}"
+                );
+            }
         }
     }
 

@@ -252,14 +252,14 @@ impl ButtonVariant {
                 hover_fill: Some(s.primary.opacity(0.8)),
                 ..base
             },
-            // border-border bg-outline-background shadow-xs hover:bg-muted hover:text-foreground.
-            // The dark fill stays translucent at rest, so it tints a card or dialog as in CSS:
-            // shadow-xs shows through it by one level at most.
+            // border-border bg-outline-background shadow-xs hover:bg-muted-hover
+            // hover:text-foreground. The dark fill stays translucent at rest, so it tints a card
+            // or dialog as in CSS: shadow-xs shows through it by one level at most.
             ButtonVariant::Outline => VariantStyle {
                 fill: Some(s.outline_background),
                 border: Some(m.pick(s.border, s.input)), // dark:border-input
                 shadow_xs: true,
-                hover_fill: Some(m.pick(s.muted, s.input.opacity(0.5))), // dark:hover:bg-input/50
+                hover_fill: Some(s.muted_hover),
                 // dark:border-input comes after focus-visible:border-ring in the stylesheet, so
                 // a focused dark outline keeps its border.
                 focus_border: m.pick(s.ring, s.input),
@@ -272,19 +272,19 @@ impl ButtonVariant {
                 hover_fill: Some(s.secondary.opacity(0.8)),
                 ..base
             },
-            // hover:bg-muted hover:text-foreground
+            // hover:bg-muted-hover hover:text-foreground
             ButtonVariant::Ghost => VariantStyle {
-                hover_fill: Some(m.pick(s.muted, s.muted.opacity(0.5))), // dark:hover:bg-muted/50
+                hover_fill: Some(s.muted_hover),
                 ..base
             },
-            // bg-destructive-background text-destructive hover:bg-destructive/20
-            // focus-visible:border-destructive/40 focus-visible:ring-destructive/20
+            // bg-destructive-background text-destructive hover:bg-destructive-hover
+            // focus-visible:border-destructive/40 focus-visible:ring-destructive-ring
             ButtonVariant::Destructive => VariantStyle {
                 fill: Some(s.destructive_background),
                 text: s.destructive,
-                hover_fill: Some(s.destructive.opacity(m.pick(0.2, 0.3))), // dark:hover:bg-destructive/30
+                hover_fill: Some(s.destructive_hover),
                 focus_border: s.destructive.opacity(0.4),
-                focus_ring: s.destructive.opacity(m.pick(0.2, 0.4)), // dark:focus-visible:ring-destructive/40
+                focus_ring: s.destructive_ring,
                 ..base
             },
             // text-primary underline-offset-4 hover:underline
@@ -577,6 +577,26 @@ mod tests {
                 dark.fill,
                 Some(Mode::Dark.semantic().destructive.opacity(0.2))
             );
+        }
+
+        #[gpui::test]
+        fn should_read_the_per_mode_state_tokens_in_both_modes(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            for mode in [Mode::Light, Mode::Dark] {
+                let s = mode.semantic();
+                let theme = theme(cx, mode);
+                for variant in [ButtonVariant::Outline, ButtonVariant::Ghost] {
+                    let style = variant.style(&theme);
+                    assert_eq!(style.hover_fill, Some(s.muted_hover), "{variant} {mode:?}");
+                }
+                let destructive = ButtonVariant::Destructive.style(&theme);
+                assert_eq!(
+                    destructive.hover_fill,
+                    Some(s.destructive_hover),
+                    "{mode:?}"
+                );
+                assert_eq!(destructive.focus_ring, s.destructive_ring, "{mode:?}");
+            }
         }
 
         #[gpui::test]
