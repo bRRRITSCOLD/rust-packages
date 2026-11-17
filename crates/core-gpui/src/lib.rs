@@ -69,9 +69,9 @@ pub use components::dialog::{
     DialogHeader, DialogOverlay, DialogTitle,
 };
 pub use components::dropdown_menu::{
-    DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem,
-    DropdownMenuItemVariant, DropdownMenuLabel, DropdownMenuRadioItem, DropdownMenuSeparator,
-    DropdownMenuShortcut, DropdownMenuSubContent, DropdownMenuSubTrigger,
+    DropdownMenu, DropdownMenuAlign, DropdownMenuCheckboxItem, DropdownMenuContent,
+    DropdownMenuItem, DropdownMenuItemVariant, DropdownMenuLabel, DropdownMenuRadioItem,
+    DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSubContent, DropdownMenuSubTrigger,
 };
 pub use components::field::{
     Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend,
