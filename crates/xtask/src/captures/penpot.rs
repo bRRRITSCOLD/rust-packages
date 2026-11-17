@@ -207,19 +207,39 @@ fn export_body(profile_id: &str, file_id: &str, page_id: &str, object_id: &str) 
     })
 }
 
-/// The asset URI in an export result (transit tags a URI string with `~r`), else its first
-/// http(s) URL.
+/// The asset URI in an export result: the value of its `~:uri` key, else its first http(s) URL.
 fn asset_uri(result: &str) -> Option<String> {
-    let Some(key) = result.find("\"~:uri\"") else {
-        let start = result.find("http")?;
-        let end = start + result[start..].find('"')?;
-        return Some(result[start..end].to_owned());
-    };
-    let after = &result[key + "\"~:uri\"".len()..];
-    let start = after.find('"')? + 1;
-    let end = start + after[start..].find('"')?;
-    let uri = &after[start..end];
-    Some(uri.strip_prefix("~r").unwrap_or(uri).to_owned())
+    serde_json::from_str::<Value>(result)
+        .ok()
+        .and_then(|value| uri_entry(&value))
+        .or_else(|| {
+            let start = result.find("http")?;
+            let end = start + result[start..].find('"')?;
+            Some(result[start..end].to_owned())
+        })
+}
+
+/// The value after a `"~:uri"` key in a transit map (`["^ ", key, value, …]`), at any depth.
+fn uri_entry(value: &Value) -> Option<String> {
+    let items = value.as_array()?;
+    items
+        .windows(2)
+        .find(|pair| pair[0] == "~:uri")
+        .and_then(|pair| transit_uri(&pair[1]))
+        .or_else(|| items.iter().find_map(uri_entry))
+}
+
+/// A transit URI in either encoding the exporter has sent: the short string `"~r<url>"`, or
+/// the tagged value `["~#uri", "<url>"]`.
+fn transit_uri(value: &Value) -> Option<String> {
+    match value {
+        Value::String(uri) => Some(uri.strip_prefix("~r").unwrap_or(uri).to_owned()),
+        Value::Array(tagged) => match tagged.as_slice() {
+            [tag, Value::String(uri)] if tag == "~#uri" => Some(uri.clone()),
+            _ => None,
+        },
+        _ => None,
+    }
 }
 
 #[cfg(test)]
@@ -291,6 +311,16 @@ mod tests {
         fn should_read_a_transit_tagged_uri() {
             let result =
                 r#"["^ ","~:id","~uabc","~:uri","~rhttp://penpot.localhost/assets/x.png"]"#;
+            assert_eq!(
+                asset_uri(result).unwrap(),
+                "http://penpot.localhost/assets/x.png"
+            );
+        }
+
+        #[test]
+        fn should_read_a_uri_tagged_as_a_transit_array() {
+            let result =
+                r#"["^ ","~:id","~uabc","~:uri",["~#uri","http://penpot.localhost/assets/x.png"]]"#;
             assert_eq!(
                 asset_uri(result).unwrap(),
                 "http://penpot.localhost/assets/x.png"
