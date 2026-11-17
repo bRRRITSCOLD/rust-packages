@@ -141,9 +141,18 @@ impl BoxStyle {
             // aria-invalid:aria-checked:border-primary
             // data-indeterminate:border-primary data-indeterminate:bg-primary
             // data-indeterminate:text-primary-foreground dark:data-indeterminate:bg-primary
+            let border = if invalid {
+                // dark:aria-invalid:border-destructive-border beats both, over the fill as a
+                // CSS border shows over its own background.
+                theme
+                    .mode()
+                    .pick(s.primary, s.primary.blend(s.destructive_border))
+            } else {
+                s.primary
+            };
             Self {
                 fill: s.primary,
-                border: s.primary,
+                border,
                 text: s.primary_foreground,
                 outline,
             }
@@ -267,6 +276,18 @@ mod tests {
                 style.outline.ring,
                 Some(theme.semantic().destructive.opacity(0.2))
             );
+        }
+
+        #[gpui::test]
+        fn should_take_the_destructive_border_over_its_fill_when_checked_and_invalid_in_dark(
+            cx: &mut TestAppContext,
+        ) {
+            cx.update(crate::init);
+            let theme = theme(cx, Mode::Dark);
+            let s = theme.semantic();
+            let style = BoxStyle::new(&theme, true, true, false);
+            assert_eq!(style.fill, s.primary);
+            assert_eq!(style.border, s.primary.blend(s.destructive_border));
         }
 
         #[gpui::test]
