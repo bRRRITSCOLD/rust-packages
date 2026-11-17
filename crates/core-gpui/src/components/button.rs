@@ -9,6 +9,11 @@
 //! - The `aria-invalid` and `aria-expanded` arms: neither is a Penpot variant property, so
 //!   the Button has no builder for them until one is.
 //!
+//! `focus-visible:` is GPUI's `.focus_visible(..)`: the ring shows while the button has focus
+//! and the window's last input was a key. As with Chromium's `:focus-visible` on core-react's
+//! button, a click alone shows none, Tab does, and so does a key pressed while a clicked
+//! button keeps focus (Chromium counts a modifier pressed alone; GPUI doesn't).
+//!
 //! Where GPUI paints differently, the button resolves its colours with the form controls'
 //! helpers (see `control`): a focused button paints `background` under its fill, as GPUI
 //! would show the ring through a transparent one, and `disabled:opacity-50` dims each layer's
@@ -773,6 +778,61 @@ mod tests {
             let (cx, bounds) = render(cx, button);
             cx.simulate_click(bounds.center(), Modifiers::default());
             assert_eq!(clicks.get(), 0);
+        }
+    }
+
+    mod focus_ring {
+        use gpui::VisualTestContext;
+
+        use super::*;
+
+        /// Two buttons side by side: `a`, then `b`.
+        fn pair() -> gpui::Div {
+            div()
+                .flex()
+                .child(Button::new("a").label("A"))
+                .child(Button::new("b").label("B"))
+        }
+
+        /// Whether the last frame painted a button's focus border (`border-ring`).
+        fn rings(cx: &mut VisualTestContext) -> bool {
+            let ring = Mode::Light.semantic().ring;
+            cx.update(|window, cx| {
+                window.draw(cx).clear(cx);
+                window
+                    .painted_quads()
+                    .iter()
+                    .any(|quad| quad.border_color == ring)
+            })
+        }
+
+        fn has_focus(cx: &mut VisualTestContext) -> bool {
+            cx.update(|window, cx| window.focused(cx).is_some())
+        }
+
+        #[gpui::test]
+        fn should_show_no_ring_after_a_pointer_click(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            let (cx, bounds) = render(cx, pair);
+            cx.simulate_click(
+                bounds.origin + gpui::point(px(10.), px(10.)),
+                Modifiers::default(),
+            );
+            assert!(has_focus(cx), "the click focused A");
+            assert!(!rings(cx));
+        }
+
+        #[gpui::test]
+        fn should_ring_after_tab(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            let (cx, bounds) = render(cx, pair);
+            cx.simulate_click(
+                bounds.origin + gpui::point(px(10.), px(10.)),
+                Modifiers::default(),
+            );
+            cx.simulate_keystrokes("tab");
+            assert!(has_focus(cx), "Tab focused B");
+            assert!(rings(cx));
         }
     }
 }
