@@ -1,16 +1,15 @@
 //! Checkbox: core-react's `checkbox.tsx` on `gpui-base`'s unstyled [`gpui_base::Checkbox`],
 //! which owns focus, Space and click activation, disabled inertness and accessibility.
 //!
-//! The checkbox is controlled: it shows [`Checkbox::checked`] and reports the next value to
-//! [`Checkbox::on_change`], as core-react's `checked` / `onCheckedChange` do.
+//! The checkbox is controlled: it shows [`Checkbox::checked`] and
+//! [`Checkbox::indeterminate`], and reports the next value to [`Checkbox::on_change`], as
+//! core-react's `checked` / `indeterminate` / `onCheckedChange` do.
 //!
 //! Not mirrored:
 //!
 //! - `after:-inset-x-3 after:-inset-y-2`: the hit area stays the 16px box.
 //! - The `group-has-…/field` and `/field-label` arms, which read the checkbox's place in a
 //!   `Field` through CSS relations GPUI has no equivalent of.
-//! - The indeterminate state: core-react draws no indeterminate mark and Penpot has no value
-//!   for it.
 
 use std::rc::Rc;
 
@@ -19,7 +18,7 @@ use gpui::{
     App, ElementId, Hsla, InteractiveElement as _, IntoElement, ParentElement as _, RenderOnce,
     SharedString, StyleRefinement, Styled, Window, prelude::FluentBuilder as _, px,
 };
-use gpui_base::{CheckboxState, StyledExt as _};
+use gpui_base::StyledExt as _;
 
 use super::control::{Outline, dimmed, dimmed_shadows, on_background, shadows};
 use crate::icons::{Icon, IconName};
@@ -28,8 +27,8 @@ use crate::theme::{ActiveTheme as _, Theme};
 type ChangeHandler = Rc<dyn Fn(bool, &mut Window, &mut App)>;
 
 /// A checkbox, styled like core-react's `Checkbox`. One builder per Penpot variant property
-/// ([`checked`](Self::checked), [`aria_invalid`](Self::aria_invalid),
-/// [`disabled`](Self::disabled)):
+/// ([`checked`](Self::checked), [`indeterminate`](Self::indeterminate),
+/// [`aria_invalid`](Self::aria_invalid), [`disabled`](Self::disabled)):
 ///
 /// ```no_run
 /// use brrritscold_core_gpui::Checkbox;
@@ -43,6 +42,7 @@ type ChangeHandler = Rc<dyn Fn(bool, &mut Window, &mut App)>;
 pub struct Checkbox {
     id: ElementId,
     checked: bool,
+    indeterminate: bool,
     aria_invalid: bool,
     disabled: bool,
     accessibility_label: Option<SharedString>,
@@ -56,6 +56,7 @@ impl Checkbox {
         Self {
             id: id.into(),
             checked: false,
+            indeterminate: false,
             aria_invalid: false,
             disabled: false,
             accessibility_label: None,
@@ -67,6 +68,14 @@ impl Checkbox {
     /// Penpot property `checked`: fills the box in `primary` and draws the check.
     pub fn checked(mut self, checked: bool) -> Self {
         self.checked = checked;
+        self
+    }
+
+    /// Penpot property `indeterminate`: some but not all of a group is selected (a data
+    /// table's select-all). Fills the box as [`checked`](Self::checked) does and draws a minus
+    /// in place of the check, whatever `checked` says.
+    pub fn indeterminate(mut self, indeterminate: bool) -> Self {
+        self.indeterminate = indeterminate;
         self
     }
 
@@ -88,8 +97,9 @@ impl Checkbox {
         self
     }
 
-    /// Runs on a click or Space with the value the checkbox asks to change to. Never while
-    /// disabled.
+    /// Runs on a click or Space with the value the checkbox asks to change to: the opposite of
+    /// [`checked`](Self::checked), indeterminate or not, as Base UI's `onCheckedChange`. Never
+    /// while disabled.
     pub fn on_change(mut self, handler: impl Fn(bool, &mut Window, &mut App) + 'static) -> Self {
         self.on_change = Some(Rc::new(handler));
         self
@@ -107,8 +117,9 @@ struct BoxStyle {
 }
 
 impl BoxStyle {
-    fn new(theme: &Theme, checked: bool, invalid: bool, disabled: bool) -> Self {
-        let style = Self::enabled(theme, checked, invalid);
+    /// `filled` is checked or indeterminate: core-react styles both alike.
+    fn new(theme: &Theme, filled: bool, invalid: bool, disabled: bool) -> Self {
+        let style = Self::enabled(theme, filled, invalid);
         if !disabled {
             return style;
         }
@@ -121,13 +132,15 @@ impl BoxStyle {
         }
     }
 
-    fn enabled(theme: &Theme, checked: bool, invalid: bool) -> Self {
+    fn enabled(theme: &Theme, filled: bool, invalid: bool) -> Self {
         let s = theme.semantic();
         let outline = Outline::new(theme, invalid);
-        if checked {
+        if filled {
             // data-checked:border-primary data-checked:bg-primary
             // data-checked:text-primary-foreground dark:data-checked:bg-primary
             // aria-invalid:aria-checked:border-primary
+            // data-indeterminate:border-primary data-indeterminate:bg-primary
+            // data-indeterminate:text-primary-foreground dark:data-indeterminate:bg-primary
             Self {
                 fill: s.primary,
                 border: s.primary,
@@ -146,18 +159,38 @@ impl BoxStyle {
     }
 }
 
+/// The indicator's glyph: `CheckIcon` when checked, `MinusIcon` in its place while
+/// indeterminate (`group-data-indeterminate/checkbox-indicator:hidden` / `:block`).
+fn indicator(checked: bool, indeterminate: bool) -> Option<IconName> {
+    if indeterminate {
+        Some(IconName::Minus)
+    } else {
+        checked.then_some(IconName::Check)
+    }
+}
+
+impl Checkbox {
+    /// The box's colours for this checkbox's state.
+    fn box_style(&self, theme: &Theme) -> BoxStyle {
+        let filled = self.checked || self.indeterminate;
+        BoxStyle::new(theme, filled, self.aria_invalid, self.disabled)
+    }
+}
+
 impl RenderOnce for Checkbox {
     fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = cx.theme();
-        let b = BoxStyle::new(theme, self.checked, self.aria_invalid, self.disabled);
+        let b = self.box_style(theme);
         let mut resting = shadows(b.outline.ring, true);
         if self.disabled {
             resting = dimmed_shadows(resting);
         }
-        let checked = self.checked;
-        // focus-visible:border-ring, except that data-checked:border-primary comes later.
+        let (checked, indeterminate) = (self.checked, self.indeterminate);
+        let filled = checked || indeterminate;
+        // focus-visible:border-ring, except that data-checked:border-primary and
+        // data-indeterminate:border-primary come later.
         let focus = b.outline.focus.map(|(border, ring)| {
-            let border = if checked { b.border } else { border };
+            let border = if filled { b.border } else { border };
             (border, shadows(Some(ring), true))
         });
 
@@ -165,6 +198,7 @@ impl RenderOnce for Checkbox {
         // border-input shadow-xs data-disabled:opacity-50
         gpui_base::Checkbox::new(self.id)
             .checked(checked)
+            .indeterminate(indeterminate)
             .disabled(self.disabled)
             .relative()
             .flex()
@@ -185,13 +219,13 @@ impl RenderOnce for Checkbox {
                 c.accessibility_label(label)
             })
             .when_some(self.on_change, |c, on_change| {
-                c.on_change(move |state, _, window, cx| {
-                    on_change(state == CheckboxState::Checked, window, cx)
-                })
+                // Base UI asks for !checked; gpui-base asks for Checked from indeterminate.
+                c.on_change(move |_, _, window, cx| on_change(!checked, window, cx))
             })
-            // The indicator: [&>svg]:size-3.5, in the box's text colour.
-            .when(checked, |c| {
-                c.child(Icon::new(IconName::Check).size(px(14.)))
+            // The indicator: [&>svg]:size-3.5, in the box's text colour. Lucide's 2px stroke on
+            // its 24px grid scales with the glyph, to 14/12px.
+            .when_some(indicator(checked, indeterminate), |c, glyph| {
+                c.child(Icon::new(glyph).size(px(14.)))
             })
             .refine_style(&self.style)
     }
@@ -311,6 +345,79 @@ mod tests {
             let (cx, bounds) = render(cx, checkbox);
             cx.simulate_click(bounds.center(), Modifiers::default());
             assert!(!checked.get());
+        }
+    }
+
+    mod indeterminate {
+        use super::*;
+
+        #[test]
+        fn should_draw_the_minus_in_place_of_the_check() {
+            assert_eq!(indicator(false, true), Some(IconName::Minus));
+            assert_eq!(indicator(true, true), Some(IconName::Minus));
+        }
+
+        #[test]
+        fn should_draw_the_check_only_when_checked() {
+            assert_eq!(indicator(true, false), Some(IconName::Check));
+            assert_eq!(indicator(false, false), None);
+        }
+
+        #[gpui::test]
+        fn should_fill_the_box_as_checked_does_in_every_state(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            for mode in [Mode::Light, Mode::Dark] {
+                let theme = theme(cx, mode);
+                for (invalid, disabled) in [(false, false), (true, false), (false, true)] {
+                    let indeterminate = Checkbox::new("c")
+                        .indeterminate(true)
+                        .aria_invalid(invalid)
+                        .disabled(disabled);
+                    let checked = Checkbox::new("c")
+                        .checked(true)
+                        .aria_invalid(invalid)
+                        .disabled(disabled);
+                    assert_eq!(
+                        indeterminate.box_style(&theme),
+                        checked.box_style(&theme),
+                        "{mode:?} invalid={invalid} disabled={disabled}"
+                    );
+                }
+            }
+        }
+
+        /// An indeterminate checkbox reporting the value its handler gets.
+        fn indeterminate(checked: bool) -> (impl Fn() -> Checkbox, Rc<Cell<Option<bool>>>) {
+            let changed = Rc::new(Cell::new(None));
+            let make = {
+                let changed = changed.clone();
+                move || {
+                    let write = changed.clone();
+                    Checkbox::new("c")
+                        .checked(checked)
+                        .indeterminate(true)
+                        .on_change(move |value, _, _| write.set(Some(value)))
+                }
+            };
+            (make, changed)
+        }
+
+        #[gpui::test]
+        fn should_ask_to_become_checked_on_a_click(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            let (checkbox, changed) = indeterminate(false);
+            let (cx, bounds) = render(cx, checkbox);
+            cx.simulate_click(bounds.center(), Modifiers::default());
+            assert_eq!(changed.get(), Some(true));
+        }
+
+        #[gpui::test]
+        fn should_ask_to_uncheck_on_a_click_when_also_checked(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            let (checkbox, changed) = indeterminate(true);
+            let (cx, bounds) = render(cx, checkbox);
+            cx.simulate_click(bounds.center(), Modifiers::default());
+            assert_eq!(changed.get(), Some(false));
         }
     }
 }
