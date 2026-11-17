@@ -37,10 +37,14 @@ pub fn export(root: &Path, captures: &[Capture], theme: &str, out: &Path) -> Res
         .as_str()
         .context("library snapshot has no libraryFileId")?;
 
+    let (exports, skipped) = main_components(&snapshot, captures, theme);
+    for reason in skipped {
+        eprintln!("xtask: Penpot column skips a variant: {reason}");
+    }
+
     let session = Session::login(&url, &email, &password)?;
     let file = session.rpc("get-file", json!({ "id": file_id }))?;
-    for capture in captures.iter().filter(|c| c.theme == theme) {
-        let component_id = component_id(&snapshot, capture)?;
+    for (capture, component_id) in exports {
         let main = &file["data"]["components"][component_id];
         let (Some(page), Some(object)) = (
             main["mainInstancePage"].as_str(),
@@ -74,6 +78,24 @@ fn env() -> Result<[String; 3]> {
         );
     }
     Ok(values.map(|value| value.unwrap_or_default()))
+}
+
+/// Each `theme` capture with its library component's snapshot id, and why each of the others
+/// has none: a registry combination Penpot doesn't draw leaves only its own cell empty.
+fn main_components<'a>(
+    snapshot: &'a Value,
+    captures: &'a [Capture],
+    theme: &str,
+) -> (Vec<(&'a Capture, &'a str)>, Vec<String>) {
+    let mut found = Vec::new();
+    let mut skipped = Vec::new();
+    for capture in captures.iter().filter(|c| c.theme == theme) {
+        match component_id(snapshot, capture) {
+            Ok(id) => found.push((capture, id)),
+            Err(reason) => skipped.push(format!("{reason:#}")),
+        }
+    }
+    (found, skipped)
 }
 
 /// The snapshot's id for the library component with this capture's export name and variant
@@ -260,18 +282,40 @@ mod tests {
         }
     }
 
-    mod component_id {
+    fn snapshot() -> Value {
+        json!({ "components": {
+            "id-a": { "path": "Components", "name": "Button", "variantProperties": { "size": "sm", "variant": "default" } },
+            "id-b": { "path": "Components", "name": "Button", "variantProperties": { "size": "sm", "variant": "outline" } },
+            "id-c": { "path": "Components", "name": "Badge", "variantProperties": { "variant": "outline" } },
+            "id-d": { "path": "Components/Field", "name": "Label", "variantProperties": {} },
+            "id-e": { "path": "Components", "name": "Label", "variantProperties": {} },
+        }})
+    }
+
+    mod main_components {
         use super::*;
 
-        fn snapshot() -> Value {
-            json!({ "components": {
-                "id-a": { "path": "Components", "name": "Button", "variantProperties": { "size": "sm", "variant": "default" } },
-                "id-b": { "path": "Components", "name": "Button", "variantProperties": { "size": "sm", "variant": "outline" } },
-                "id-c": { "path": "Components", "name": "Badge", "variantProperties": { "variant": "outline" } },
-                "id-d": { "path": "Components/Field", "name": "Label", "variantProperties": {} },
-                "id-e": { "path": "Components", "name": "Label", "variantProperties": {} },
-            }})
+        #[test]
+        fn should_skip_a_variant_the_library_lacks_and_say_which() {
+            let snapshot = snapshot();
+            let dark = Capture {
+                theme: "dark".into(),
+                ..capture("default", "sm")
+            };
+            let captures = [capture("default", "sm"), capture("ghost", "sm"), dark];
+            let (found, skipped) = main_components(&snapshot, &captures, "light");
+            let found: Vec<(&str, &str)> = found
+                .iter()
+                .map(|(capture, id)| (capture.props[0].1.as_str(), *id))
+                .collect();
+            assert_eq!(found, [("default", "id-a")]);
+            assert_eq!(skipped.len(), 1);
+            assert!(skipped[0].contains("ghost"), "{}", skipped[0]);
         }
+    }
+
+    mod component_id {
+        use super::*;
 
         fn part(component: &str) -> Capture {
             Capture {
