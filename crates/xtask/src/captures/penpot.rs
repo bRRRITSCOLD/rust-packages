@@ -37,10 +37,14 @@ pub fn export(root: &Path, captures: &[Capture], theme: &str, out: &Path) -> Res
         .as_str()
         .context("library snapshot has no libraryFileId")?;
 
+    let (exports, skipped) = main_components(&snapshot, captures, theme);
+    for reason in skipped {
+        eprintln!("xtask: Penpot column skips a variant: {reason}");
+    }
+
     let session = Session::login(&url, &email, &password)?;
     let file = session.rpc("get-file", json!({ "id": file_id }))?;
-    for capture in captures.iter().filter(|c| c.theme == theme) {
-        let component_id = component_id(&snapshot, capture)?;
+    for (capture, component_id) in exports {
         let main = &file["data"]["components"][component_id];
         let (Some(page), Some(object)) = (
             main["mainInstancePage"].as_str(),
@@ -74,6 +78,24 @@ fn env() -> Result<[String; 3]> {
         );
     }
     Ok(values.map(|value| value.unwrap_or_default()))
+}
+
+/// Each `theme` capture with its library component's snapshot id, and why each of the others
+/// has none: a registry combination Penpot doesn't draw leaves only its own cell empty.
+fn main_components<'a>(
+    snapshot: &'a Value,
+    captures: &'a [Capture],
+    theme: &str,
+) -> (Vec<(&'a Capture, &'a str)>, Vec<String>) {
+    let mut found = Vec::new();
+    let mut skipped = Vec::new();
+    for capture in captures.iter().filter(|c| c.theme == theme) {
+        match component_id(snapshot, capture) {
+            Ok(id) => found.push((capture, id)),
+            Err(reason) => skipped.push(format!("{reason:#}")),
+        }
+    }
+    (found, skipped)
 }
 
 /// The snapshot's id for the library component with this capture's export name and variant
@@ -207,19 +229,39 @@ fn export_body(profile_id: &str, file_id: &str, page_id: &str, object_id: &str) 
     })
 }
 
-/// The asset URI in an export result (transit tags a URI string with `~r`), else its first
-/// http(s) URL.
+/// The asset URI in an export result: the value of its `~:uri` key, else its first http(s) URL.
 fn asset_uri(result: &str) -> Option<String> {
-    let Some(key) = result.find("\"~:uri\"") else {
-        let start = result.find("http")?;
-        let end = start + result[start..].find('"')?;
-        return Some(result[start..end].to_owned());
-    };
-    let after = &result[key + "\"~:uri\"".len()..];
-    let start = after.find('"')? + 1;
-    let end = start + after[start..].find('"')?;
-    let uri = &after[start..end];
-    Some(uri.strip_prefix("~r").unwrap_or(uri).to_owned())
+    serde_json::from_str::<Value>(result)
+        .ok()
+        .and_then(|value| uri_entry(&value))
+        .or_else(|| {
+            let start = result.find("http")?;
+            let end = start + result[start..].find('"')?;
+            Some(result[start..end].to_owned())
+        })
+}
+
+/// The value after a `"~:uri"` key in a transit map (`["^ ", key, value, …]`), at any depth.
+fn uri_entry(value: &Value) -> Option<String> {
+    let items = value.as_array()?;
+    items
+        .windows(2)
+        .find(|pair| pair[0] == "~:uri")
+        .and_then(|pair| transit_uri(&pair[1]))
+        .or_else(|| items.iter().find_map(uri_entry))
+}
+
+/// A transit URI in either encoding the exporter has sent: the short string `"~r<url>"`, or
+/// the tagged value `["~#uri", "<url>"]`.
+fn transit_uri(value: &Value) -> Option<String> {
+    match value {
+        Value::String(uri) => Some(uri.strip_prefix("~r").unwrap_or(uri).to_owned()),
+        Value::Array(tagged) => match tagged.as_slice() {
+            [tag, Value::String(uri)] if tag == "~#uri" => Some(uri.clone()),
+            _ => None,
+        },
+        _ => None,
+    }
 }
 
 #[cfg(test)]
@@ -240,18 +282,40 @@ mod tests {
         }
     }
 
-    mod component_id {
+    fn snapshot() -> Value {
+        json!({ "components": {
+            "id-a": { "path": "Components", "name": "Button", "variantProperties": { "size": "sm", "variant": "default" } },
+            "id-b": { "path": "Components", "name": "Button", "variantProperties": { "size": "sm", "variant": "outline" } },
+            "id-c": { "path": "Components", "name": "Badge", "variantProperties": { "variant": "outline" } },
+            "id-d": { "path": "Components/Field", "name": "Label", "variantProperties": {} },
+            "id-e": { "path": "Components", "name": "Label", "variantProperties": {} },
+        }})
+    }
+
+    mod main_components {
         use super::*;
 
-        fn snapshot() -> Value {
-            json!({ "components": {
-                "id-a": { "path": "Components", "name": "Button", "variantProperties": { "size": "sm", "variant": "default" } },
-                "id-b": { "path": "Components", "name": "Button", "variantProperties": { "size": "sm", "variant": "outline" } },
-                "id-c": { "path": "Components", "name": "Badge", "variantProperties": { "variant": "outline" } },
-                "id-d": { "path": "Components/Field", "name": "Label", "variantProperties": {} },
-                "id-e": { "path": "Components", "name": "Label", "variantProperties": {} },
-            }})
+        #[test]
+        fn should_skip_a_variant_the_library_lacks_and_say_which() {
+            let snapshot = snapshot();
+            let dark = Capture {
+                theme: "dark".into(),
+                ..capture("default", "sm")
+            };
+            let captures = [capture("default", "sm"), capture("ghost", "sm"), dark];
+            let (found, skipped) = main_components(&snapshot, &captures, "light");
+            let found: Vec<(&str, &str)> = found
+                .iter()
+                .map(|(capture, id)| (capture.props[0].1.as_str(), *id))
+                .collect();
+            assert_eq!(found, [("default", "id-a")]);
+            assert_eq!(skipped.len(), 1);
+            assert!(skipped[0].contains("ghost"), "{}", skipped[0]);
         }
+    }
+
+    mod component_id {
+        use super::*;
 
         fn part(component: &str) -> Capture {
             Capture {
@@ -291,6 +355,16 @@ mod tests {
         fn should_read_a_transit_tagged_uri() {
             let result =
                 r#"["^ ","~:id","~uabc","~:uri","~rhttp://penpot.localhost/assets/x.png"]"#;
+            assert_eq!(
+                asset_uri(result).unwrap(),
+                "http://penpot.localhost/assets/x.png"
+            );
+        }
+
+        #[test]
+        fn should_read_a_uri_tagged_as_a_transit_array() {
+            let result =
+                r#"["^ ","~:id","~uabc","~:uri",["~#uri","http://penpot.localhost/assets/x.png"]]"#;
             assert_eq!(
                 asset_uri(result).unwrap(),
                 "http://penpot.localhost/assets/x.png"
