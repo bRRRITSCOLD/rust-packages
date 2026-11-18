@@ -18,7 +18,7 @@ brrritscold-core-gpui-tokens = { path = "crates/core-gpui-tokens" }
 # The GPUI pin: the gpui-kit version (`gpui-base`). Every gpui-pre* line below is
 # derived from gpui-base's own `=` requirements and is never chosen on its own.
 # `cargo xtask gpui update` rewrites this block.
-gpui-base = "=0.9.1"
+gpui-base = "=0.10.0"
 gpui = { package = "gpui-pre", version = "=0.3.12" }
 gpui-macros = { package = "gpui-pre-macros", version = "=0.3.12" }
 gpui-platform = { package = "gpui-pre-platform", version = "=0.3.12" }
