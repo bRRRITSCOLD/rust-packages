@@ -1,6 +1,11 @@
 //! Tabs: core-react's `tabs.tsx` on `gpui-base`'s unstyled [`gpui_base::Tabs`] (the tab list's
-//! role) and [`gpui_base::Tab`] (each tab's role, selected state, disabled inertness and pointer
-//! activation).
+//! role, orientation and roving keyboard focus) and [`gpui_base::Tab`] (each tab's role, selected
+//! state, disabled inertness and pointer activation).
+//!
+//! The list is one Tab stop, entered on the selected tab. Left and Right (Up and Down in a
+//! vertical list) move focus between the enabled tabs, wrapping; Home and End reach the outer
+//! ones; Enter or Space selects the focused tab. Moving focus alone selects nothing (Base UI's
+//! `activateOnFocus={false}`, its default).
 //!
 //! [`Tabs`] keeps the selected tab, its own by default (Base UI's `defaultValue`) or the
 //! caller's ([`Tabs::value`]); it hands its orientation and selection to its [`TabsList`], which
@@ -9,8 +14,7 @@
 //! selectors, so the parts are typed builders on their parent.
 //!
 //! Not mirrored:
-//! - Arrow-key roving focus: `gpui-base`'s tabs have none. Each tab is its own Tab stop and Enter
-//!   or Space selects it.
+//! - A disabled tab taking keyboard focus: `gpui-base`'s roving focus skips it.
 //! - The `has-data-[icon=…]` padding and `[&_svg]` rules: a trigger takes a label only.
 //! - The line underline's opacity transition: it shows at once.
 
@@ -20,9 +24,9 @@ use brrritscold_core_gpui_tokens::primitive::{
     font_size, font_weight, line_height, opacity, shadow, space,
 };
 use gpui::{
-    AnyElement, App, ElementId, Hsla, InteractiveElement as _, IntoElement, ParentElement as _,
-    RenderOnce, SharedString, StyleRefinement, Styled, Window, div, prelude::FluentBuilder as _,
-    px, relative, transparent_black,
+    AnyElement, App, Axis, ElementId, Hsla, InteractiveElement as _, IntoElement,
+    ParentElement as _, RenderOnce, SharedString, StyleRefinement, Styled, Window, div,
+    prelude::FluentBuilder as _, px, relative, transparent_black,
 };
 use gpui_base::StyledExt as _;
 use strum::{AsRefStr, Display, EnumIter, IntoStaticStr};
@@ -272,6 +276,11 @@ impl RenderOnce for TabsList {
         // group-data-[orientation=horizontal]/tabs:h-9
         // group-data-[orientation=vertical]/tabs:h-fit group-data-[orientation=vertical]/tabs:flex-col
         gpui_base::Tabs::new("tabs-list")
+            .axis(if vertical {
+                Axis::Vertical
+            } else {
+                Axis::Horizontal
+            })
             .flex()
             .flex_none()
             .items_center()
@@ -410,16 +419,14 @@ impl TabsTrigger {
 }
 
 impl RenderOnce for TabsTrigger {
-    fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
+    fn render(self, _window: &mut Window, cx: &mut App) -> impl IntoElement {
         let theme = cx.theme();
         let s = theme.semantic();
         let focus_ring = theme.focus_ring();
         let t = self.style(theme);
         let vertical = self.orientation == TabsOrientation::Vertical;
+        // The tab's focus handle is `gpui-base`'s, keyed by this id: its list roves it.
         let id = ElementId::Name(format!("tabs-trigger-{}", self.value).into());
-        let focus = window.use_keyed_state(id.clone(), cx, |_, cx| cx.focus_handle());
-        // aria-disabled: a disabled tab stays focusable, as in core-react.
-        let focus = focus.read(cx).clone().tab_stop(true);
         let enabled = !self.disabled;
         let foreground = s.foreground;
         let value = self.value;
@@ -441,7 +448,6 @@ impl RenderOnce for TabsTrigger {
             .when_some(self.position, |tab, (position, count)| {
                 tab.set_position(position, count)
             })
-            .track_focus(&focus)
             .when_some(self.on_select.filter(|_| enabled), |tab, on_select| {
                 tab.on_click(move |_, window, cx| on_select(&value, window, cx))
             })
@@ -676,18 +682,72 @@ mod tests {
             assert!(panel.left() > tabs.left() + px(60.));
         }
 
+        /// Tab into the list: its one Tab stop, the selected tab.
+        fn enter_list(cx: &mut VisualTestContext) {
+            // The second frame applies the roving Tab stop the first chose.
+            draw(cx);
+            cx.update(|window, cx| window.focus_next(cx));
+            draw(cx);
+        }
+
+        #[gpui::test]
+        fn should_enter_on_the_selected_tab(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            let log = Log::default();
+            let (cx, _) = render(cx, settings(log.clone(), TabsOrientation::Horizontal));
+            enter_list(cx);
+            press(cx, "enter");
+            assert_eq!(*log.borrow(), [SharedString::from("account")]);
+        }
+
         #[gpui::test]
         fn should_select_from_the_keyboard(cx: &mut TestAppContext) {
             cx.update(crate::init);
             let log = Log::default();
             let (cx, _) = render(cx, settings(log.clone(), TabsOrientation::Horizontal));
-            for _ in 0..2 {
-                cx.update(|window, cx| window.focus_next(cx));
-                draw(cx);
-            }
+            enter_list(cx);
+            press(cx, "right");
+            assert!(log.borrow().is_empty(), "moving focus selects nothing");
             press(cx, "space");
             draw(cx);
             assert_eq!(*log.borrow(), [SharedString::from("password")]);
+        }
+
+        #[gpui::test]
+        fn should_skip_a_disabled_tab_and_wrap(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            let log = Log::default();
+            let (cx, _) = render(cx, settings(log.clone(), TabsOrientation::Horizontal));
+            enter_list(cx);
+            // Account, Password, then past disabled Billing back to Account.
+            press(cx, "right");
+            press(cx, "right");
+            press(cx, "enter");
+            assert_eq!(*log.borrow(), [SharedString::from("account")]);
+        }
+
+        #[gpui::test]
+        fn should_rove_a_vertical_list_with_up_and_down(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            let log = Log::default();
+            let (cx, _) = render(cx, settings(log.clone(), TabsOrientation::Vertical));
+            enter_list(cx);
+            press(cx, "right");
+            press(cx, "enter");
+            assert_eq!(
+                *log.borrow(),
+                [SharedString::from("account")],
+                "Right does not move a column"
+            );
+            press(cx, "down");
+            press(cx, "enter");
+            assert_eq!(
+                *log.borrow(),
+                [
+                    SharedString::from("account"),
+                    SharedString::from("password")
+                ]
+            );
         }
     }
 }
