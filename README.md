@@ -19,7 +19,7 @@ Licensed under either of [Apache License, Version 2.0](LICENSE-APACHE) or [MIT l
 
 ## Development
 
-The toolchain is pinned in `rust-toolchain.toml`. On Linux, install GPUI's packages with `script/install-linux-deps.sh`.
+The toolchain is pinned in `rust-toolchain.toml`. On Linux, install GPUI's packages with `script/install-linux-deps.sh`
 
 | Command | What it does |
 |---|---|
