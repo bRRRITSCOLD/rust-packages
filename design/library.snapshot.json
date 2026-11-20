@@ -22553,6 +22553,212 @@
 				}
 			}
 		},
+		"a125dbd8-5a64-80fd-8008-f548a41a7557": {
+			"path": "icon",
+			"name": "ExternalLink",
+			"variantProperties": {},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"a125dbd8-5a64-80fd-8008-f548a3bd8c51": {
+					"namePath": [
+						"icon / ExternalLink",
+						"Stroke 3"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"a125dbd8-5a64-80fd-8008-f548a3bd8c52": {
+					"namePath": [
+						"icon / ExternalLink",
+						"Stroke 2"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"a125dbd8-5a64-80fd-8008-f548a3bd8c53": {
+					"namePath": [
+						"icon / ExternalLink",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"a125dbd8-5a64-80fd-8008-f548a81ba519": {
+			"path": "icon",
+			"name": "GitMerge",
+			"variantProperties": {},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"a125dbd8-5a64-80fd-8008-f548a7be897d": {
+					"namePath": [
+						"icon / GitMerge",
+						"Stroke 3"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"a125dbd8-5a64-80fd-8008-f548a7be897e": {
+					"namePath": [
+						"icon / GitMerge",
+						"Stroke 2"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"a125dbd8-5a64-80fd-8008-f548a7be897f": {
+					"namePath": [
+						"icon / GitMerge",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"a125dbd8-5a64-80fd-8008-f548a8c701ec": {
+			"path": "icon",
+			"name": "GitPullRequestClosed",
+			"variantProperties": {},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"a125dbd8-5a64-80fd-8008-f548a8268f37": {
+					"namePath": [
+						"icon / GitPullRequestClosed",
+						"Stroke 6"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"a125dbd8-5a64-80fd-8008-f548a8268f38": {
+					"namePath": [
+						"icon / GitPullRequestClosed",
+						"Stroke 5"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"a125dbd8-5a64-80fd-8008-f548a8268f39": {
+					"namePath": [
+						"icon / GitPullRequestClosed",
+						"Stroke 4"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"a125dbd8-5a64-80fd-8008-f548a8268f3a": {
+					"namePath": [
+						"icon / GitPullRequestClosed",
+						"Stroke 3"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"a125dbd8-5a64-80fd-8008-f548a8268f3b": {
+					"namePath": [
+						"icon / GitPullRequestClosed",
+						"Stroke 2"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"a125dbd8-5a64-80fd-8008-f548a826c886": {
+					"namePath": [
+						"icon / GitPullRequestClosed",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"a125dbd8-5a64-80fd-8008-f548a95c6b6b": {
+			"path": "icon",
+			"name": "GitPullRequestDraft",
+			"variantProperties": {},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"a125dbd8-5a64-80fd-8008-f548a8d2de7e": {
+					"namePath": [
+						"icon / GitPullRequestDraft",
+						"Stroke 5"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"a125dbd8-5a64-80fd-8008-f548a8d2de7f": {
+					"namePath": [
+						"icon / GitPullRequestDraft",
+						"Stroke 4"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"a125dbd8-5a64-80fd-8008-f548a8d2de80": {
+					"namePath": [
+						"icon / GitPullRequestDraft",
+						"Stroke 3"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"a125dbd8-5a64-80fd-8008-f548a8d2de81": {
+					"namePath": [
+						"icon / GitPullRequestDraft",
+						"Stroke 2"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"a125dbd8-5a64-80fd-8008-f548a8d2de82": {
+					"namePath": [
+						"icon / GitPullRequestDraft",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				}
+			}
+		},
 		"eb51704c-a48d-804c-8008-ef2a2543f3fe": {
 			"path": "Components",
 			"name": "Badge",
