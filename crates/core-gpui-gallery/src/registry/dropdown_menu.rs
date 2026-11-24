@@ -49,8 +49,11 @@ pub(super) fn content() -> DropdownMenuContent {
 /// The `Submenu` story's submenu.
 pub(super) fn sub_content() -> DropdownMenuSubContent {
     DropdownMenuSubContent::new()
+        .label(DropdownMenuLabel::new("Share via"))
         .item(DropdownMenuItem::new("Email"))
         .item(DropdownMenuItem::new("Message"))
+        .separator(DropdownMenuSeparator::new())
+        .item(DropdownMenuItem::new("More…"))
 }
 
 pub(super) fn entries() -> Vec<Entry> {

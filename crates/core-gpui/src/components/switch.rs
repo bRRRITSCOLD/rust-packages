@@ -154,20 +154,19 @@ struct StateStyle {
 impl StateStyle {
     fn new(theme: &Theme, checked: bool) -> Self {
         let s = theme.semantic();
-        let m = theme.mode();
         if checked {
-            // data-checked:bg-primary; thumb bg-background dark:data-checked:bg-primary-foreground
+            // data-checked:bg-primary; thumb data-checked:bg-checked-thumb
             Self {
                 track: s.primary,
-                thumb: m.pick(s.background, s.primary_foreground),
+                thumb: s.checked_thumb,
             }
         } else {
             // data-unchecked:bg-unchecked-background;
-            // thumb bg-background dark:data-unchecked:bg-foreground
+            // thumb data-unchecked:bg-unchecked-thumb
             Self {
                 // made opaque: the track sits on shadow-xs
                 track: on_background(theme, s.unchecked_background),
-                thumb: m.pick(s.background, s.foreground),
+                thumb: s.unchecked_thumb,
             }
         }
     }
