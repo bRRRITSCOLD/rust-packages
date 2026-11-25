@@ -316,6 +316,12 @@ impl DropdownMenuSubContent {
         }
     }
 
+    /// A `Label` part: a heading.
+    pub fn label(mut self, label: DropdownMenuLabel) -> Self {
+        self.content = self.content.label(label);
+        self
+    }
+
     /// An `Item` part.
     pub fn item(mut self, item: DropdownMenuItem) -> Self {
         self.content = self.content.item(item);
