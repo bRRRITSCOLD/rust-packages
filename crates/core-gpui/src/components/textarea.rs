@@ -13,7 +13,7 @@ use gpui::{App, Entity, Focusable as _, IntoElement, RenderOnce, StyleRefinement
 use gpui_base::StyledExt as _;
 pub use gpui_base::input::TextareaState;
 
-use super::input::{editor_style, frame};
+use super::input::{frame, project_editor_style};
 
 /// A multi-line text input, styled like core-react's `Textarea`. One builder per Penpot
 /// variant property ([`aria_invalid`](Self::aria_invalid), [`disabled`](Self::disabled)) over
@@ -76,10 +76,9 @@ impl Textarea {
 impl RenderOnce for Textarea {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let disabled = self.disabled;
-        let style = editor_style(cx);
         self.state.update(cx, |state, cx| {
             state.set_disabled(disabled, cx);
-            state.set_editor_style(style);
+            project_editor_style(state, cx);
         });
         let focused = self.state.read(cx).focus_handle(cx).is_focused(window);
         // flex field-sizing-content min-h-16 w-full py-2
@@ -105,7 +104,9 @@ mod tests {
     use gpui::{TestAppContext, px};
 
     use super::*;
+    use crate::components::input::projected;
     use crate::components::test_support::{render, state};
+    use crate::theme::ActiveTheme as _;
 
     mod textarea {
         use super::*;
@@ -116,6 +117,24 @@ mod tests {
             let state = state(cx, TextareaState::new);
             let (_, bounds) = render(cx, move || Textarea::new(&state).w(px(320.)));
             assert_eq!(bounds.size.height, px(64.));
+        }
+
+        #[gpui::test]
+        fn should_select_text_on_the_themes_selection(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            let state = state(cx, TextareaState::new);
+            let shown = state.clone();
+            let (cx, _) = render(cx, move || Textarea::new(&shown).w(px(320.)));
+            for preference in [crate::ThemePreference::Light, crate::ThemePreference::Dark] {
+                cx.update(|window, cx| {
+                    crate::Theme::set_preference(preference, cx);
+                    window.draw(cx).clear(cx);
+                });
+                assert_eq!(
+                    projected::selection(state.entity_id()),
+                    Some(cx.read(|cx| cx.theme().selection()))
+                );
+            }
         }
 
         #[gpui::test]

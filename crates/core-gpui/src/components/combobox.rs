@@ -40,6 +40,7 @@ use gpui_base::input::{Backspace, Enter, Escape, InputEvent, MoveDown, MoveUp};
 
 use super::button::{Button, ButtonSize, ButtonVariant};
 use super::control::{Outline, on_background, shadows};
+use super::input::project_editor_style;
 use super::input_group::{InputGroup, InputGroupButton};
 use crate::icons::{Icon, IconName};
 use crate::theme::ActiveTheme as _;
@@ -670,6 +671,8 @@ impl ComboboxChips {
 
 impl RenderOnce for ComboboxChips {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
+        // ComboboxChipsInput is core-react's Input inside the chips, so it selects as Input does.
+        self.state.update(cx, project_editor_style);
         let focused = self.state.read(cx).focus_handle(cx).is_focused(window);
         let theme = cx.theme();
         let s = theme.semantic();
@@ -1408,6 +1411,19 @@ mod tests {
 
     mod chips {
         use super::*;
+
+        #[gpui::test]
+        fn should_select_typed_text_on_the_themes_selection(cx: &mut TestAppContext) {
+            let (cx, input, _) = framework(cx, true, false);
+            for preference in [crate::ThemePreference::Light, crate::ThemePreference::Dark] {
+                cx.update(|_, cx| crate::Theme::set_preference(preference, cx));
+                draw(cx);
+                assert_eq!(
+                    crate::components::input::projected::selection(input.entity_id()),
+                    Some(cx.read(|cx| cx.theme().selection()))
+                );
+            }
+        }
 
         #[gpui::test]
         fn should_add_a_chip_for_each_choice_and_clear_the_text(cx: &mut TestAppContext) {
