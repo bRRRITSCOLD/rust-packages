@@ -19,7 +19,7 @@ use gpui_base::StyledExt as _;
 use gpui_base::input::{InputBase, InputState};
 
 use super::control::{Outline, on_background, shadows};
-use super::input::editor_style;
+use super::input::project_editor_style;
 use crate::icons::{Icon, IconName};
 use crate::theme::ActiveTheme as _;
 
@@ -74,10 +74,9 @@ impl RenderOnce for InputGroup {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let disabled = self.disabled;
         // InputGroupInput is core-react's Input, so it selects as Input does.
-        let style = editor_style(cx);
         self.state.update(cx, |state, cx| {
             state.set_disabled(disabled, cx);
-            state.set_editor_style(style);
+            project_editor_style(state, cx);
         });
         let focused = self.state.read(cx).focus_handle(cx).is_focused(window);
         let theme = cx.theme();

@@ -14,17 +14,17 @@
 //! - `cursor-not-allowed` while disabled.
 //! - The browser's text selection (core-react sets no `selection:` colour): an opaque blue under
 //!   white text. gpui-base draws the selection under glyphs it paints in one colour, so it is
-//!   a translucent blue under unchanged text. Input, Textarea and the internal InputGroup
-//!   project it onto their state with [`InputState::set_editor_style`].
+//!   a translucent blue under unchanged text. Input, Textarea, the internal InputGroup and
+//!   ComboboxChips project it onto their state with [`InputState::set_editor_style`].
 
 use brrritscold_core_gpui_tokens::primitive::{font_size, space};
 use gpui::{
-    App, Entity, EntityId, Focusable as _, IntoElement, ParentElement as _, RenderOnce,
+    App, Context, Entity, EntityId, Focusable as _, IntoElement, ParentElement as _, RenderOnce,
     StyleRefinement, Styled, Window, div,
 };
 use gpui_base::StyledExt as _;
 pub use gpui_base::input::InputState;
-use gpui_base::input::{InputBase, InputEditorStyle};
+use gpui_base::input::{InputBase, InputBaseState, InputEditorStyle, InputModeKind};
 
 use super::control::{Outline, dimmed, dimmed_shadows, on_background, shadows};
 use crate::theme::ActiveTheme as _;
@@ -90,10 +90,9 @@ impl Input {
 impl RenderOnce for Input {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let disabled = self.disabled;
-        let style = editor_style(cx);
         self.state.update(cx, |state, cx| {
             state.set_disabled(disabled, cx);
-            state.set_editor_style(style);
+            project_editor_style(state, cx);
         });
         let focused = self.state.read(cx).focus_handle(cx).is_focused(window);
         // h-9 w-full min-w-0 px-2.5 py-1, and its text vertically centred like a native input
@@ -115,13 +114,49 @@ impl RenderOnce for Input {
 
 impl_styled!(Input);
 
-/// The editor style Input and Textarea project onto their state: the theme's selection, every
-/// other colour left for gpui-base to fill from the palette.
+/// The editor style every text field core-react draws as an Input projects onto its state: the
+/// theme's selection, every other colour left for gpui-base to fill from the palette.
 /// Unset, gpui-base selects on `accent` at 40%, which barely shows in either mode.
-pub(super) fn editor_style(cx: &App) -> InputEditorStyle {
+fn editor_style(cx: &App) -> InputEditorStyle {
     InputEditorStyle {
         selection: cx.theme().selection(),
         ..InputEditorStyle::default()
+    }
+}
+
+/// Projects [`editor_style`] onto `state`. Input, Textarea, InputGroup's control and
+/// ComboboxChips' text box call it as they render.
+pub(super) fn project_editor_style<M: InputModeKind>(
+    state: &mut InputBaseState<M>,
+    cx: &mut Context<InputBaseState<M>>,
+) {
+    let style = editor_style(cx);
+    #[cfg(test)]
+    projected::record(cx.entity_id(), style.selection);
+    state.set_editor_style(style);
+}
+
+/// What [`project_editor_style`] last projected onto each state. GPUI's test window exposes
+/// painted quads and underlines but not paths, and gpui-base paints a selection as paths, so the
+/// tests read the projected selection here instead.
+#[cfg(test)]
+pub(super) mod projected {
+    use std::cell::RefCell;
+    use std::collections::HashMap;
+
+    use gpui::{EntityId, Hsla};
+
+    thread_local! {
+        static SELECTIONS: RefCell<HashMap<EntityId, Hsla>> = RefCell::default();
+    }
+
+    pub(in crate::components) fn record(state: EntityId, selection: Hsla) {
+        SELECTIONS.with(|selections| selections.borrow_mut().insert(state, selection));
+    }
+
+    /// The selection last projected onto `state`, `None` if nothing projected one.
+    pub(in crate::components) fn selection(state: EntityId) -> Option<Hsla> {
+        SELECTIONS.with(|selections| selections.borrow().get(&state).copied())
     }
 }
 
@@ -217,10 +252,16 @@ mod tests {
         #[gpui::test]
         fn should_select_text_on_the_themes_selection(cx: &mut TestAppContext) {
             cx.update(crate::init);
+            let (state, cx) = input(cx, false);
             for preference in [ThemePreference::Light, ThemePreference::Dark] {
-                cx.update(|cx| crate::Theme::set_preference(preference, cx));
-                let style = cx.read(editor_style);
-                assert_eq!(style.selection, cx.read(|cx| cx.theme().selection()));
+                cx.update(|window, cx| {
+                    crate::Theme::set_preference(preference, cx);
+                    window.draw(cx).clear(cx);
+                });
+                assert_eq!(
+                    projected::selection(state.entity_id()),
+                    Some(cx.read(|cx| cx.theme().selection()))
+                );
             }
         }
 
