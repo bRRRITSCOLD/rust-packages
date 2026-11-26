@@ -136,4 +136,5 @@ pub fn init(cx: &mut App) {
     root::register(cx);
     components::toast::register(cx);
     components::dropdown_menu::popup_menu::init(cx);
+    components::button::init(cx);
 }

@@ -8,14 +8,22 @@
 //! media spanning both rows at the left, the title and description beside it) is a row of the
 //! media and a text column.
 //!
+//! Enter while the dialog itself has focus confirms it (gpui-base binds Enter to `Confirm`), and
+//! a confirm runs the [`AlertDialogAction`]'s `on_click` however it came: a click, Enter on the
+//! focused action, or Enter on the dialog. Enter on a focused [`AlertDialogCancel`] clicks it.
+//!
 //! Not mirrored: the open and close animations, `text-balance` / `md:text-pretty` (GPUI wraps
 //! greedily), the description's link styles, and the narrow-screen layouts below `sm:` (a
 //! desktop window is always past the `sm` breakpoint).
 
 use brrritscold_core_gpui_tokens::primitive::{font_size, font_weight, size, space};
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use gpui::{
-    AnyElement, App, ClickEvent, ElementId, IntoElement, ParentElement as _, RenderOnce,
-    SharedString, StyleRefinement, Styled, Window, div, prelude::FluentBuilder as _,
+    AnyElement, App, Bounds, ClickEvent, Element, ElementId, GlobalElementId, InspectorElementId,
+    IntoElement, LayoutId, ParentElement as _, Pixels, RenderOnce, SharedString, StyleRefinement,
+    Styled, Window, div, prelude::FluentBuilder as _,
 };
 use gpui_base::StyledExt as _;
 use strum::{AsRefStr, Display, EnumIter, IntoStaticStr};
@@ -136,15 +144,116 @@ impl RenderOnce for AlertDialog {
             let state = state.read(cx);
             (state.handle(), state.focus())
         };
+        let confirm = Confirm::default();
+        let content = self.content.map(|content| ConfirmScope {
+            confirm: confirm.clone(),
+            child: content.into_any_element(),
+        });
         div()
             .children(self.trigger.map(|t| modal::trigger(t, handle.clone())))
             .child(
                 gpui_base::AlertDialog::new(cx)
                     .focus_handle(focus)
                     .handle(handle)
+                    .on_ok(move |_, window, cx| {
+                        confirm.run(window, cx);
+                        true
+                    })
                     .backdrop(AlertDialogOverlay::new())
-                    .popup(gpui_base::AlertDialogPopup::new().children(self.content)),
+                    .popup(gpui_base::AlertDialogPopup::new().children(content)),
             )
+    }
+}
+
+type ClickHandler = Rc<dyn Fn(&ClickEvent, &mut Window, &mut App)>;
+
+/// What a confirm runs: the handler of the [`AlertDialogAction`] the dialog drew last, and the
+/// click that confirmed, if one did. gpui-base's `Confirm` reaches the dialog without the
+/// action, from Enter or from the action's own click, so both paths meet here.
+#[derive(Clone, Default)]
+struct Confirm(Rc<RefCell<ConfirmSlot>>);
+
+#[derive(Default)]
+struct ConfirmSlot {
+    action: Option<ClickHandler>,
+    click: Option<ClickEvent>,
+}
+
+impl Confirm {
+    /// Runs the action's handler with the click that confirmed, or a default event for Enter.
+    fn run(&self, window: &mut Window, cx: &mut App) {
+        let (action, click) = {
+            let mut slot = self.0.borrow_mut();
+            (slot.action.clone(), slot.click.take())
+        };
+        if let Some(action) = action {
+            action(&click.unwrap_or_default(), window, cx);
+        }
+    }
+}
+
+thread_local! {
+    /// The confirm of each alert dialog whose content is laying out, innermost last.
+    static CONFIRMS: RefCell<Vec<Confirm>> = const { RefCell::new(Vec::new()) };
+}
+
+/// Lays its child out as its own, with its alert dialog's [`Confirm`] current, so an
+/// [`AlertDialogAction`] drawn anywhere inside registers its handler there. A part rendering
+/// inside a container renders while the container lays out, so the scope covers them all.
+struct ConfirmScope {
+    confirm: Confirm,
+    child: AnyElement,
+}
+
+impl Element for ConfirmScope {
+    type RequestLayoutState = ();
+    type PrepaintState = ();
+
+    fn id(&self) -> Option<ElementId> {
+        None
+    }
+
+    fn source_location(&self) -> Option<&'static core::panic::Location<'static>> {
+        None
+    }
+
+    fn request_layout(
+        &mut self,
+        _: Option<&GlobalElementId>,
+        _: Option<&InspectorElementId>,
+        window: &mut Window,
+        cx: &mut App,
+    ) -> (LayoutId, ()) {
+        self.confirm.0.borrow_mut().action = None;
+        CONFIRMS.with(|confirms| confirms.borrow_mut().push(self.confirm.clone()));
+        let layout_id = self.child.request_layout(window, cx);
+        CONFIRMS.with(|confirms| confirms.borrow_mut().pop());
+        (layout_id, ())
+    }
+
+    fn prepaint(
+        &mut self,
+        _: Option<&GlobalElementId>,
+        _: Option<&InspectorElementId>,
+        _: Bounds<Pixels>,
+        _: &mut (),
+        window: &mut Window,
+        cx: &mut App,
+    ) {
+        self.child.prepaint(window, cx);
+    }
+
+    fn paint(
+        &mut self,
+        _: Option<&GlobalElementId>,
+        _: Option<&InspectorElementId>,
+        _: Bounds<Pixels>,
+        _: &mut (),
+        _: &mut (),
+        window: &mut Window,
+        cx: &mut App,
+    ) {
+        self.child.paint(window, cx);
     }
 }
 
@@ -441,6 +550,7 @@ impl RenderOnce for AlertDialogFooter {
 #[derive(IntoElement)]
 pub struct AlertDialogAction {
     button: Button,
+    on_click: Option<ClickHandler>,
 }
 
 impl AlertDialogAction {
@@ -448,6 +558,7 @@ impl AlertDialogAction {
     pub fn new(id: impl Into<ElementId>, label: impl Into<SharedString>) -> Self {
         Self {
             button: Button::new(id).label(label),
+            on_click: None,
         }
     }
 
@@ -463,25 +574,46 @@ impl AlertDialogAction {
         self
     }
 
-    /// Runs on activation, before the dialog closes.
+    /// Runs on every confirm, before the dialog closes: a click on the action, Enter on it, or
+    /// Enter on the dialog. Enter passes a default [`ClickEvent`].
     pub fn on_click(
         mut self,
         handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
     ) -> Self {
-        self.button = self.button.on_click(handler);
+        self.on_click = Some(Rc::new(handler));
         self
     }
 }
 
 impl RenderOnce for AlertDialogAction {
     fn render(self, _window: &mut Window, _cx: &mut App) -> impl IntoElement {
-        self.button.then_on_click(|_, window, cx| {
-            window.dispatch_action(
-                Box::new(gpui_base::actions::Confirm { secondary: false }),
-                cx,
-            )
-        })
+        let confirm = CONFIRMS.with(|confirms| confirms.borrow().last().cloned());
+        let Self { button, on_click } = self;
+        match confirm {
+            // Inside an alert dialog its confirm runs the handler, so a click only confirms.
+            Some(confirm) => {
+                confirm.0.borrow_mut().action = on_click;
+                button.on_click(move |event, window, cx| {
+                    confirm.0.borrow_mut().click = Some(event.clone());
+                    dispatch_confirm(window, cx);
+                })
+            }
+            // Drawn on its own (a gallery row), nothing confirms: the click runs the handler.
+            None => button.on_click(move |event, window, cx| {
+                if let Some(on_click) = &on_click {
+                    on_click(event, window, cx);
+                }
+                dispatch_confirm(window, cx);
+            }),
+        }
     }
+}
+
+fn dispatch_confirm(window: &mut Window, cx: &mut App) {
+    window.dispatch_action(
+        Box::new(gpui_base::actions::Confirm { secondary: false }),
+        cx,
+    );
 }
 
 /// The alert dialog's `Cancel` part: an `outline` button that closes it.
@@ -536,6 +668,7 @@ mod tests {
     use strum::IntoEnumIterator as _;
 
     use super::*;
+    use crate::components::test_support::press;
 
     struct Page {
         handle: DialogHandle,
@@ -633,6 +766,38 @@ mod tests {
             draw(cx);
             assert!(!is_open(cx, &page));
             assert_eq!(cx.read(|cx| page.read(cx).deleted.get()), 0);
+        }
+
+        #[gpui::test]
+        fn should_run_the_action_on_enter_then_close(cx: &mut TestAppContext) {
+            let (cx, page) = open_page(cx);
+            press(cx, "enter");
+            draw(cx);
+            assert!(!is_open(cx, &page));
+            assert_eq!(cx.read(|cx| page.read(cx).deleted.get()), 1);
+        }
+
+        #[gpui::test]
+        fn should_close_on_enter_on_a_focused_cancel_without_running_the_action(
+            cx: &mut TestAppContext,
+        ) {
+            let (cx, page) = open_page(cx);
+            press(cx, "tab");
+            press(cx, "enter");
+            draw(cx);
+            assert!(!is_open(cx, &page));
+            assert_eq!(cx.read(|cx| page.read(cx).deleted.get()), 0);
+        }
+
+        #[gpui::test]
+        fn should_run_the_action_once_on_enter_on_the_focused_action(cx: &mut TestAppContext) {
+            let (cx, page) = open_page(cx);
+            press(cx, "tab");
+            press(cx, "tab");
+            press(cx, "enter");
+            draw(cx);
+            assert!(!is_open(cx, &page));
+            assert_eq!(cx.read(|cx| page.read(cx).deleted.get()), 1);
         }
 
         #[gpui::test]

@@ -571,6 +571,7 @@ mod tests {
         use gpui::Entity;
 
         use super::*;
+        use crate::components::test_support::press;
         use crate::{Input, InputState};
 
         /// A dialog whose content is a form with one input.
@@ -626,6 +627,48 @@ mod tests {
 
             assert_eq!(presses.get(), 1, "the input's handler ran");
             assert!(handle.is_open(), "Enter left the dialog open");
+        }
+
+        /// A dialog whose content is one button counting its clicks.
+        struct Saver {
+            handle: DialogHandle,
+            saves: Rc<Cell<usize>>,
+        }
+
+        impl Render for Saver {
+            fn render(&mut self, _: &mut Window, _: &mut Context<Self>) -> impl IntoElement {
+                let saves = self.saves.clone();
+                Dialog::new("saver").handle(self.handle.clone()).content(
+                    DialogContent::new().child(
+                        crate::Button::new("save")
+                            .label("Save")
+                            .on_click(move |_, _, _| saves.set(saves.get() + 1)),
+                    ),
+                )
+            }
+        }
+
+        #[gpui::test]
+        fn should_click_a_focused_button(cx: &mut TestAppContext) {
+            cx.update(crate::init);
+            let handle = DialogHandle::new(false);
+            let saves = Rc::new(Cell::new(0));
+            let window = cx.add_window({
+                let handle = handle.clone();
+                let saves = saves.clone();
+                move |window, cx| {
+                    let saver = cx.new(|_| Saver { handle, saves });
+                    crate::Root::new(saver, window, cx)
+                }
+            });
+            let cx = VisualTestContext::from_window(*window, cx).into_mut();
+            cx.update(|window, cx| handle.open(window, cx));
+            draw(cx);
+            press(cx, "tab");
+            press(cx, "enter");
+            draw(cx);
+
+            assert_eq!(saves.get(), 1, "Enter clicked the focused button");
         }
     }
 }
