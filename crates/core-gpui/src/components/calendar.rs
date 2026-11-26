@@ -22,19 +22,19 @@
 use std::rc::Rc;
 
 use brrritscold_core_gpui_tokens::primitive::{font_size, font_weight, opacity, space};
-use chrono::{Datelike as _, NaiveDate};
 use gpui::{
     App, ElementId, Entity, InteractiveElement as _, IntoElement, ParentElement as _, RenderOnce,
     SharedString, StyleRefinement, Styled, Window, div, prelude::FluentBuilder as _,
 };
 pub use gpui_base::Matcher;
 use gpui_base::{CalendarState, Date, StyledExt as _};
+use jiff::civil;
 
 use super::button::{Button, ButtonSize, ButtonVariant};
 use crate::icons::IconName;
 use crate::theme::ActiveTheme as _;
 
-type SelectHandler = Rc<dyn Fn(Option<NaiveDate>, &mut Window, &mut App)>;
+type SelectHandler = Rc<dyn Fn(Option<civil::Date>, &mut Window, &mut App)>;
 
 /// The months' names, January first, as the caption reads them.
 const MONTHS: [&str; 12] = [
@@ -56,8 +56,8 @@ const MONTHS: [&str; 12] = [
 const WEEKDAYS: [&str; 7] = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
 /// The English name of `month`, 1-based.
-pub(crate) fn month_name(month: u32) -> &'static str {
-    MONTHS[(month as usize + 11) % 12]
+pub(crate) fn month_name(month: i8) -> &'static str {
+    MONTHS[(usize::from(month.unsigned_abs()) + 11) % 12]
 }
 
 /// A month calendar: a caption between the previous and next month buttons, the weekdays, and a
@@ -66,19 +66,19 @@ pub(crate) fn month_name(month: u32) -> &'static str {
 ///
 /// ```no_run
 /// use brrritscold_core_gpui::Calendar;
-/// use chrono::NaiveDate;
+/// use jiff::civil;
 ///
 /// let due = Calendar::new("due")
-///     .default_month(NaiveDate::from_ymd_opt(2026, 11, 1).unwrap())
+///     .default_month(civil::date(2026, 11, 1))
 ///     .disabled_days(vec![0, 6]) // weekends
 ///     .on_select(|date, _, _| println!("{date:?}"));
 /// ```
 #[derive(IntoElement)]
 pub struct Calendar {
     id: ElementId,
-    selected: Option<Option<NaiveDate>>,
-    default_month: Option<NaiveDate>,
-    today: Option<NaiveDate>,
+    selected: Option<Option<civil::Date>>,
+    default_month: Option<civil::Date>,
+    today: Option<civil::Date>,
     disabled_days: Option<Rc<Matcher>>,
     on_select: Option<SelectHandler>,
     style: StyleRefinement,
@@ -100,19 +100,19 @@ impl Calendar {
 
     /// The picked day, owned by the caller (`None`: nothing picked); it then changes only when
     /// the caller passes another. The calendar opens on its month.
-    pub fn selected(mut self, date: Option<NaiveDate>) -> Self {
+    pub fn selected(mut self, date: Option<civil::Date>) -> Self {
         self.selected = Some(date);
         self
     }
 
     /// The month shown at first, when nothing is picked.
-    pub fn default_month(mut self, month: NaiveDate) -> Self {
+    pub fn default_month(mut self, month: civil::Date) -> Self {
         self.default_month = Some(month);
         self
     }
 
     /// The day shown as today; the system's date unless set.
-    pub fn today(mut self, today: NaiveDate) -> Self {
+    pub fn today(mut self, today: civil::Date) -> Self {
         self.today = Some(today);
         self
     }
@@ -131,7 +131,7 @@ impl Calendar {
     /// Runs on a pick with the picked day, or `None` when the picked day is picked again.
     pub fn on_select(
         mut self,
-        handler: impl Fn(Option<NaiveDate>, &mut Window, &mut App) + 'static,
+        handler: impl Fn(Option<civil::Date>, &mut Window, &mut App) + 'static,
     ) -> Self {
         self.on_select = Some(Rc::new(handler));
         self
@@ -145,8 +145,8 @@ impl Calendar {
         window.use_keyed_state(self.id.clone(), cx, move |window, cx| {
             let mut state = CalendarState::new(window, cx);
             if let Some(month) = default_month {
-                state.select_year(month.year());
-                state.select_month(month.month() as u8);
+                state.select_year(month.year().into());
+                state.select_month(month.month().unsigned_abs());
             }
             state.apply_date(Date::Single(selected));
             state
@@ -175,14 +175,14 @@ impl RenderOnce for Calendar {
             };
             (
                 s.current_year(),
-                s.current_month() as u32,
+                s.current_month() as i8,
                 weeks,
                 picked,
                 s.today(),
             )
         };
         let today = self.today.unwrap_or(system_today);
-        let disabled = |date: &NaiveDate| {
+        let disabled = |date: &civil::Date| {
             self.disabled_days
                 .as_ref()
                 .is_some_and(|matcher| matcher.matched(date))
@@ -299,7 +299,7 @@ type ClickHandler = Box<dyn Fn(&mut Window, &mut App)>;
 /// `muted` cell when today.
 #[derive(IntoElement)]
 pub struct CalendarDayButton {
-    date: NaiveDate,
+    date: civil::Date,
     selected: bool,
     today: bool,
     outside: bool,
@@ -310,7 +310,7 @@ pub struct CalendarDayButton {
 
 impl CalendarDayButton {
     /// The button for `date`, showing its day of the month.
-    pub fn new(date: NaiveDate) -> Self {
+    pub fn new(date: civil::Date) -> Self {
         Self {
             date,
             selected: false,
@@ -410,10 +410,10 @@ mod tests {
     use super::*;
     use crate::components::test_support::render;
 
-    type Log = Rc<RefCell<Vec<Option<NaiveDate>>>>;
+    type Log = Rc<RefCell<Vec<Option<civil::Date>>>>;
 
-    fn date(month: u32, day: u32) -> NaiveDate {
-        NaiveDate::from_ymd_opt(2026, month, day).unwrap()
+    fn date(month: i8, day: i8) -> civil::Date {
+        civil::date(2026, month, day)
     }
 
     /// The story's calendar: November 2026 with the 9th as today, weekends disabled, logging

@@ -151,14 +151,6 @@ pub struct IconElement {
     inherit_color: bool,
 }
 
-impl IntoElement for IconElement {
-    type Element = Self;
-
-    fn into_element(self) -> Self {
-        self
-    }
-}
-
 impl Element for IconElement {
     type RequestLayoutState = <Svg as Element>::RequestLayoutState;
     type PrepaintState = <Svg as Element>::PrepaintState;

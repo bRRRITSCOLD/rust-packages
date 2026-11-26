@@ -27,7 +27,7 @@ gpui-sum-tree = { package = "gpui-pre-sum-tree", version = "=0.3.14" }
 
 anyhow = "1"
 # Calendar dates: the version gpui-base already pulls in, named by core-gpui's public API.
-chrono = { version = "0.4", default-features = false }
+jiff = { version = "1.0", default-features = false }
 thiserror = "2"
 # Variant enums: `EnumIter` for the gallery registry, kebab-case strings = Penpot values.
 strum = { version = "0.28", features = ["derive"] }

@@ -12,24 +12,24 @@
 use std::rc::Rc;
 
 use brrritscold_core_gpui_tokens::primitive::{font_weight, shadow, space};
-use chrono::{Datelike as _, NaiveDate};
 use gpui::{
     Anchor, App, Context, ElementId, InteractiveElement as _, IntoElement, ParentElement as _,
     RenderOnce, SharedString, StyleRefinement, Styled, Window, div, prelude::FluentBuilder as _,
     transparent_black,
 };
 use gpui_base::StyledExt as _;
+use jiff::civil;
 
 use super::button::{Button, ButtonVariant};
 use super::calendar::{Calendar, Matcher, month_name};
 use crate::icons::IconName;
 use crate::theme::ActiveTheme as _;
 
-type ValueChangeHandler = Rc<dyn Fn(Option<NaiveDate>, &mut Window, &mut App)>;
-type Format = Rc<dyn Fn(NaiveDate) -> SharedString>;
+type ValueChangeHandler = Rc<dyn Fn(Option<civil::Date>, &mut Window, &mut App)>;
+type Format = Rc<dyn Fn(civil::Date) -> SharedString>;
 
 /// date-fns's `PPP`, core-react's default format: `November 9th, 2026`.
-fn format_ppp(date: NaiveDate) -> SharedString {
+fn format_ppp(date: civil::Date) -> SharedString {
     let day = date.day();
     let suffix = match (day % 10, day % 100) {
         (_, 11..=13) => "th",
@@ -51,18 +51,18 @@ fn format_ppp(date: NaiveDate) -> SharedString {
 ///
 /// ```no_run
 /// use brrritscold_core_gpui::DatePicker;
-/// use chrono::NaiveDate;
+/// use jiff::civil;
 ///
 /// let due = DatePicker::new("due")
-///     .default_value(NaiveDate::from_ymd_opt(2026, 11, 9).unwrap())
+///     .default_value(civil::date(2026, 11, 9))
 ///     .disabled_days(vec![0, 6]) // weekends
 ///     .on_value_change(|date, _, _| println!("{date:?}"));
 /// ```
 #[derive(IntoElement)]
 pub struct DatePicker {
     id: ElementId,
-    value: Option<Option<NaiveDate>>,
-    default_value: Option<NaiveDate>,
+    value: Option<Option<civil::Date>>,
+    default_value: Option<civil::Date>,
     placeholder: SharedString,
     disabled: bool,
     disabled_days: Option<Rc<Matcher>>,
@@ -89,13 +89,13 @@ impl DatePicker {
 
     /// The picked date, owned by the caller (`None`: nothing picked); it then changes only when
     /// the caller passes another.
-    pub fn value(mut self, value: Option<NaiveDate>) -> Self {
+    pub fn value(mut self, value: Option<civil::Date>) -> Self {
         self.value = Some(value);
         self
     }
 
     /// The date picked at first, when the picker keeps its own value.
-    pub fn default_value(mut self, value: NaiveDate) -> Self {
+    pub fn default_value(mut self, value: civil::Date) -> Self {
         self.default_value = Some(value);
         self
     }
@@ -120,7 +120,7 @@ impl DatePicker {
 
     /// How the trigger shows the picked date; date-fns's `PPP` (`November 9th, 2026`) unless
     /// set.
-    pub fn format_value(mut self, format: impl Fn(NaiveDate) -> SharedString + 'static) -> Self {
+    pub fn format_value(mut self, format: impl Fn(civil::Date) -> SharedString + 'static) -> Self {
         self.format_value = Rc::new(format);
         self
     }
@@ -128,7 +128,7 @@ impl DatePicker {
     /// Runs on a pick with the picked date, or `None` when the picked day is picked again.
     pub fn on_value_change(
         mut self,
-        handler: impl Fn(Option<NaiveDate>, &mut Window, &mut App) + 'static,
+        handler: impl Fn(Option<civil::Date>, &mut Window, &mut App) + 'static,
     ) -> Self {
         self.on_value_change = Some(Rc::new(handler));
         self
@@ -221,10 +221,10 @@ mod tests {
     use super::*;
     use crate::components::test_support::render;
 
-    type Log = Rc<RefCell<Vec<Option<NaiveDate>>>>;
+    type Log = Rc<RefCell<Vec<Option<civil::Date>>>>;
 
-    fn date(month: u32, day: u32) -> NaiveDate {
-        NaiveDate::from_ymd_opt(2026, month, day).unwrap()
+    fn date(month: i8, day: i8) -> civil::Date {
+        civil::date(2026, month, day)
     }
 
     fn draw(cx: &mut VisualTestContext) {
