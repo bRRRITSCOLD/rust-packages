@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1](https://github.com/bRRRITSCOLD/rust-packages/compare/v0.2.0...v0.2.1) - 2026-11-26
+
+**GPUI pin:** gpui-kit 0.11.0 (`gpui-base = "=0.11.0"`, `gpui = { package = "gpui-pre", version = "=0.3.14" }` and its `gpui-pre-*` siblings at `=0.3.14`). Apps copy these lines next to the `v0.2.1` tag.
+
+**core-react pin:** 1.8.0 (tokens, library snapshot, Lucide 1.68.0, drift checker design-core-node 0.1.3 + design-core-js 0.2.0).
+
+### Fixed
+
+- *(gpui)* Enter clicks a focused button; a confirm runs AlertDialogAction ([#82](https://github.com/bRRRITSCOLD/rust-packages/pull/82))
+- *(gpui)* ComboboxChips selects on the theme's selection ([#80](https://github.com/bRRRITSCOLD/rust-packages/pull/80))
+
 ## [0.2.0](https://github.com/bRRRITSCOLD/rust-packages/compare/v0.1.9...v0.2.0) - 2026-11-26
 
 **GPUI pin:** gpui-kit 0.11.0 (`gpui-base = "=0.11.0"`, `gpui = { package = "gpui-pre", version = "=0.3.14" }` and its `gpui-pre-*` siblings at `=0.3.14`). Apps copy these lines next to the `v0.2.0` tag.
