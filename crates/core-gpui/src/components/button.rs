@@ -9,6 +9,9 @@
 //! - The `aria-invalid` and `aria-expanded` arms: neither is a Penpot variant property, so
 //!   the Button has no builder for them until one is.
 //!
+//! Enter clicks a focused button, as in a browser, even inside a dialog that binds Enter
+//! itself: core-gpui unbinds Enter while a button has focus.
+//!
 //! `focus-visible:` is GPUI's `.focus_visible(..)`: the ring shows while the button has focus
 //! and the window's last input was a key. As with Chromium's `:focus-visible` on core-react's
 //! button, a click alone shows none, Tab does, and so does a key pressed while a clicked
@@ -34,6 +37,22 @@ use strum::{AsRefStr, Display, EnumIter, IntoStaticStr};
 use super::control::{dimmed, dimmed_shadows, on_background, shadows};
 use crate::icons::{Icon, IconName};
 use crate::theme::{ActiveTheme as _, Theme};
+
+/// The key context every Button sets, so its own bindings outrank an ancestor's.
+const KEY_CONTEXT: &str = "CoreGpuiButton";
+
+/// Unbinds Enter while a Button has focus. A browser clicks a focused button on Enter, but GPUI
+/// runs key bindings first and clicks only when none matched, so an ancestor's Enter binding
+/// (gpui-base's dialog binds it to `Confirm`) would otherwise take Enter from the button. A
+/// `NoAction` at the button's depth suppresses every shallower binding, leaving GPUI's own
+/// keyboard click. Space has no binding to lose.
+pub(crate) fn init(cx: &mut App) {
+    cx.bind_keys([gpui::KeyBinding::new(
+        "enter",
+        gpui::NoAction {},
+        Some(KEY_CONTEXT),
+    )]);
+}
 
 /// Penpot variant property `variant`. Cases are its values in PascalCase; [`Display`] gives
 /// the Penpot value back (`ButtonVariant::Outline` → `outline`).
@@ -468,6 +487,7 @@ impl RenderOnce for Button {
             None => gpui_base::Button::new(self.id),
         };
         base.disabled(self.disabled)
+            .key_context(KEY_CONTEXT)
             .group(GROUP)
             .relative()
             .flex_shrink_0()
