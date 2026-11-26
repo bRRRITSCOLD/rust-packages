@@ -28,6 +28,11 @@
 				"$type": "color",
 				"$value": "{color.neutral.50}"
 			},
+			"checked-thumb": {
+				"$type": "color",
+				"$value": "{primary-foreground}",
+				"$description": "The thumb of a checked Switch. `background` in light, `primary-foreground` in dark."
+			},
 			"destructive": {
 				"$type": "color",
 				"$value": "{color.red.400}"
@@ -255,6 +260,11 @@
 				"$value": "rgba(38, 38, 38, 0.8)",
 				"$description": "The track of an unchecked toggle: Switch. `input` in light, `input` at 80% in dark."
 			},
+			"unchecked-thumb": {
+				"$type": "color",
+				"$value": "{foreground}",
+				"$description": "The thumb of an unchecked Switch. `background` in light, `foreground` in dark."
+			},
 			"warning": {
 				"$type": "color",
 				"$value": "{color.amber.400}",
@@ -300,6 +310,11 @@
 			"card-foreground": {
 				"$type": "color",
 				"$value": "{color.neutral.950}"
+			},
+			"checked-thumb": {
+				"$type": "color",
+				"$value": "{background}",
+				"$description": "The thumb of a checked Switch. `background` in light, `primary-foreground` in dark."
 			},
 			"destructive": {
 				"$type": "color",
@@ -527,6 +542,11 @@
 				"$type": "color",
 				"$value": "{input}",
 				"$description": "The track of an unchecked toggle: Switch. `input` in light, `input` at 80% in dark."
+			},
+			"unchecked-thumb": {
+				"$type": "color",
+				"$value": "{background}",
+				"$description": "The thumb of an unchecked Switch. `background` in light, `foreground` in dark."
 			},
 			"warning": {
 				"$type": "color",
@@ -14495,7 +14515,7 @@
 						"Thumb"
 					],
 					"appliedTokens": {
-						"fill": "background"
+						"fill": "unchecked-thumb"
 					},
 					"unbound": []
 				}
@@ -14533,7 +14553,7 @@
 						"Thumb"
 					],
 					"appliedTokens": {
-						"fill": "background"
+						"fill": "unchecked-thumb"
 					},
 					"unbound": []
 				}
@@ -14570,7 +14590,7 @@
 						"Thumb"
 					],
 					"appliedTokens": {
-						"fill": "background"
+						"fill": "checked-thumb"
 					},
 					"unbound": []
 				}
@@ -14608,7 +14628,7 @@
 						"Thumb"
 					],
 					"appliedTokens": {
-						"fill": "background"
+						"fill": "checked-thumb"
 					},
 					"unbound": []
 				}
@@ -14645,7 +14665,7 @@
 						"Thumb"
 					],
 					"appliedTokens": {
-						"fill": "background"
+						"fill": "unchecked-thumb"
 					},
 					"unbound": []
 				}
@@ -14683,7 +14703,7 @@
 						"Thumb"
 					],
 					"appliedTokens": {
-						"fill": "background"
+						"fill": "unchecked-thumb"
 					},
 					"unbound": []
 				}
@@ -14720,7 +14740,7 @@
 						"Thumb"
 					],
 					"appliedTokens": {
-						"fill": "background"
+						"fill": "checked-thumb"
 					},
 					"unbound": []
 				}
@@ -14758,7 +14778,7 @@
 						"Thumb"
 					],
 					"appliedTokens": {
-						"fill": "background"
+						"fill": "checked-thumb"
 					},
 					"unbound": []
 				}
@@ -15704,7 +15724,7 @@
 						"Thumb"
 					],
 					"appliedTokens": {
-						"fill": "background"
+						"fill": "unchecked-thumb"
 					},
 					"unbound": []
 				},
@@ -19839,8 +19859,17 @@
 				"Email": {
 					"componentId": "411cee6b-cc3d-8041-8008-ead4ec9a1977"
 				},
+				"Label": {
+					"componentId": "411cee6b-cc3d-8041-8008-ead4e4e13352"
+				},
 				"Message": {
 					"componentId": "411cee6b-cc3d-8041-8008-ead4ec9a1977"
+				},
+				"More": {
+					"componentId": "411cee6b-cc3d-8041-8008-ead4ec9a1977"
+				},
+				"Separator": {
+					"componentId": "411cee6b-cc3d-8041-8008-ead4e519ee69"
 				}
 			},
 			"wrappers": [],
@@ -20025,6 +20054,118 @@
 					],
 					"appliedTokens": {
 						"stroke-color": "popover-foreground"
+					},
+					"unbound": []
+				},
+				"a3d71233-32d1-80cf-8008-fea86e57a116": {
+					"namePath": [
+						"Components / DropdownMenu / SubContent",
+						"Label"
+					],
+					"appliedTokens": {
+						"p1": "space.1-5",
+						"p2": "space.2",
+						"p3": "space.1-5",
+						"p4": "space.2"
+					},
+					"unbound": []
+				},
+				"a3d71233-32d1-80cf-8008-fea86e57a117": {
+					"namePath": [
+						"Components / DropdownMenu / SubContent",
+						"Label",
+						"Text"
+					],
+					"appliedTokens": {
+						"fill": "muted-foreground",
+						"font-family": "font-family.sans",
+						"font-size": "font-size.xs",
+						"font-weight": "font-weight.medium"
+					},
+					"unbound": []
+				},
+				"a3d71233-32d1-80cf-8008-fea86e6d3eec": {
+					"namePath": [
+						"Components / DropdownMenu / SubContent",
+						"Separator"
+					],
+					"appliedTokens": {
+						"fill": "border"
+					},
+					"unbound": []
+				},
+				"a3d71233-32d1-80cf-8008-fea86e7f4505": {
+					"namePath": [
+						"Components / DropdownMenu / SubContent",
+						"More"
+					],
+					"appliedTokens": {
+						"r1": "radius-sm",
+						"r2": "radius-sm",
+						"r3": "radius-sm",
+						"r4": "radius-sm",
+						"p1": "space.1-5",
+						"p2": "space.2",
+						"p3": "space.1-5",
+						"p4": "space.2",
+						"column-gap": "space.2"
+					},
+					"unbound": []
+				},
+				"a3d71233-32d1-80cf-8008-fea86e7f4507": {
+					"namePath": [
+						"Components / DropdownMenu / SubContent",
+						"More",
+						"Shortcut",
+						"Text"
+					],
+					"appliedTokens": {
+						"fill": "muted-foreground",
+						"font-family": "font-family.sans",
+						"font-size": "font-size.xs",
+						"font-weight": "font-weight.normal",
+						"letter-spacing": "letter-spacing.widest"
+					},
+					"unbound": []
+				},
+				"a3d71233-32d1-80cf-8008-fea86e7f4508": {
+					"namePath": [
+						"Components / DropdownMenu / SubContent",
+						"More",
+						"Text"
+					],
+					"appliedTokens": {
+						"fill": "popover-foreground",
+						"font-family": "font-family.sans",
+						"font-size": "font-size.sm",
+						"font-weight": "font-weight.normal"
+					},
+					"unbound": []
+				},
+				"a3d71233-32d1-80cf-8008-fea86e7f450a": {
+					"namePath": [
+						"Components / DropdownMenu / SubContent",
+						"More",
+						"Icon",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "popover-foreground"
+					},
+					"unbound": []
+				},
+				"a3d71233-32d1-80cf-8008-fea86e7f450b": {
+					"namePath": [
+						"Components / DropdownMenu / SubContent",
+						"More",
+						"Highlight"
+					],
+					"appliedTokens": {
+						"fill": "accent",
+						"r1": "radius-sm",
+						"r2": "radius-sm",
+						"r3": "radius-sm",
+						"r4": "radius-sm"
 					},
 					"unbound": []
 				}
@@ -22750,6 +22891,35 @@
 				"a125dbd8-5a64-80fd-8008-f548a8d2de82": {
 					"namePath": [
 						"icon / GitPullRequestDraft",
+						"Stroke 1"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				}
+			}
+		},
+		"a3d71233-32d1-80cf-8008-fea8458ebc7d": {
+			"path": "icon",
+			"name": "Lock",
+			"variantProperties": {},
+			"parts": {},
+			"wrappers": [],
+			"layers": {
+				"a3d71233-32d1-80cf-8008-fea83a3d3af7": {
+					"namePath": [
+						"icon / Lock",
+						"Stroke 2"
+					],
+					"appliedTokens": {
+						"stroke-color": "foreground"
+					},
+					"unbound": []
+				},
+				"a3d71233-32d1-80cf-8008-fea83a3d3af8": {
+					"namePath": [
+						"icon / Lock",
 						"Stroke 1"
 					],
 					"appliedTokens": {
